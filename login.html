@@ -38,7 +38,7 @@ button:disabled { background: #475569; cursor: default; }
   <h2>⚔️ FightArena</h2>
 
   <label>Адрес сервера</label>
-  <input type="text" id="srv" placeholder="http://localhost:4000">
+  <input type="text" id="srv" placeholder="https://nordheimunion.ru">
 
   <label>Логин (email)</label>
   <input type="text" id="email" autocomplete="username">
@@ -59,7 +59,7 @@ const api = window.loginAPI
 
 // Pre-fill saved values
 const saved = api.getSaved()
-document.getElementById('srv').value   = saved.srv   || 'http://localhost:4000'
+document.getElementById('srv').value   = saved.srv   || 'https://nordheimunion.ru'
 document.getElementById('email').value = saved.email || ''
 document.getElementById('remember').checked = saved.remember || false
 

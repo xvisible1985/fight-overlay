@@ -326,7 +326,7 @@ function clearCodeCache() {
 }
 
 // Saved login data (in-memory, persisted via Electron store via IPC)
-let savedLogin = { srv: 'http://localhost:4000', email: '', remember: false, token: '' }
+let savedLogin = { srv: 'https://nordheimunion.ru', email: '', remember: false, token: '' }
 try {
   const p = path.join(app.getPath('userData'), 'login.json')
   if (fs.existsSync(p)) savedLogin = { ...savedLogin, ...JSON.parse(fs.readFileSync(p, 'utf8')) }
