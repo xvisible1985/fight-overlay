@@ -308,7 +308,7 @@ function makePNG(w, h, r, g, b) {
 let mainWindow = null
 let loginWindow = null
 let tray = null
-let widgetVisible = { chat: true, fight: true }
+let widgetVisible = { chat: true, fight: true, warriors: false, calc: false }
 try {
   const wp = path.join(app.getPath('userData'), 'widgets.json')
   if (fs.existsSync(wp)) widgetVisible = { ...widgetVisible, ...JSON.parse(fs.readFileSync(wp, 'utf8')) }
@@ -393,21 +393,19 @@ function rebuildTrayMenu() {
       label: 'Виджеты', submenu: [
         {
           label: 'Чат', type: 'checkbox', checked: widgetVisible.chat,
-          click: (item) => {
-            widgetVisible.chat = item.checked
-            saveWidgets()
-            mainWindow?.webContents.send('widget-toggle', { widget: 'chat', visible: item.checked })
-            rebuildTrayMenu()
-          }
+          click: (item) => { widgetVisible.chat = item.checked; saveWidgets(); mainWindow?.webContents.send('widget-toggle', { widget: 'chat', visible: item.checked }); rebuildTrayMenu() }
+        },
+        {
+          label: 'Жители', type: 'checkbox', checked: widgetVisible.warriors,
+          click: (item) => { widgetVisible.warriors = item.checked; saveWidgets(); mainWindow?.webContents.send('widget-toggle', { widget: 'warriors', visible: item.checked }); rebuildTrayMenu() }
         },
         {
           label: 'Бой', type: 'checkbox', checked: widgetVisible.fight,
-          click: (item) => {
-            widgetVisible.fight = item.checked
-            saveWidgets()
-            mainWindow?.webContents.send('widget-toggle', { widget: 'fight', visible: item.checked })
-            rebuildTrayMenu()
-          }
+          click: (item) => { widgetVisible.fight = item.checked; saveWidgets(); mainWindow?.webContents.send('widget-toggle', { widget: 'fight', visible: item.checked }); rebuildTrayMenu() }
+        },
+        {
+          label: 'Калькулятор', type: 'checkbox', checked: widgetVisible.calc,
+          click: (item) => { widgetVisible.calc = item.checked; saveWidgets(); mainWindow?.webContents.send('widget-toggle', { widget: 'calc', visible: item.checked }); rebuildTrayMenu() }
         },
       ]
     },
@@ -437,8 +435,8 @@ ipcMain.on('set-ignore-mouse-events', (_, ignore) => {
 ipcMain.on('login-get-saved', (e) => { e.returnValue = savedLogin })
 function sendWidgetState() {
   if (!mainWindow) return
-  mainWindow.webContents.send('widget-toggle', { widget: 'chat',  visible: widgetVisible.chat })
-  mainWindow.webContents.send('widget-toggle', { widget: 'fight', visible: widgetVisible.fight })
+  for (const [widget, visible] of Object.entries(widgetVisible))
+    mainWindow.webContents.send('widget-toggle', { widget, visible })
 }
 
 ipcMain.on('login-success', (_, { token, srv, email, remember }) => {

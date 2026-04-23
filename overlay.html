@@ -12,79 +12,36 @@ body {
   user-select: none; height: 100vh; width: 100vw;
 }
 
-/* ── Widget ── */
+/* ── Widget base ── */
 .widget {
   position: fixed; background: #1e293b; border: 1px solid #334155;
   border-radius: 10px; box-shadow: 0 4px 24px rgba(0,0,0,0.55);
   display: flex; flex-direction: column; overflow: hidden; z-index: 9999;
-  cursor: none;
 }
 .wh {
-  display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+  display: flex; align-items: center; gap: 6px; padding: 6px 10px;
   background: #0f172a; border-bottom: 1px solid #334155;
-  cursor: grab; white-space: nowrap;
+  cursor: grab; white-space: nowrap; flex-shrink: 0;
   font-size: 11px; font-weight: 600; color: #94a3b8;
   text-transform: uppercase; letter-spacing: .05em;
 }
 .wh:active { cursor: grabbing; }
-.wh-title { flex: 1; }
-.wdot { font-size: 10px; }
+.wh-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.wdot { font-size: 10px; flex-shrink: 0; }
 .wdot.ok { color: #22c55e; } .wdot.err { color: #ef4444; }
-.wtoggle { cursor: pointer; background: none; border: none; color: #64748b; font-size: 10px; padding: 0 2px; }
+.wtoggle { cursor: pointer; background: none; border: none; color: #64748b; font-size: 10px; padding: 0 2px; flex-shrink: 0; }
 .wtoggle:hover { color: #94a3b8; }
-.wbody { display: flex; flex-direction: column; flex: 1; }
+.wbody { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
 
-/* ── Fight content ── */
-#fightContent { display: none; flex-direction: column; flex: 1; }
-
-/* Fights list */
-#fightsList { flex: 1; overflow-y: auto; padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; }
-.fight-item {
-  display: flex; align-items: center; gap: 6px; padding: 6px 8px;
-  background: #0f172a; border-radius: 6px; cursor: pointer;
-  border: 1px solid #1e293b; transition: border-color .15s;
-}
-.fight-item:hover { border-color: #3b82f6; }
-.fight-item-info { flex: 1; min-width: 0; }
-.fight-item-title { font-size: 11px; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.fight-item-sub { font-size: 10px; color: #475569; margin-top: 1px; }
-.fight-status { font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; white-space: nowrap; }
-.fight-status.active  { background: #14532d; color: #4ade80; }
-.fight-status.waiting { background: #431407; color: #fb923c; }
-.no-fights { font-size: 11px; color: #475569; padding: 10px 8px; text-align: center; }
-
-/* ── Fight chat ── */
-#fightChat { display: none; flex-direction: column; flex: 1; }
-
-/* Members bar */
-.members-bar {
-  padding: 4px 8px; border-bottom: 1px solid #0f172a;
-  font-size: 10px; line-height: 1.6; color: #64748b;
-  white-space: normal; overflow: hidden;
-}
-.member-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; margin-right: 2px; vertical-align: middle; }
-.team1 { background: #f87171; } .team2 { background: #60a5fa; } .team3 { background: #4ade80; } .team0 { background: #94a3b8; }
-.member-name { color: #cbd5e1; }
-.member-name.departed { opacity: 0.4; text-decoration: line-through; }
-.hp-val { color: #f87171; }
-.sh-val { color: #60a5fa; }
-
-/* Fight chat header */
-.fight-chat-hdr { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-bottom: 1px solid #0f172a; }
-.fight-chat-title { flex: 1; font-size: 11px; color: #f59e0b; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.fight-leave { font-size: 10px; color: #64748b; cursor: pointer; background: none; border: none; padding: 0 2px; }
-.fight-leave:hover { color: #ef4444; }
-
-/* Scrollbars */
+/* ── Scrollbars ── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: #0f172a; }
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-/* Messages */
+/* ── Messages ── */
 .msgs { flex: 1; overflow-y: auto; padding: 5px 8px; display: flex; flex-direction: column; gap: 1px; }
 #mChat  { height: calc(17 * 13px * 1.4); flex: none; }
-#mFight { height: calc(17 * 13px * 1.4); flex: none; }
 .msg { font-size: 13px; line-height: 1.4; word-break: break-word; }
 .msg-ts { font-size: 9px; color: #334155; margin-right: 3px; }
 .msg .au { color: #60a5fa; font-weight: 600; margin-right: 3px; }
@@ -93,12 +50,12 @@ body {
 .msg.me  { color: #a78bfa; font-style: italic; }
 .msg.do  { color: #818cf8; font-style: italic; }
 
-/* Online list (global chat) */
-.online-list { padding: 5px 8px; border-bottom: 1px solid #0f172a; font-size: 10px; color: #475569; max-height: 54px; overflow-y: auto; }
+/* ── Online list ── */
+.online-list { padding: 5px 8px; border-bottom: 1px solid #0f172a; font-size: 10px; color: #475569; max-height: 54px; overflow-y: auto; flex-shrink: 0; }
 .oname { display: inline-block; background: #0f172a; border-radius: 3px; padding: 1px 5px; margin: 1px; color: #64748b; }
 
-/* Input */
-.irow { display: flex; gap: 3px; padding: 5px 8px; border-top: 1px solid #0f172a; align-items: flex-end; }
+/* ── Input ── */
+.irow { display: flex; gap: 3px; padding: 5px 8px; border-top: 1px solid #0f172a; align-items: flex-end; flex-shrink: 0; }
 .irow textarea {
   flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 4px;
   color: #e2e8f0; font-size: 11px; padding: 4px 6px; resize: none; outline: none;
@@ -107,27 +64,270 @@ body {
 .irow textarea:focus { border-color: #3b82f6; caret-color: #93c5fd; }
 .irow button {
   background: #1e293b; border: 1px solid #334155; border-radius: 4px;
-  color: #94a3b8; cursor: pointer; padding: 3px 6px; font-size: 10px;
+  color: #94a3b8; cursor: pointer; padding: 3px 6px; font-size: 10px; flex-shrink: 0;
 }
 .irow button:hover:not(:disabled) { background: #334155; color: #e2e8f0; }
 .irow button:disabled { opacity: 0.35; cursor: default; }
 .irow .send-btn { font-size: 12px; padding: 4px 8px; }
 .lang-btn { font-size: 9px; font-weight: 700; padding: 3px 4px; min-width: 22px; letter-spacing: .03em; }
 .lang-btn.ru { color: #60a5fa; border-color: #3b82f6; }
+
+/* ── Font size buttons ── */
+.fsz-btn {
+  background: none; border: 1px solid #334155; border-radius: 3px;
+  color: #475569; cursor: pointer; font-size: 9px; font-weight: 700;
+  padding: 1px 4px; line-height: 1.2;
+}
+.fsz-btn:hover { color: #94a3b8; border-color: #475569; }
+.fsz-btn.active { color: #60a5fa; border-color: #3b82f6; }
+
+/* ── Nordheim Bar ── */
+#nbar {
+  position: fixed; z-index: 10000;
+  background: #0f172a; border: 1px solid #334155;
+  border-radius: 10px; box-shadow: 0 4px 24px rgba(0,0,0,0.7);
+  display: none; flex-direction: column; overflow: hidden; min-width: 180px;
+}
+.nb-hdr {
+  display: flex; align-items: center; padding: 6px 10px; gap: 6px;
+  border-bottom: 1px solid #1e293b; cursor: grab;
+  font-size: 11px; font-weight: 700; color: #94a3b8;
+  letter-spacing: .06em; text-transform: uppercase;
+}
+.nb-hdr:active { cursor: grabbing; }
+.nb-hdr-title { flex: 1; }
+.nb-close { background: none; border: none; color: #475569; cursor: pointer; font-size: 11px; padding: 0 2px; }
+.nb-close:hover { color: #ef4444; }
+.nb-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 6px 8px; }
+.nb-btn {
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  background: #1e293b; border: 1px solid #334155; border-radius: 6px;
+  color: #64748b; cursor: pointer; font-size: 10px; font-weight: 600;
+  padding: 5px 6px; transition: all .15s; white-space: nowrap;
+}
+.nb-btn:hover { background: #1e3a5f; border-color: #3b82f6; color: #93c5fd; }
+.nb-btn.active { background: #1e3a5f; border-color: #3b82f6; color: #93c5fd; }
+.nb-cnt { font-size: 9px; color: #4ade80; font-weight: 700; }
+
+/* ── Warriors widget ── */
+#wWarriors { width: 230px; }
+.w-search-row { display: flex; padding: 5px 8px 0; flex-shrink: 0; }
+.w-search-inp {
+  flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 4px;
+  color: #e2e8f0; font-size: 11px; padding: 3px 7px; outline: none;
+}
+.w-search-inp:focus { border-color: #3b82f6; }
+.wfilter { display: flex; gap: 3px; padding: 4px 8px; flex-shrink: 0; }
+.wfbtn {
+  flex: 1; background: #0f172a; border: 1px solid #1e293b; border-radius: 4px;
+  color: #475569; cursor: pointer; font-size: 9px; font-weight: 600; padding: 3px 4px;
+}
+.wfbtn:hover { border-color: #475569; color: #94a3b8; }
+.wfbtn.active { border-color: #3b82f6; color: #60a5fa; background: #1e3a5f22; }
+.warriors-list { flex: 1; overflow-y: auto; max-height: 340px; padding: 3px 0; }
+.warrior-item { display: flex; align-items: center; gap: 6px; padding: 4px 8px; }
+.warrior-item:hover { background: #0f172a44; }
+.warrior-avatar {
+  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  background: #1e293b; border: 1px solid #334155;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700; color: #64748b; overflow: hidden;
+}
+.warrior-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.warrior-info { flex: 1; min-width: 0; }
+.warrior-name { font-size: 11px; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.warrior-sub  { font-size: 9px; color: #475569; margin-top: 1px; }
+.w-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.w-dot.on { background: #22c55e; } .w-dot.off { background: #334155; }
+.w-empty { font-size: 11px; color: #475569; padding: 10px 8px; text-align: center; }
+
+/* ── Fight widget updates ── */
+.fight-tabs { display: flex; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
+.fight-tab {
+  flex: 1; background: none; border: none; border-bottom: 2px solid transparent;
+  color: #475569; cursor: pointer; font-size: 10px; font-weight: 700;
+  padding: 4px 8px; letter-spacing: .04em; text-transform: uppercase; transition: all .15s;
+}
+.fight-tab:hover { color: #94a3b8; }
+.fight-tab.active { color: #60a5fa; border-bottom-color: #3b82f6; }
+
+.fight-filters { display: flex; gap: 3px; padding: 4px 8px; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
+.fight-filter-btn {
+  background: #0f172a; border: 1px solid #1e293b; border-radius: 4px;
+  color: #475569; cursor: pointer; font-size: 9px; font-weight: 600; padding: 2px 6px;
+}
+.fight-filter-btn:hover { border-color: #475569; color: #94a3b8; }
+.fight-filter-btn.active { border-color: #3b82f6; color: #60a5fa; background: #1e3a5f22; }
+
+#fightsList { flex: 1; overflow-y: auto; padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; }
+.fight-item {
+  display: flex; align-items: center; gap: 6px; padding: 6px 8px;
+  background: #0f172a; border-radius: 6px; cursor: pointer;
+  border: 1px solid #1e293b; transition: border-color .15s;
+}
+.fight-item:hover { border-color: #3b82f6; }
+.fight-item-info { flex: 1; min-width: 0; }
+.fight-item-title { font-size: 1em; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fight-item-sub { font-size: .85em; color: #475569; margin-top: 1px; }
+.fight-status { font-size: .78em; font-weight: 700; padding: 1px 5px; border-radius: 3px; white-space: nowrap; flex-shrink: 0; }
+.fight-status.active  { background: #14532d; color: #4ade80; }
+.fight-status.waiting { background: #431407; color: #fb923c; }
+.fight-status.finished { background: #1e293b; color: #475569; }
+.no-fights { font-size: 11px; color: #475569; padding: 10px 8px; text-align: center; }
+
+#fightChat { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+.members-bar { padding: 4px 8px; border-bottom: 1px solid #0f172a; font-size: 10px; line-height: 1.6; color: #64748b; white-space: normal; overflow: hidden; flex-shrink: 0; }
+.member-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; margin-right: 2px; vertical-align: middle; }
+.team1 { background: #f87171; } .team2 { background: #60a5fa; } .team3 { background: #4ade80; } .team0 { background: #94a3b8; }
+.member-name { color: #cbd5e1; }
+.member-name.departed { opacity: 0.4; text-decoration: line-through; }
+.hp-val { color: #f87171; } .sh-val { color: #60a5fa; }
+.fight-chat-hdr { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
+.fight-chat-title { flex: 1; font-size: 11px; color: #f59e0b; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fight-leave { font-size: 10px; color: #64748b; cursor: pointer; background: none; border: none; padding: 0 2px; }
+.fight-leave:hover { color: #ef4444; }
+#mFight { height: calc(14 * 1em * 1.4); flex: none; }
+
+/* ── Calc widget ── */
+#wCalc { width: 460px; font-size: 14px; }
+#wCalc.fsz-md { width: 560px; font-size: 17px; }
+#wCalc.fsz-lg { width: 660px; font-size: 21px; }
+.cw-upper { display: flex; flex-direction: row; border-bottom: 1px solid #1e293b; }
+.cw-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .28em; padding: .55em .6em; }
+.cw-col-div { width: 1px; background: #1e293b; flex-shrink: 0; }
+.cw-name-row { display: flex; align-items: center; gap: .25em; }
+.cw-inp {
+  width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 5px;
+  color: #e2e8f0; font-family: inherit; font-size: .72em; padding: .26em .44em; outline: none;
+}
+.cw-inp:focus { border-color: #3b82f6; }
+.cw-inp::placeholder { color: #334155; }
+.cw-inp[type=number] { -moz-appearance: textfield; }
+.cw-inp[type=number]::-webkit-inner-spin-button,
+.cw-inp[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+.cw-name-inp { flex: 1; min-width: 0; }
+.cw-color-sw { width: 2em; height: 2em; flex-shrink: 0; border: 1px solid #334155; border-radius: 5px; background: transparent; cursor: pointer; padding: 1px 2px; }
+.cw-stats-row { display: flex; align-items: center; gap: .22em; }
+.cw-stat-lbl { font-size: .76em; flex-shrink: 0; }
+.cw-stat-inp { flex: 1; min-width: 0; }
+.cw-cnt-row { display: flex; align-items: center; gap: .22em; min-height: 1.75em; }
+.cw-cnt-lbl { font-size: .62em; color: #64748b; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cw-cnt-lbl.red { color: rgba(210,100,100,.8); }
+.cw-cnt-ctrl { display: flex; align-items: center; gap: .15em; flex-shrink: 0; }
+.cw-cnt-btn {
+  background: #1e293b; border: 1px solid #334155; border-radius: 3px; color: #64748b;
+  font-size: .7em; width: 1.55em; height: 1.55em; display: flex; align-items: center;
+  justify-content: center; cursor: pointer; padding: 0; flex-shrink: 0;
+}
+.cw-cnt-btn:hover { background: #334155; color: #94a3b8; }
+.cw-cnt-val { font-size: .72em; font-weight: 700; color: #cbd5e1; min-width: 1.5em; text-align: center; }
+.cw-cnt-note { font-size: .58em; color: rgba(200,80,80,.65); white-space: nowrap; flex-shrink: 0; }
+.cw-trauma-block { display: flex; flex-direction: column; gap: .15em; padding: .25em .3em; background: rgba(180,100,40,.04); border: 1px solid rgba(180,100,40,.15); border-radius: 5px; }
+.cw-trauma-hdr { font-size: .54em; font-weight: 700; color: rgba(200,140,60,.5); letter-spacing: .06em; text-transform: uppercase; margin-bottom: .04em; }
+.cw-field-row { display: flex; align-items: center; gap: .3em; }
+.cw-lbl { font-size: .6em; font-weight: 700; color: #475569; width: 3.2em; flex-shrink: 0; }
+.cw-num-inp { flex: 1; min-width: 0; }
+.cw-radio-row { display: flex; gap: .22em; }
+.cw-radio-grp { display: flex; flex-direction: column; gap: .14em; padding: .22em .3em; background: #0f172a22; border: 1px solid #1e293b; border-radius: 5px; flex: 1; min-width: 0; }
+.cw-radio-grp-sm { flex: 0 0 auto; }
+.cw-radio-lbl { display: flex; align-items: center; gap: .3em; font-size: .66em; color: #64748b; cursor: pointer; }
+.cw-radio-lbl:hover { color: #94a3b8; }
+.cw-radio-lbl input[type=radio] { accent-color: #3b82f6; width: .9em; height: .9em; cursor: pointer; flex-shrink: 0; }
+.cw-pending { font-size: .63em; color: rgba(220,170,60,.85); background: rgba(220,170,60,.07); border: 1px solid rgba(220,170,60,.2); border-radius: 5px; padding: .2em .4em; }
+.cw-apply-btn {
+  background: #1e3a5f; border: 1px solid #3b82f6; border-radius: 6px;
+  color: #93c5fd; font-family: inherit; font-size: .65em; font-weight: 700;
+  padding: .3em .5em; cursor: pointer; width: 100%; margin-top: auto; transition: all .15s;
+}
+.cw-apply-btn:hover { background: #1d4ed8; border-color: #60a5fa; color: #dbeafe; }
+.cw-lower { display: flex; flex-direction: column; gap: .3em; padding: .5em .6em; }
+.cw-lower-hdr { display: flex; align-items: center; gap: .25em; flex-wrap: wrap; }
+.cw-lower-title { font-size: .58em; font-weight: 700; color: #475569; letter-spacing: .06em; text-transform: uppercase; flex: 1; }
+.cw-act-btn {
+  background: #1e293b; border: 1px solid #334155; border-radius: 4px;
+  color: #64748b; font-size: .64em; padding: .14em .42em; cursor: pointer;
+}
+.cw-act-btn:hover:not(:disabled) { border-color: #475569; color: #94a3b8; }
+.cw-act-btn:disabled { opacity: .3; cursor: default; }
+.cw-bleed-row { display: flex; align-items: center; gap: .2em; }
+.cw-bleed-lbl { font-size: .58em; color: #334155; white-space: nowrap; }
+.cw-result {
+  width: 100%; min-height: 8em; max-height: 14em;
+  background: #0f172a; border: 1px solid #1e293b; border-radius: 5px;
+  padding: .38em .5em; color: #cbd5e1; font-family: 'Courier New', monospace;
+  font-size: .68em; line-height: 1.55; resize: none; outline: none;
+}
+.cw-status-box {
+  background: #0f172a; border: 1px solid #1e293b; border-radius: 5px;
+  padding: .38em .5em; font-family: 'Courier New', monospace;
+  font-size: .68em; line-height: 1.7; display: flex; flex-direction: column;
+}
+.sv-red { color: #f87171; } .sv-blue { color: #60a5fa; } .sv-orange { color: #e0a050; }
+
+/* ── Incoming challenge ── */
+#challenge {
+  position: fixed; inset: 0; z-index: 11000;
+  background: rgba(0,0,0,0.65); display: none;
+  align-items: center; justify-content: center;
+}
+.ch-box {
+  background: #1e293b; border: 1px solid #334155; border-radius: 14px;
+  padding: 24px 28px; width: 310px; text-align: center;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+}
+.ch-icon { font-size: 32px; margin-bottom: 8px; }
+.ch-from { font-size: 16px; font-weight: 700; color: #f1f5f9; }
+.ch-sub { font-size: 12px; color: #64748b; margin-top: 4px; }
+.ch-title { font-size: 14px; color: #f59e0b; font-weight: 600; margin: 10px 0 6px; }
+.ch-badges { display: flex; justify-content: center; gap: 6px; margin-bottom: 8px; }
+.ch-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: #0f172a; color: #94a3b8; }
+.ch-msg { font-size: 11px; color: #64748b; margin-bottom: 14px; font-style: italic; min-height: 16px; }
+.ch-btns { display: flex; gap: 8px; justify-content: center; }
+.ch-btn-accept {
+  background: #1d4ed8; border: none; border-radius: 7px;
+  color: #fff; font-size: 13px; font-weight: 600; padding: 8px 18px; cursor: pointer;
+}
+.ch-btn-accept:hover { background: #2563eb; }
+.ch-btn-decline {
+  background: #1e293b; border: 1px solid #334155; border-radius: 7px;
+  color: #94a3b8; font-size: 13px; font-weight: 600; padding: 8px 18px; cursor: pointer;
+}
+.ch-btn-decline:hover { background: #334155; color: #f1f5f9; }
 </style>
 </head>
 <body>
 
-<!-- Чат виджет -->
-<div class="widget" id="wChat" style="width:346px; bottom:20px; right:20px;">
+<!-- ── Nordheim Bar ── -->
+<div id="nbar">
+  <div class="nb-hdr" id="whNbar">
+    <span class="nb-hdr-title">ᚾ Нордхейм</span>
+    <button class="nb-close" onclick="hide('nbar')" title="Скрыть">✕</button>
+  </div>
+  <div class="nb-btns">
+    <button class="nb-btn" id="nb-chat" onclick="nbarToggle('wChat')">
+      💬 Лобби <span class="wdot err" id="dChat">●</span>
+    </button>
+    <button class="nb-btn" id="nb-warriors" onclick="nbarToggle('wWarriors')">
+      👥 Жители <span class="nb-cnt" id="nbOnlineCnt"></span>
+    </button>
+    <button class="nb-btn" id="nb-fight" onclick="nbarToggle('wFight')">
+      ⚔ Бой
+    </button>
+    <button class="nb-btn" id="nb-calc" onclick="nbarToggle('wCalc')">
+      🧮 Калькулятор
+    </button>
+  </div>
+</div>
+
+<!-- ── Chat widget ── -->
+<div class="widget" id="wChat" style="width:346px;">
   <div class="wh" id="whChat">
     <span class="wh-title">💬 Чат</span>
-    <span class="wdot err" id="dChat">●</span>
-    <button class="wtoggle" onclick="el?.logout()" title="Выйти / сменить сервер">⚙</button>
+    <button class="wtoggle" onclick="el?.logout()" title="Выйти">⚙</button>
     <button class="wtoggle" id="tbChat" onclick="toggle('Chat')">▼</button>
   </div>
   <div class="wbody" id="wbChat">
-    <div class="online-list" id="onlineList">
+    <div class="online-list">
       Онлайн: <span id="onlineCnt">0</span> &nbsp;<span id="onlineNames"></span>
     </div>
     <div class="msgs" id="mChat"></div>
@@ -139,108 +339,353 @@ body {
   </div>
 </div>
 
-<!-- Виджет боя — скрыт до авторизации -->
-<div class="widget" id="wFight" style="display:none; width:346px; bottom:20px; right:386px;">
+<!-- ── Warriors widget ── -->
+<div class="widget" id="wWarriors" style="display:none;">
+  <div class="wh" id="whWarriors">
+    <span class="wh-title">👥 Жители</span>
+    <span id="wOnlineCnt" style="font-size:10px;color:#4ade80;font-weight:700;"></span>
+    <button class="wtoggle" id="tbWarriors" onclick="toggle('Warriors')">▼</button>
+  </div>
+  <div class="wbody" id="wbWarriors">
+    <div class="w-search-row">
+      <input class="w-search-inp" id="wsearch" type="text" placeholder="🔍 Поиск..." oninput="filterWarriors()">
+    </div>
+    <div class="wfilter">
+      <button class="wfbtn active" id="wf-all"     onclick="setWarriorFilter('all')">Все</button>
+      <button class="wfbtn"        id="wf-online"  onclick="setWarriorFilter('online')">● Онлайн</button>
+      <button class="wfbtn"        id="wf-offline" onclick="setWarriorFilter('offline')">Оффлайн</button>
+    </div>
+    <div class="warriors-list" id="warriorsList">
+      <div class="w-empty">Загрузка…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Fight widget ── -->
+<div class="widget" id="wFight" style="display:none; width:346px;">
   <div class="wh" id="whFight">
-    <span class="wh-title">⚔️ Бой</span>
+    <span class="wh-title">⚔ Бой</span>
     <span class="wdot err" id="dFight">●</span>
+    <button class="fsz-btn active" id="ff-s" onclick="setFightFs('s')">S</button>
+    <button class="fsz-btn"        id="ff-m" onclick="setFightFs('m')">M</button>
+    <button class="fsz-btn"        id="ff-l" onclick="setFightFs('l')">L</button>
     <button class="wtoggle" id="tbFight" onclick="toggle('Fight')">▼</button>
   </div>
   <div class="wbody" id="wbFight">
-    <div id="fightContent" style="display:flex;">
-
-      <!-- Список боёв -->
-      <div id="fightsList">
+    <!-- Tab switcher -->
+    <div class="fight-tabs" id="fightTabsRow">
+      <button class="fight-tab active" id="ft-lobby" onclick="switchFightTab('lobby')">Лобби</button>
+      <button class="fight-tab"        id="ft-fight" onclick="switchFightTab('fight')">Бой</button>
+    </div>
+    <!-- Lobby tab -->
+    <div id="fightLobbyTab" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+      <div class="fight-filters">
+        <button class="fight-filter-btn active" id="ff-all"     onclick="setFightFilter('all')">Все</button>
+        <button class="fight-filter-btn"        id="ff-mine"    onclick="setFightFilter('mine')">Мои</button>
+        <button class="fight-filter-btn"        id="ff-archive" onclick="setFightFilter('archive')">Архив</button>
+        <button class="fight-filter-btn" style="margin-left:auto" onclick="loadFightsList()" title="Обновить">↺</button>
+      </div>
+      <div id="fightsList" style="flex:1;overflow-y:auto;padding:6px 8px;display:flex;flex-direction:column;gap:4px;">
         <div class="no-fights">Загрузка…</div>
       </div>
-
-      <!-- Чат боя -->
-      <div id="fightChat">
+    </div>
+    <!-- Fight tab -->
+    <div id="fightFightTab" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+      <div id="fightChat" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
         <div class="fight-chat-hdr">
           <span class="fight-chat-title" id="fightChatTitle"></span>
-          <button class="fight-leave" onclick="leaveFight()" title="Покинуть бой">✕</button>
+          <button class="fight-leave" onclick="leaveFight()" title="Покинуть">✕</button>
         </div>
         <div class="members-bar" id="membersBar"></div>
         <div class="msgs" id="mFight"></div>
         <div class="irow">
-          <button onclick="prependCmd('/me ')" title="/me — действие">/me</button>
-          <button onclick="prependCmd('/do ')" title="/do — описание">/do</button>
+          <button onclick="prependCmd('/me ')" title="/me">/me</button>
+          <button onclick="prependCmd('/do ')" title="/do">/do</button>
           <button class="lang-btn" id="lbFight" onmousedown="event.preventDefault()" onclick="toggleLang()">EN</button>
           <textarea id="iFight" rows="1" placeholder="Написать..." onmousedown="lastClickedTA=this; el?.enterChatMode()" onblur="el?.exitChatMode()" onkeydown="hk(event,'Fight')"></textarea>
           <button class="send-btn" id="sbFight" onclick="sendMsg('Fight')" disabled>→</button>
         </div>
       </div>
+    </div>
+  </div>
+</div>
 
+<!-- ── Calc widget ── -->
+<div class="widget" id="wCalc" style="display:none;">
+  <div class="wh" id="whCalc">
+    <span class="wh-title">🧮 Калькулятор</span>
+    <button class="fsz-btn active" id="cf-s" onclick="setCalcFs('s')">S</button>
+    <button class="fsz-btn"        id="cf-m" onclick="setCalcFs('m')">M</button>
+    <button class="fsz-btn"        id="cf-l" onclick="setCalcFs('l')">L</button>
+    <button class="wtoggle" id="tbCalc" onclick="toggle('Calc')">▼</button>
+  </div>
+  <div class="wbody" id="wbCalc">
+    <div class="cw-upper">
+      <!-- Col 1 -->
+      <div class="cw-col">
+        <div class="cw-name-row">
+          <input class="cw-inp cw-name-inp" id="c1name" placeholder="Игрок 1" oninput="renderStatus()">
+          <input type="color" class="cw-color-sw" id="c1color" value="#c8bfb0" onchange="renderStatus()">
+        </div>
+        <div class="cw-stats-row">
+          <label class="cw-stat-lbl">❤</label>
+          <input class="cw-inp cw-stat-inp" id="c1hp" type="number" min="0" value="100" oninput="renderStatus()">
+          <label class="cw-stat-lbl">🛡</label>
+          <input class="cw-inp cw-stat-inp" id="c1sh" type="number" min="0" value="200" oninput="renderStatus()">
+        </div>
+        <div class="cw-cnt-row">
+          <span class="cw-cnt-lbl red">🩸 Порезы</span>
+          <div class="cw-cnt-ctrl">
+            <button class="cw-cnt-btn" onclick="incC(1,'cuts',-1)">−</button>
+            <span class="cw-cnt-val" id="c1cuts">0</span>
+            <button class="cw-cnt-btn" onclick="incC(1,'cuts',1)">+</button>
+          </div>
+          <span class="cw-cnt-note" id="c1cuts-note"></span>
+        </div>
+        <div class="cw-trauma-block">
+          <div class="cw-trauma-hdr">Травмы</div>
+          <div class="cw-cnt-row"><span class="cw-cnt-lbl">⚔ Урон</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(1,'tDmg',-1)">−</button><span class="cw-cnt-val" id="c1tDmg">0</span><button class="cw-cnt-btn" onclick="incC(1,'tDmg',1)">+</button></div></div>
+          <div class="cw-cnt-row"><span class="cw-cnt-lbl">🎯 Точность</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(1,'tAcc',-1)">−</button><span class="cw-cnt-val" id="c1tAcc">0</span><button class="cw-cnt-btn" onclick="incC(1,'tAcc',1)">+</button></div></div>
+          <div class="cw-cnt-row"><span class="cw-cnt-lbl">💨 Уворот</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(1,'tDodge',-1)">−</button><span class="cw-cnt-val" id="c1tDodge">0</span><button class="cw-cnt-btn" onclick="incC(1,'tDodge',1)">+</button></div></div>
+          <div class="cw-cnt-row"><span class="cw-cnt-lbl">🛡 Парир.</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(1,'tParry',-1)">−</button><span class="cw-cnt-val" id="c1tParry">0</span><button class="cw-cnt-btn" onclick="incC(1,'tParry',1)">+</button></div></div>
+        </div>
+        <div class="cw-field-row"><label class="cw-lbl">Бросок</label><input class="cw-inp cw-num-inp" id="c1brosok" type="number" min="0" value="0"></div>
+        <div class="cw-radio-row">
+          <div class="cw-radio-grp">
+            <label class="cw-radio-lbl"><input type="radio" name="c1def" value="hit"   checked onchange="c[1].defense=$('.checked').value"> Удар</label>
+            <label class="cw-radio-lbl"><input type="radio" name="c1def" value="dodge"         onchange=""> Уворот</label>
+            <label class="cw-radio-lbl"><input type="radio" name="c1def" value="parry"         onchange=""> Парирование</label>
+          </div>
+          <div class="cw-radio-grp cw-radio-grp-sm">
+            <label class="cw-radio-lbl"><input type="radio" name="c1ct" value="weapon" checked> Оружие</label>
+            <label class="cw-radio-lbl"><input type="radio" name="c1ct" value="melee"> Руки</label>
+          </div>
+        </div>
+        <div id="c1pending" class="cw-pending" style="display:none"></div>
+        <button class="cw-apply-btn" onclick="calcApply(0)">Применить П1</button>
+      </div>
+      <div class="cw-col-div"></div>
+      <!-- Col 2 -->
+      <div class="cw-col">
+        <div class="cw-name-row">
+          <input class="cw-inp cw-name-inp" id="c2name" placeholder="Игрок 2" oninput="renderStatus()">
+          <input type="color" class="cw-color-sw" id="c2color" value="#c8bfb0" onchange="renderStatus()">
+        </div>
+        <div class="cw-stats-row">
+          <label class="cw-stat-lbl">❤</label>
+          <input class="cw-inp cw-stat-inp" id="c2hp" type="number" min="0" value="100" oninput="renderStatus()">
+          <label class="cw-stat-lbl">🛡</label>
+          <input class="cw-inp cw-stat-inp" id="c2sh" type="number" min="0" value="200" oninput="renderStatus()">
+        </div>
+        <div class="cw-cnt-row">
+          <span class="cw-cnt-lbl red">🩸 Порезы</span>
+          <div class="cw-cnt-ctrl">
+            <button class="cw-cnt-btn" onclick="incC(2,'cuts',-1)">−</button>
+            <span class="cw-cnt-val" id="c2cuts">0</span>
+            <button class="cw-cnt-btn" onclick="incC(2,'cuts',1)">+</button>
+          </div>
+          <span class="cw-cnt-note" id="c2cuts-note"></span>
+        </div>
+        <div class="cw-trauma-block">
+          <div class="cw-trauma-hdr">Травмы</div>
+          <div class="cw-cnt-row"><span class="cw-cnt-lbl">⚔ Урон</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(2,'tDmg',-1)">−</button><span class="cw-cnt-val" id="c2tDmg">0</span><button class="cw-cnt-btn" onclick="incC(2,'tDmg',1)">+</button></div></div>
+          <div class="cw-cnt-row"><span class="cw-cnt-lbl">🎯 Точность</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(2,'tAcc',-1)">−</button><span class="cw-cnt-val" id="c2tAcc">0</span><button class="cw-cnt-btn" onclick="incC(2,'tAcc',1)">+</button></div></div>
+          <div class="cw-cnt-row"><span class="cw-cnt-lbl">💨 Уворот</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(2,'tDodge',-1)">−</button><span class="cw-cnt-val" id="c2tDodge">0</span><button class="cw-cnt-btn" onclick="incC(2,'tDodge',1)">+</button></div></div>
+          <div class="cw-cnt-row"><span class="cw-cnt-lbl">🛡 Парир.</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(2,'tParry',-1)">−</button><span class="cw-cnt-val" id="c2tParry">0</span><button class="cw-cnt-btn" onclick="incC(2,'tParry',1)">+</button></div></div>
+        </div>
+        <div class="cw-field-row"><label class="cw-lbl">Бросок</label><input class="cw-inp cw-num-inp" id="c2brosok" type="number" min="0" value="0"></div>
+        <div class="cw-radio-row">
+          <div class="cw-radio-grp">
+            <label class="cw-radio-lbl"><input type="radio" name="c2def" value="hit"   checked> Удар</label>
+            <label class="cw-radio-lbl"><input type="radio" name="c2def" value="dodge"> Уворот</label>
+            <label class="cw-radio-lbl"><input type="radio" name="c2def" value="parry"> Парирование</label>
+          </div>
+          <div class="cw-radio-grp cw-radio-grp-sm">
+            <label class="cw-radio-lbl"><input type="radio" name="c2ct" value="weapon" checked> Оружие</label>
+            <label class="cw-radio-lbl"><input type="radio" name="c2ct" value="melee"> Руки</label>
+          </div>
+        </div>
+        <div id="c2pending" class="cw-pending" style="display:none"></div>
+        <button class="cw-apply-btn" onclick="calcApply(1)">Применить П2</button>
+      </div>
+    </div>
+    <!-- Log + status -->
+    <div class="cw-lower">
+      <div class="cw-lower-hdr">
+        <span class="cw-lower-title">Лог</span>
+        <button class="cw-act-btn" onclick="calcResult='';renderLog()" id="cw-clear-btn" disabled>Очистить</button>
+        <button class="cw-act-btn" onclick="calcCopy()" id="cw-copy-btn" disabled>📋 Скопировать</button>
+      </div>
+      <textarea class="cw-result" id="calcLog" readonly placeholder="Результат появится здесь…"></textarea>
+      <div class="cw-lower-hdr">
+        <span class="cw-lower-title">Состояние</span>
+        <div class="cw-bleed-row">
+          <span class="cw-bleed-lbl">«Кровь»</span>
+          <button class="cw-cnt-btn" onclick="incBleed(-1)">−</button>
+          <span class="cw-cnt-val" id="bleedVal">8</span>
+          <button class="cw-cnt-btn" onclick="incBleed(1)">+</button>
+        </div>
+        <button class="cw-act-btn" onclick="copyStatus()">📊 Статус</button>
+        <button class="cw-act-btn" onclick="copyUnion()">в Союз</button>
+      </div>
+      <div class="cw-status-box" id="calcStatusBox"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Incoming challenge ── -->
+<div id="challenge" onclick="dismissChallenge()">
+  <div class="ch-box" onclick="event.stopPropagation()">
+    <div class="ch-icon">⚔</div>
+    <div class="ch-from" id="chFrom"></div>
+    <div class="ch-sub">вызывает вас на бой</div>
+    <div class="ch-title" id="chTitle"></div>
+    <div class="ch-badges"><span class="ch-badge" id="chType"></span><span class="ch-badge" id="chRules"></span></div>
+    <div class="ch-msg" id="chMsg"></div>
+    <div class="ch-btns">
+      <button class="ch-btn-accept" onclick="acceptChallenge()">⚔ Принять</button>
+      <button class="ch-btn-decline" onclick="dismissChallenge()">✕</button>
     </div>
   </div>
 </div>
 
 <script>
 // ── Config ────────────────────────────────────────────────────────────────────
-let srv   = 'http://localhost:4000'
+let srv   = 'https://nordheimunion.ru'
 let token = ''
 const el  = window.electronAPI
+let currentUser = null
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let lastClickedTA = null
-let inputLang = 'EN'
+let inputLang     = 'EN'
 let chatWs = null, fightWs = null
 let currentFightId = null, currentFightTitle = ''
 let pollTimer = null
 
-// ── Auth from login window ────────────────────────────────────────────────────
-function onAuth({ token: t, srv: s }) {
+// Warriors
+let allWarriors   = []
+let onlineIds     = new Set()
+let warriorFilter = 'all'
+
+// Fight filter
+let fightFilter = 'all'
+let allFights   = []
+
+// Incoming challenge
+let pendingChallenge = null
+
+// ── Positions ─────────────────────────────────────────────────────────────────
+function savePos(id, x, y) { try { localStorage.setItem('fa_pos_' + id, JSON.stringify({x, y})) } catch {} }
+function loadPos(id, dx, dy) {
+  try { const s = localStorage.getItem('fa_pos_' + id); if (s) return JSON.parse(s) } catch {}
+  return { x: dx, y: dy }
+}
+function applyPos(id, dx, dy) {
+  const w = document.getElementById(id)
+  if (!w) return
+  const p = loadPos(id, dx, dy)
+  w.style.left = p.x + 'px'; w.style.top = p.y + 'px'
+  w.style.right = 'auto'; w.style.bottom = 'auto'
+}
+
+function initPositions() {
+  applyPos('nbar',       20,  20)
+  applyPos('wChat',      window.innerWidth - 366, window.innerHeight - 320)
+  applyPos('wWarriors',  20,  80)
+  applyPos('wFight',     window.innerWidth - 366, window.innerHeight - 620)
+  applyPos('wCalc',      340, 80)
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+async function onAuth({ token: t, srv: s }) {
   token = t; srv = s
-  show('wFight')
+  try {
+    const r = await apiFetch('/api/auth/me')
+    if (r.ok) currentUser = await r.json()
+  } catch {}
   initPositions()
+  showNbar()
   connectChatWs()
   loadFightsList()
+  loadWarriors()
   schedulePollFight()
+  restoreFightFs()
+  restoreCalcFs()
 }
 
 el?.onAuthToken(data => onAuth(data))
 
 el?.onWidgetToggle(({ widget, visible }) => {
-  if (widget === 'chat')  { visible ? show('wChat')  : hide('wChat')  }
-  if (widget === 'fight' && token) { visible ? show('wFight') : hide('wFight') }
+  const map = { chat: 'wChat', fight: 'wFight', warriors: 'wWarriors', calc: 'wCalc' }
+  const id = map[widget]
+  if (!id) return
+  if (widget !== 'chat' && !token) return
+  visible ? show(id) : hide(id)
+  updateNbarButtons()
 })
 
 function resetState() {
-  token = ''; srv = 'http://localhost:4000'
-  if (chatWs) { chatWs.onclose = null; chatWs.close(); chatWs = null }
+  token = ''; srv = 'https://nordheimunion.ru'; currentUser = null
+  if (chatWs)  { chatWs.onclose  = null; chatWs.close();  chatWs  = null }
   if (fightWs) { fightWs.onclose = null; fightWs.close(); fightWs = null }
   if (pollTimer) { clearInterval(pollTimer); pollTimer = null }
-  currentFightId = null
-  document.getElementById('fightChat').style.display = 'none'
-  document.getElementById('fightsList').style.display = 'flex'
+  currentFightId = null; allWarriors = []; onlineIds = new Set()
+  hide('nbar'); hide('wFight'); hide('wWarriors'); hide('wCalc')
+  switchFightTab('lobby')
+  document.getElementById('fightChatTitle').textContent = ''
+  document.getElementById('membersBar').innerHTML = ''
+  clearMsgs('Chat'); clearMsgs('Fight')
   dot('Chat', false); dot('Fight', false)
   setSend('Chat', false); setSend('Fight', false)
-  hide('wFight')
-  // Restore wChat to bottom-right
-  const wc = document.getElementById('wChat')
-  wc.style.right = '20px'; wc.style.bottom = '20px'
-  wc.style.left = 'auto'; wc.style.top = 'auto'
+  document.getElementById('warriorsList').innerHTML = '<div class="w-empty">Жители</div>'
+  updateNbarButtons()
+}
+
+function showNbar() {
+  const n = document.getElementById('nbar')
+  n.style.display = 'flex'
+  updateNbarButtons()
 }
 
 function apiFetch(path, opts = {}) {
   return fetch(srv + path, {
     ...opts,
-    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers||{}) }
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers || {}) }
   })
+}
+
+// ── Nbar ──────────────────────────────────────────────────────────────────────
+function nbarToggle(id) {
+  const w = document.getElementById(id)
+  if (!w) return
+  w.style.display === 'none' ? show(id) : hide(id)
+  updateNbarButtons()
+}
+
+function updateNbarButtons() {
+  const pairs = [['wChat','nb-chat'], ['wWarriors','nb-warriors'], ['wFight','nb-fight'], ['wCalc','nb-calc']]
+  for (const [wid, bid] of pairs) {
+    const w = document.getElementById(wid)
+    const b = document.getElementById(bid)
+    if (b && w) b.classList.toggle('active', w.style.display !== 'none')
+  }
 }
 
 // ── Global chat WS ────────────────────────────────────────────────────────────
 function connectChatWs() {
-  const wsBase = srv.replace(/^http/, 'ws')
+  const wsBase = srv.replace(/^https/, 'wss').replace(/^http/, 'ws')
   chatWs = new WebSocket(wsBase + '/chat?token=' + token)
   chatWs.onopen  = () => { dot('Chat', true);  setSend('Chat', true) }
-  chatWs.onclose = () => { dot('Chat', false); setSend('Chat', false); setTimeout(connectChatWs, 2000) }
+  chatWs.onclose = () => { dot('Chat', false); setSend('Chat', false); if (token) setTimeout(connectChatWs, 2000) }
   chatWs.onerror = () => {}
   chatWs.onmessage = e => {
     const m = JSON.parse(e.data)
-    if (m.type === 'message') appendChatMsg(m.data)
-    else if (m.type === 'history') { clearMsgs('Chat'); m.data.forEach(msg => appendChatMsg(msg)) }
-    else if (m.type === 'online') updateOnline(m.data)
+    if      (m.type === 'message')    appendChatMsg(m.data)
+    else if (m.type === 'history')    { clearMsgs('Chat'); m.data.forEach(msg => appendChatMsg(msg)) }
+    else if (m.type === 'online')     updateOnline(m.data)
+    else if (m.type === 'online_ids') applyOnlineIds(m.data)
+    else if (m.type === 'challenge')  showChallenge(m)
   }
 }
 
@@ -249,13 +694,12 @@ function connectFightWs(fightId, fightTitle) {
   if (fightWs) { fightWs.onclose = null; fightWs.close(); fightWs = null }
   currentFightId = fightId; currentFightTitle = fightTitle
   document.getElementById('fightChatTitle').textContent = fightTitle
-  document.getElementById('fightsList').style.display = 'none'
-  document.getElementById('fightChat').style.display = 'flex'
   clearMsgs('Fight')
   loadFightHistory(fightId)
   loadMembers(fightId)
+  switchFightTab('fight')
 
-  const wsBase = srv.replace(/^http/, 'ws')
+  const wsBase = srv.replace(/^https/, 'wss').replace(/^http/, 'ws')
   fightWs = new WebSocket(wsBase + '/ws?token=' + token + '&fight=' + fightId)
   fightWs.onopen  = () => { dot('Fight', true);  setSend('Fight', true) }
   fightWs.onclose = () => {
@@ -265,11 +709,8 @@ function connectFightWs(fightId, fightTitle) {
   fightWs.onerror = () => {}
   fightWs.onmessage = e => {
     const m = JSON.parse(e.data)
-    if (m.type === 'message') appendFightMsg(m.data)
-    else if (m.type === 'reload_messages') {
-      loadFightHistory(fightId)
-      loadMembers(fightId)
-    }
+    if (m.type === 'message')         appendFightMsg(m.data)
+    else if (m.type === 'reload_messages') { loadFightHistory(fightId); loadMembers(fightId) }
   }
 }
 
@@ -277,14 +718,79 @@ function leaveFight() {
   currentFightId = null
   if (fightWs) { fightWs.onclose = null; fightWs.close(); fightWs = null }
   dot('Fight', false); setSend('Fight', false)
-  document.getElementById('fightChat').style.display = 'none'
-  document.getElementById('fightsList').style.display = 'flex'
-  document.getElementById('membersBar').innerHTML = ''
   clearMsgs('Fight')
+  document.getElementById('membersBar').innerHTML = ''
+  switchFightTab('lobby')
   loadFightsList()
 }
 
-// ── Members bar ───────────────────────────────────────────────────────────────
+// ── Fight tabs ────────────────────────────────────────────────────────────────
+function switchFightTab(tab) {
+  const lobby = document.getElementById('fightLobbyTab')
+  const fight = document.getElementById('fightFightTab')
+  const ftl   = document.getElementById('ft-lobby')
+  const ftf   = document.getElementById('ft-fight')
+  if (tab === 'lobby') {
+    lobby.style.display = 'flex'; fight.style.display = 'none'
+    ftl.classList.add('active'); ftf.classList.remove('active')
+  } else {
+    lobby.style.display = 'none'; fight.style.display = 'flex'
+    ftf.classList.add('active'); ftl.classList.remove('active')
+  }
+}
+
+// ── Fight font size ───────────────────────────────────────────────────────────
+const fightFsMap = { s: '13px', m: '16px', l: '19px' }
+function setFightFs(sz) {
+  document.getElementById('wFight').style.fontSize = fightFsMap[sz] || '13px'
+  for (const k of ['s','m','l']) document.getElementById('ff-'+k).classList.toggle('active', k === sz)
+  try { localStorage.setItem('fa_fight_fs', sz) } catch {}
+}
+function restoreFightFs() {
+  const sz = localStorage.getItem('fa_fight_fs') || 's'
+  setFightFs(sz)
+}
+
+// ── Fight filter ──────────────────────────────────────────────────────────────
+function setFightFilter(f) {
+  fightFilter = f
+  for (const k of ['all','mine','archive']) document.getElementById('ff-'+k).classList.toggle('active', k === f)
+  renderFightsList()
+}
+
+async function loadFightsList() {
+  const box = document.getElementById('fightsList')
+  box.innerHTML = '<div class="no-fights">Загрузка…</div>'
+  try {
+    const r = await apiFetch('/api/fights')
+    if (!r.ok) throw new Error()
+    allFights = await r.json()
+    renderFightsList()
+  } catch { box.innerHTML = '<div class="no-fights">Ошибка загрузки</div>' }
+}
+
+function renderFightsList() {
+  const box = document.getElementById('fightsList')
+  let fights = allFights
+  if (fightFilter === 'mine')    fights = fights.filter(f => currentUser && f.admin_id == currentUser.id)
+  if (fightFilter === 'archive') fights = fights.filter(f => f.status === 'finished')
+  else                           fights = fights.filter(f => f.status !== 'finished')
+  if (!fights.length) { box.innerHTML = '<div class="no-fights">Нет боёв</div>'; return }
+  box.innerHTML = fights.map(f => {
+    const sc  = f.status === 'active' ? 'active' : f.status === 'finished' ? 'finished' : 'waiting'
+    const sl  = f.status === 'active' ? 'Идёт' : f.status === 'finished' ? 'Завершён' : 'Ожидание'
+    const sub = f.admin_name ? `${esc(f.admin_name)}` : ''
+    return `<div class="fight-item" onclick="connectFightWs('${f.id}','${esc(f.title).replace(/'/g,"\\'")}')">
+      <div class="fight-item-info">
+        <div class="fight-item-title">${esc(f.title)}</div>
+        ${sub ? `<div class="fight-item-sub">${sub}</div>` : ''}
+      </div>
+      <span class="fight-status ${sc}">${sl}</span>
+    </div>`
+  }).join('')
+}
+
+// ── Fight members / history ───────────────────────────────────────────────────
 async function loadMembers(fightId) {
   try {
     const r = await apiFetch('/api/fights/' + fightId + '/members')
@@ -293,17 +799,14 @@ async function loadMembers(fightId) {
     const bar = document.getElementById('membersBar')
     if (!members.length) { bar.innerHTML = ''; return }
     bar.innerHTML = members.map((m, i) => {
-      const teamCls = 'team' + (m.team || 0)
-      const depCls  = m.departed ? ' departed' : ''
-      const hp  = m.hp  ?? '—'
-      const sh  = m.shield ?? null
+      const tc = 'team' + (m.team || 0)
+      const dc = m.departed ? ' departed' : ''
       const sep = i < members.length - 1 ? '<span style="color:#334155">, </span>' : ''
-      return `<span class="member-dot ${teamCls}"></span><span class="member-name${depCls}">${esc(m.game_name || '?')}</span> <span class="hp-val">❤${hp}</span>${sh !== null ? ` <span class="sh-val">🛡${sh}</span>` : ''}${sep}`
+      return `<span class="member-dot ${tc}"></span><span class="member-name${dc}">${esc(m.game_name||'?')}</span> <span class="hp-val">❤${m.hp??'—'}</span>${m.shield!=null?` <span class="sh-val">🛡${m.shield}</span>`:''}${sep}`
     }).join('')
   } catch {}
 }
 
-// ── Fight history ─────────────────────────────────────────────────────────────
 async function loadFightHistory(fightId) {
   try {
     const r = await apiFetch('/api/fights/' + fightId + '/messages')
@@ -312,30 +815,6 @@ async function loadFightHistory(fightId) {
     clearMsgs('Fight')
     msgs.forEach(m => appendFightMsg(m))
   } catch {}
-}
-
-// ── Fights list ───────────────────────────────────────────────────────────────
-async function loadFightsList() {
-  const box = document.getElementById('fightsList')
-  try {
-    const r = await apiFetch('/api/fights')
-    if (!r.ok) return
-    const fights = await r.json()
-    const active = fights.filter(f => f.status !== 'finished')
-    if (!active.length) { box.innerHTML = '<div class="no-fights">Нет активных боёв</div>'; return }
-    box.innerHTML = active.map(f => {
-      const statusLabel = f.status === 'active' ? 'Идёт' : 'Ожидание'
-      const statusCls   = f.status === 'active' ? 'active' : 'waiting'
-      const sub = f.admin_name ? `Организатор: ${esc(f.admin_name)}` : ''
-      return `<div class="fight-item" onclick="connectFightWs('${f.id}','${esc(f.title)}')">
-        <div class="fight-item-info">
-          <div class="fight-item-title">${esc(f.title)}</div>
-          ${sub ? `<div class="fight-item-sub">${sub}</div>` : ''}
-        </div>
-        <span class="fight-status ${statusCls}">${statusLabel}</span>
-      </div>`
-    }).join('')
-  } catch { box.innerHTML = '<div class="no-fights">Ошибка загрузки</div>' }
 }
 
 // ── Poll ──────────────────────────────────────────────────────────────────────
@@ -348,6 +827,319 @@ async function pollFight() {
     const fight = await r.json()
     if (!fight || !fight.id) leaveFight()
   } catch {}
+}
+
+// ── Warriors ──────────────────────────────────────────────────────────────────
+async function loadWarriors() {
+  try {
+    const r = await fetch(srv + '/api/landing/warriors')
+    if (!r.ok) return
+    allWarriors = await r.json()
+    renderWarriors()
+  } catch {}
+}
+
+function applyOnlineIds(ids) {
+  onlineIds = new Set(ids)
+  for (const w of allWarriors) w.online = onlineIds.has(String(w.user_id))
+  renderWarriors()
+  const cnt = ids.length
+  document.getElementById('wOnlineCnt').textContent   = cnt ? cnt + ' онлайн' : ''
+  document.getElementById('nbOnlineCnt').textContent  = cnt ? String(cnt) : ''
+}
+
+function setWarriorFilter(f) {
+  warriorFilter = f
+  for (const k of ['all','online','offline']) document.getElementById('wf-'+k).classList.toggle('active', k === f)
+  renderWarriors()
+}
+
+function filterWarriors() { renderWarriors() }
+
+function renderWarriors() {
+  const q   = (document.getElementById('wsearch')?.value || '').trim().toLowerCase()
+  const box = document.getElementById('warriorsList')
+  let list  = allWarriors.filter(w => {
+    if (warriorFilter === 'online'  && !w.online)  return false
+    if (warriorFilter === 'offline' &&  w.online)  return false
+    if (q && !w.game_name.toLowerCase().includes(q)) return false
+    return true
+  }).sort((a, b) => (b.online ? 1 : 0) - (a.online ? 1 : 0))
+
+  if (!list.length) { box.innerHTML = '<div class="w-empty">Нет воинов</div>'; return }
+  box.innerHTML = list.map(w => {
+    const avatar = w.avatar_url
+      ? `<img src="${srv}${w.avatar_url}" onerror="this.style.display='none'">`
+      : esc((w.game_name || '?')[0].toUpperCase())
+    return `<div class="warrior-item">
+      <div class="warrior-avatar">${avatar}</div>
+      <div class="warrior-info">
+        <div class="warrior-name">${esc(w.game_name)}</div>
+        ${w.fraction ? `<div class="warrior-sub">${esc(w.fraction)}</div>` : ''}
+      </div>
+      <div class="w-dot ${w.online ? 'on' : 'off'}"></div>
+    </div>`
+  }).join('')
+}
+
+// ── Incoming challenge ────────────────────────────────────────────────────────
+function showChallenge(m) {
+  pendingChallenge = m
+  document.getElementById('chFrom').textContent  = m.from_name || 'Воин'
+  document.getElementById('chTitle').textContent = m.title     || ''
+  document.getElementById('chType').textContent  = m.fight_type === '1v1' ? '1 на 1' : m.fight_type || ''
+  document.getElementById('chRules').textContent = m.rules === 'nordheim' ? 'НХ' : m.rules || ''
+  document.getElementById('chMsg').textContent   = m.message   || ''
+  document.getElementById('challenge').style.display = 'flex'
+}
+
+function dismissChallenge() {
+  pendingChallenge = null
+  document.getElementById('challenge').style.display = 'none'
+}
+
+async function acceptChallenge() {
+  if (!pendingChallenge) return
+  const { fight_id, title } = pendingChallenge
+  dismissChallenge()
+  try {
+    await apiFetch('/api/fights/' + fight_id + '/join', { method: 'POST', body: JSON.stringify({ team: 2 }) })
+  } catch {}
+  connectFightWs(fight_id, title || 'Бой')
+  show('wFight')
+  updateNbarButtons()
+}
+
+// ── Calc state ────────────────────────────────────────────────────────────────
+const cols = [
+  { name:'', hp:100, shield:200, brosok:0, defense:'hit', combatType:'weapon', pendingBrosok:null, cuts:0, tDmg:0, tAcc:0, tDodge:0, tParry:0 },
+  { name:'', hp:100, shield:200, brosok:0, defense:'hit', combatType:'weapon', pendingBrosok:null, cuts:0, tDmg:0, tAcc:0, tDodge:0, tParry:0 },
+]
+let calcResult = ''
+let bleedSpaces    = 8
+let bleedRefDigits = 6
+try { bleedSpaces    = parseInt(localStorage.getItem('fa_calc_bleed') || '8') } catch {}
+try { bleedRefDigits = parseInt(localStorage.getItem('fa_calc_bleedref') || '6') } catch {}
+
+function getCalcInputs(i) {
+  const p = i === 0 ? 'c1' : 'c2'
+  const col = cols[i]
+  col.name       = document.getElementById(p + 'name').value
+  col.hp         = parseInt(document.getElementById(p + 'hp').value)   || 0
+  col.shield     = parseInt(document.getElementById(p + 'sh').value)   || 0
+  col.brosok     = parseInt(document.getElementById(p + 'brosok').value)|| 0
+  col.defense    = document.querySelector(`input[name="${p}def"]:checked`)?.value || 'hit'
+  col.combatType = document.querySelector(`input[name="${p}ct"]:checked`)?.value  || 'weapon'
+}
+
+function setCalcInputs(i) {
+  const p   = i === 0 ? 'c1' : 'c2'
+  const col = cols[i]
+  document.getElementById(p + 'hp').value  = col.hp
+  document.getElementById(p + 'sh').value  = col.shield
+  document.getElementById(p + 'cuts').textContent  = col.cuts
+  document.getElementById(p + 'tDmg').textContent  = col.tDmg
+  document.getElementById(p + 'tAcc').textContent  = col.tAcc
+  document.getElementById(p + 'tDodge').textContent = col.tDodge
+  document.getElementById(p + 'tParry').textContent = col.tParry
+  const note = document.getElementById(p + 'cuts-note')
+  note.textContent = col.cuts > 0 ? `−${col.cuts} HP/ход` : ''
+  const pend = document.getElementById(p + 'pending')
+  pend.style.display = col.pendingBrosok !== null ? '' : 'none'
+  pend.textContent   = col.pendingBrosok !== null ? `⏳ урон ${col.pendingBrosok} — ждёт ответа` : ''
+  renderStatus()
+}
+
+function incC(idx, key, delta) {
+  const col = cols[idx - 1]
+  col[key] = Math.max(0, (col[key] || 0) + delta)
+  setCalcInputs(idx - 1)
+}
+
+function incBleed(delta) {
+  bleedSpaces = Math.max(0, bleedSpaces + delta)
+  document.getElementById('bleedVal').textContent = bleedSpaces
+  try { localStorage.setItem('fa_calc_bleed', bleedSpaces) } catch {}
+}
+
+function cN(v) { return typeof v === 'number' ? v : (parseInt(v) || 0) }
+function calcName(i) { return cols[i].name.trim() || (i === 0 ? 'Игрок 1' : 'Игрок 2') }
+
+function applyDmg(col, dmg, attacker) {
+  if (!attacker || attacker.combatType === 'weapon') col.cuts += 1
+  const sh = cN(col.shield), hp = cN(col.hp)
+  const parts = []
+  if (sh > 0) {
+    const shA = Math.max(0, sh - dmg); col.shield = shA
+    parts.push(`Щит: ${sh}→${shA}`, `HP: ${hp}`)
+  } else {
+    const hpA = Math.max(0, hp - dmg); col.hp = hpA
+    parts.push(`HP: ${hp}→${hpA}`, `Щит: 0`)
+  }
+  parts.push(`Порезы: ${col.cuts} (-${col.cuts} HP/ход)`)
+  return parts.join(', ')
+}
+
+function addLine(line) { calcResult = calcResult ? line + '\n' + calcResult : line }
+
+function resolveKO(col, other) {
+  const n1 = calcName(cols.indexOf(col)), n2 = calcName(cols.indexOf(other))
+  const d1 = cN(col.hp) <= 0, d2 = cN(other.hp) <= 0
+  if (d1 && d2) addLine('⚔ НИЧЬЯ — оба пали!')
+  else if (d1)  addLine(`🏆 БОЙ ОКОНЧЕН — победитель: ${n2}! ${n1} повержен.`)
+  else if (d2)  addLine(`🏆 БОЙ ОКОНЧЕН — победитель: ${n1}! ${n2} повержен.`)
+}
+
+function bleedTick(col) {
+  if (col.cuts === 0) return
+  const name = calcName(cols.indexOf(col))
+  const hp = cN(col.hp), hpA = Math.max(0, hp - col.cuts)
+  col.hp = hpA
+  addLine(`${name}: 🩸 Кровотечение (${col.cuts}) — HP: ${hp}→${hpA}`)
+}
+
+function calcApplyLogic(col, other) {
+  bleedTick(col)
+  const name = calcName(cols.indexOf(col)), otherName = calcName(cols.indexOf(other))
+
+  if (col.defense === 'hit') {
+    if (other.pendingBrosok !== null) {
+      const inc = other.pendingBrosok; other.pendingBrosok = null
+      const lg = applyDmg(col, inc, other)
+      addLine(`${name}: ⚡ Атакует в ответ — входящий ${otherName} (${inc}) прилетает. ${lg}`)
+    }
+    const b = cN(col.brosok), thr = 50 + col.tAcc
+    if (b < thr) {
+      addLine(`${name}: ⚔ Удар (${b})${col.tAcc ? ` порог ${thr}` : ''} — неудача!`)
+    } else {
+      const eff = Math.max(0, b - col.tDmg)
+      col.pendingBrosok = eff
+      addLine(`${name}: ⚔ Удар (${b}${col.tDmg ? ` −${col.tDmg}` : ''} = ${eff}) — ждёт ответа ${otherName}`)
+    }
+    resolveKO(col, other); return
+  }
+
+  const inc = other.pendingBrosok
+  if (inc === null) { addLine(`${name}: нет входящей атаки от ${otherName}`); return }
+
+  if (col.defense === 'dodge') {
+    const b = cN(col.brosok), thr = 50 + col.tDodge
+    other.pendingBrosok = null
+    if (b > thr) {
+      addLine(`${name}: Уворот (${b}) — уклонился от ${otherName} (${inc})`)
+    } else {
+      const lg = applyDmg(col, inc, other)
+      addLine(`${name}: Уворот (${b}) — не уклонился, получает ${inc}. ${lg}`)
+    }
+    resolveKO(col, other); return
+  }
+
+  if (col.defense === 'parry') {
+    const b = cN(col.brosok), thr = 50 + col.tParry
+    other.pendingBrosok = null
+    if (b < thr) {
+      const lg = applyDmg(col, inc, other)
+      addLine(`${name}: Парирование (${b}) — неудача! Получает ${inc}. ${lg}`)
+    } else {
+      const diff = Math.abs(b - inc)
+      if (b < inc)       { const lg = applyDmg(col, diff, other);  addLine(`${name}: Парирование (${b} vs ${inc}) — проигрывает, получает ${diff}. ${lg}`) }
+      else if (b > inc)  { const lg = applyDmg(other, diff, col);  addLine(`${name}: Парирование (${b} vs ${inc}) — выигрывает! ${otherName} получает ${diff}. ${lg}`) }
+      else               { addLine(`${name}: Парирование (${b} vs ${inc}) — ничья`) }
+    }
+    resolveKO(col, other)
+  }
+}
+
+function calcApply(idx) {
+  getCalcInputs(0); getCalcInputs(1)
+  calcApplyLogic(cols[idx], cols[idx === 0 ? 1 : 0])
+  setCalcInputs(0); setCalcInputs(1)
+  renderLog()
+}
+
+function renderLog() {
+  document.getElementById('calcLog').value = calcResult
+  const has = !!calcResult
+  document.getElementById('cw-clear-btn').disabled = !has
+  document.getElementById('cw-copy-btn').disabled  = !has
+}
+
+function renderStatus() {
+  const box = document.getElementById('calcStatusBox')
+  if (!box) return
+  const lines = cols.map((col, i) => {
+    const name = calcName(i)
+    let s = `${name}: HP: <span class="sv-red">${cN(col.hp)}</span> | Щит: <span class="sv-blue">${cN(col.shield)}</span> | Порезы: <span class="sv-red">${col.cuts}</span>`
+    const t = []
+    if (col.tDmg)   t.push(`−${col.tDmg} урон`)
+    if (col.tAcc)   t.push(`−${col.tAcc} точн.`)
+    if (col.tDodge) t.push(`−${col.tDodge} увор.`)
+    if (col.tParry) t.push(`−${col.tParry} парир.`)
+    if (t.length) s += ` | Травмы: [<span class="sv-orange">${t.join(', ')}</span>]`
+    return `<span>${s}</span>`
+  })
+  box.innerHTML = lines.join('')
+}
+
+async function calcCopy() {
+  try { await navigator.clipboard.writeText(calcResult) } catch {}
+}
+
+async function copyStatus() {
+  getCalcInputs(0); getCalcInputs(1)
+  const lines = cols.map((col, i) => {
+    const name = calcName(i)
+    const parts = [`HP: ${cN(col.hp)}`, `Щит: ${cN(col.shield)}`, `Порезы: ${col.cuts}`]
+    const t = []
+    if (col.tDmg)   t.push(`−${col.tDmg} урон`)
+    if (col.tAcc)   t.push(`−${col.tAcc} точн.`)
+    if (col.tDodge) t.push(`−${col.tDodge} увор.`)
+    if (col.tParry) t.push(`−${col.tParry} парир.`)
+    if (t.length) parts.push(`Травмы: [${t.join(', ')}]`)
+    return `${name}: ${parts.join(' | ')}`
+  })
+  try { await navigator.clipboard.writeText(lines.join('\n')) } catch {}
+}
+
+async function copyUnion() {
+  getCalcInputs(0); getCalcInputs(1)
+  const rv = v => `<color=#ff4444>${v}</color>`
+  const bv = v => `<color=#4488ff>${v}</color>`
+  const nc = (n, c) => `<color=${c}>${n}</color>`
+  const c1 = cols[0], c2 = cols[1]
+  const n1 = calcName(0), n2 = calcName(1)
+  const hp1 = String(cN(c1.hp)), hp2 = String(cN(c2.hp))
+  const sh1 = String(cN(c1.shield)), sh2 = String(cN(c2.shield))
+  const c1color = document.getElementById('c1color').value || '#c8bfb0'
+  const c2color = document.getElementById('c2color').value || '#c8bfb0'
+  const curDigits = hp1.length + sh1.length
+  const autoAdj   = Math.max(0, bleedRefDigits - curDigits)
+  const line1 = `${rv('Кровь')}${' '.repeat(bleedSpaces + autoAdj)}${rv(String(c1.cuts))} | ${rv(String(c2.cuts))}`
+  const line2 = `${nc(n1, c1color)} (${rv(hp1)}) (${bv(sh1)}) | (${bv(sh2)}) (${rv(hp2)}) ${nc(n2, c2color)}`
+  const traumaLines = []
+  for (const [col, name, color] of [[c1, n1, c1color], [c2, n2, c2color]]) {
+    const t = []
+    if (col.tDmg)   t.push(`−${col.tDmg} урон`)
+    if (col.tAcc)   t.push(`−${col.tAcc} точн.`)
+    if (col.tDodge) t.push(`−${col.tDodge} увор.`)
+    if (col.tParry) t.push(`−${col.tParry} парир.`)
+    if (t.length) traumaLines.push(`(<color=${color}>${name}</color>: ${t.join(', ')})`)
+  }
+  bleedRefDigits = curDigits
+  try { localStorage.setItem('fa_calc_bleedref', bleedRefDigits) } catch {}
+  const text = '\n' + [line1, line2, ...traumaLines].join('\n')
+  try { await navigator.clipboard.writeText(text) } catch {}
+}
+
+const calcFsMap = { s: '14px', m: '17px', l: '21px' }
+function setCalcFs(sz) {
+  document.getElementById('wCalc').style.fontSize = calcFsMap[sz] || '14px'
+  for (const k of ['s','m','l']) document.getElementById('cf-'+k).classList.toggle('active', k === sz)
+  try { localStorage.setItem('fa_calc_fs', sz) } catch {}
+}
+function restoreCalcFs() {
+  const sz = localStorage.getItem('fa_calc_fs') || 's'
+  setCalcFs(sz)
 }
 
 // ── Send ──────────────────────────────────────────────────────────────────────
@@ -363,11 +1155,10 @@ function sendMsg(w) {
 function prependCmd(cmd) {
   const inp = document.getElementById('iFight')
   if (!inp.value.startsWith(cmd)) inp.value = cmd + inp.value
-  lastClickedTA = inp
-  el?.enterChatMode()
+  lastClickedTA = inp; el?.enterChatMode()
 }
 
-// ── VK character maps (hook sends KK<vk>:<shifted>) ──────────────────────────
+// ── VK maps ───────────────────────────────────────────────────────────────────
 const VK_EN  = {65:'a',66:'b',67:'c',68:'d',69:'e',70:'f',71:'g',72:'h',73:'i',74:'j',75:'k',76:'l',77:'m',78:'n',79:'o',80:'p',81:'q',82:'r',83:'s',84:'t',85:'u',86:'v',87:'w',88:'x',89:'y',90:'z',48:'0',49:'1',50:'2',51:'3',52:'4',53:'5',54:'6',55:'7',56:'8',57:'9',186:';',187:'=',188:',',189:'-',190:'.',191:'/',192:'`',219:'[',220:'\\',221:']',222:"'"}
 const VK_ENS = {65:'A',66:'B',67:'C',68:'D',69:'E',70:'F',71:'G',72:'H',73:'I',74:'J',75:'K',76:'L',77:'M',78:'N',79:'O',80:'P',81:'Q',82:'R',83:'S',84:'T',85:'U',86:'V',87:'W',88:'X',89:'Y',90:'Z',48:')',49:'!',50:'@',51:'#',52:'$',53:'%',54:'^',55:'&',56:'*',57:'(',186:':',187:'+',188:'<',189:'_',190:'>',191:'?',192:'~',219:'{',220:'|',221:'}',222:'"'}
 const VK_RU  = {65:'ф',66:'и',67:'с',68:'в',69:'у',70:'а',71:'п',72:'р',73:'ш',74:'о',75:'л',76:'д',77:'ь',78:'т',79:'щ',80:'з',81:'й',82:'к',83:'ы',84:'е',85:'г',86:'м',87:'ц',88:'ч',89:'н',90:'я',48:'0',49:'1',50:'2',51:'3',52:'4',53:'5',54:'6',55:'7',56:'8',57:'9',186:'ж',187:'=',188:'б',189:'-',190:'ю',191:'.',192:'ё',219:'х',220:'\\',221:'ъ',222:'э'}
@@ -385,16 +1176,10 @@ function deleteAt(ta) {
   else if (s > 0) { ta.value = ta.value.slice(0,s-1)+ta.value.slice(s); ta.selectionStart=ta.selectionEnd=s-1 }
   ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 80) + 'px'
 }
-
 function toggleLang() {
   inputLang = inputLang === 'EN' ? 'RU' : 'EN'
-  document.querySelectorAll('.lang-btn').forEach(b => {
-    b.textContent = inputLang
-    b.classList.toggle('ru', inputLang === 'RU')
-  })
+  document.querySelectorAll('.lang-btn').forEach(b => { b.textContent = inputLang; b.classList.toggle('ru', inputLang === 'RU') })
 }
-
-// ── Key input from WH_KEYBOARD_LL hook ────────────────────────────────────────
 el?.onKeyInput(payload => {
   const ta = lastClickedTA
   if (!ta) return
@@ -402,82 +1187,56 @@ el?.onKeyInput(payload => {
     const [vkStr, sh] = payload.slice(2).split(':')
     const vk = parseInt(vkStr), shifted = sh === '1'
     const map = inputLang === 'RU' ? (shifted ? VK_RUS : VK_RU) : (shifted ? VK_ENS : VK_EN)
-    const ch = map[vk]
-    if (ch) insertAt(ta, ch)
+    const ch = map[vk]; if (ch) insertAt(ta, ch)
   } else if (payload.startsWith('KV')) {
     const vk = parseInt(payload.slice(2))
-    if (vk === 8)  { deleteAt(ta) }
-    else if (vk === 32) { insertAt(ta, ' ') }
-    else if (vk === 13) {
-      const w = ta.id === 'iChat' ? 'Chat' : 'Fight'
-      sendMsg(w); lastClickedTA = null; el?.exitChatMode()
-    } else if (vk === 27) { lastClickedTA = null; el?.exitChatMode() }
+    if      (vk === 8)  deleteAt(ta)
+    else if (vk === 32) insertAt(ta, ' ')
+    else if (vk === 13) { const w = ta.id === 'iChat' ? 'Chat' : 'Fight'; sendMsg(w); lastClickedTA = null; el?.exitChatMode() }
+    else if (vk === 27) { lastClickedTA = null; el?.exitChatMode() }
   }
 })
-
 function hk(e, w) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault(); sendMsg(w); e.target.blur(); el?.exitChatMode(); return
-  }
-  if (e.key === 'Escape') {
-    e.target.blur(); el?.exitChatMode(); return
-  }
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(w); e.target.blur(); el?.exitChatMode(); return }
+  if (e.key === 'Escape') { e.target.blur(); el?.exitChatMode(); return }
   const t = e.target
   setTimeout(() => { t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 80) + 'px' }, 0)
 }
-function resetTA(el) { el.style.height = 'auto'; el.style.height = '26px' }
+function resetTA(ta) { ta.style.height = 'auto'; ta.style.height = '26px' }
 
 // ── Messages ──────────────────────────────────────────────────────────────────
 function fmtTime(isoStr) {
   if (!isoStr) return ''
-  try {
-    const d = new Date(isoStr)
-    return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0')
-  } catch { return '' }
+  try { const d = new Date(isoStr); return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0') } catch { return '' }
 }
-
 function appendChatMsg(m) {
   if (!m) return
   const box = document.getElementById('mChat')
   const d = document.createElement('div'); d.className = 'msg'
-  const name = m.game_name || m.author_name || '?'
-  const text = m.content || m.text || ''
-  const ts   = fmtTime(m.created_at)
-  if (m.is_system) {
-    d.className += ' sys'
-    d.innerHTML = `<span class="msg-ts">${ts}</span>${esc(text)}`
-  } else {
-    d.innerHTML = `<span class="msg-ts">${ts}</span><span class="au">${esc(name)}:</span>${esc(text)}`
-  }
+  const name = m.game_name || m.author_name || '?', text = m.content || m.text || '', ts = fmtTime(m.created_at)
+  d.innerHTML = m.is_system
+    ? `<span class="msg-ts">${ts}</span>${esc(text)}`
+    : `<span class="msg-ts">${ts}</span><span class="au">${esc(name)}:</span>${esc(text)}`
+  if (m.is_system) d.className += ' sys'
   box.appendChild(d); box.scrollTop = box.scrollHeight
 }
-
 function appendFightMsg(m) {
   if (!m) return
   const box = document.getElementById('mFight')
   const d = document.createElement('div'); d.className = 'msg'
-  const name = m.game_name || '?'
-  const text = m.content || ''
-  const ts   = fmtTime(m.created_at)
-
+  const name = m.game_name || '?', text = m.content || '', ts = fmtTime(m.created_at)
   if (m.is_system) {
-    d.className += ' sys'
-    d.innerHTML = `<span class="msg-ts">${ts}</span>${esc(text)}`
+    d.className += ' sys'; d.innerHTML = `<span class="msg-ts">${ts}</span>${esc(text)}`
   } else if (text.startsWith('/me ')) {
-    d.className += ' me'
-    d.innerHTML = `<span class="msg-ts">${ts}</span>* <span class="mn">${esc(name)}</span> ${esc(text.slice(4))}`
+    d.className += ' me'; d.innerHTML = `<span class="msg-ts">${ts}</span>* <span class="mn">${esc(name)}</span> ${esc(text.slice(4))}`
   } else if (text.startsWith('/do ')) {
-    d.className += ' do'
-    d.innerHTML = `<span class="msg-ts">${ts}</span>➤ <span class="mn">${esc(name)}:</span> ${esc(text.slice(4))}`
+    d.className += ' do'; d.innerHTML = `<span class="msg-ts">${ts}</span>➤ <span class="mn">${esc(name)}:</span> ${esc(text.slice(4))}`
   } else {
-    const stats = (m.hp != null)
-      ? ` <span style="font-size:9px;color:#475569">(❤${m.hp}${m.shield != null ? ' 🛡'+m.shield : ''})</span>`
-      : ''
+    const stats = m.hp != null ? ` <span style="font-size:.85em;color:#475569">(❤${m.hp}${m.shield!=null?' 🛡'+m.shield:''})</span>` : ''
     d.innerHTML = `<span class="msg-ts">${ts}</span><span class="au">${esc(name)}${stats}:</span>${esc(text)}`
   }
   box.appendChild(d); box.scrollTop = box.scrollHeight
 }
-
 function clearMsgs(w) { document.getElementById('m' + w).innerHTML = '' }
 function updateOnline(names) {
   document.getElementById('onlineCnt').textContent = names.length
@@ -486,54 +1245,39 @@ function updateOnline(names) {
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
 
 // ── Widget helpers ────────────────────────────────────────────────────────────
-function dot(w, ok) { document.getElementById('d'+w).className = 'wdot ' + (ok?'ok':'err') }
-function setSend(w, on) { document.getElementById('sb'+w).disabled = !on }
-function show(id) { document.getElementById(id).style.display = 'flex' }
-function hide(id) { document.getElementById(id).style.display = 'none' }
-
+function dot(w, ok) { const el = document.getElementById('d' + w); if (el) el.className = 'wdot ' + (ok?'ok':'err') }
+function setSend(w, on) { const btn = document.getElementById('sb' + w); if (btn) btn.disabled = !on }
+function show(id) { const w = document.getElementById(id); if (w) w.style.display = id === 'nbar' ? 'flex' : 'flex' }
+function hide(id) { const w = document.getElementById(id); if (w) w.style.display = 'none' }
 function toggle(w) {
   const body = document.getElementById('wb' + w)
   const btn  = document.getElementById('tb' + w)
-  const wid  = document.getElementById('w' + w)
+  if (!body) return
   const collapsed = body.style.display === 'none'
   body.style.display = collapsed ? 'flex' : 'none'
-  btn.textContent = collapsed ? '▼' : '▲'
-  wid.style.width = collapsed ? '346px' : 'auto'
+  if (btn) btn.textContent = collapsed ? '▼' : '▲'
 }
 
 // ── Mouse passthrough ─────────────────────────────────────────────────────────
-document.querySelectorAll('.widget').forEach(w => {
+const interactiveEls = ['wChat','wWarriors','wFight','wCalc','nbar','challenge']
+for (const id of interactiveEls) {
+  const w = document.getElementById(id)
+  if (!w) continue
   w.addEventListener('mouseenter', () => window.electronAPI?.setIgnoreMouseEvents(false))
   w.addEventListener('mouseleave', () => {
     window.electronAPI?.setIgnoreMouseEvents(true)
     if (lastClickedTA) { lastClickedTA = null; el?.exitChatMode() }
   })
-})
-
-// ── Drag & Position ───────────────────────────────────────────────────────────
-function initPositions() {
-  ['wChat','wFight'].forEach(id => {
-    const w = document.getElementById(id)
-    if (w.style.display === 'none') return
-    const r  = w.getBoundingClientRect()
-    const cs = getComputedStyle(w)
-    if (cs.bottom !== 'auto' && cs.bottom !== '') {
-      w.style.top = (window.innerHeight - r.height - parseInt(cs.bottom||'20')) + 'px'
-      w.style.bottom = 'auto'
-    }
-    if (cs.right !== 'auto' && cs.right !== '') {
-      w.style.left = (window.innerWidth - r.width - parseInt(cs.right||'20')) + 'px'
-      w.style.right = 'auto'
-    }
-  })
 }
 
-function makeDraggable(widgetId, headerId) {
-  const widget = document.getElementById(widgetId)
-  const header = document.getElementById(headerId)
+// ── Drag ──────────────────────────────────────────────────────────────────────
+function makeDraggable(wid, hid) {
+  const widget = document.getElementById(wid)
+  const header = document.getElementById(hid)
+  if (!widget || !header) return
   let drag = false, ox = 0, oy = 0
   header.addEventListener('mousedown', e => {
-    if (e.target.tagName === 'BUTTON') return
+    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return
     drag = true
     ox = e.clientX - widget.getBoundingClientRect().left
     oy = e.clientY - widget.getBoundingClientRect().top
@@ -542,16 +1286,29 @@ function makeDraggable(widgetId, headerId) {
   })
   document.addEventListener('mousemove', e => {
     if (!drag) return
-    widget.style.left = (e.clientX - ox) + 'px'
-    widget.style.top  = (e.clientY - oy) + 'px'
+    const x = Math.max(0, Math.min(window.innerWidth  - 40, e.clientX - ox))
+    const y = Math.max(0, Math.min(window.innerHeight - 20, e.clientY - oy))
+    widget.style.left = x + 'px'; widget.style.top = y + 'px'
+    widget.style.right = 'auto';  widget.style.bottom = 'auto'
   })
-  document.addEventListener('mouseup', () => { drag = false })
+  document.addEventListener('mouseup', () => {
+    if (!drag) return; drag = false
+    const r = widget.getBoundingClientRect()
+    savePos(wid, Math.round(r.left), Math.round(r.top))
+  })
 }
 
-makeDraggable('wChat', 'whChat')
-makeDraggable('wFight', 'whFight')
+makeDraggable('nbar',      'whNbar')
+makeDraggable('wChat',     'whChat')
+makeDraggable('wWarriors', 'whWarriors')
+makeDraggable('wFight',    'whFight')
+makeDraggable('wCalc',     'whCalc')
 
 el?.onFocusChatInput(() => { lastClickedTA?.focus() })
+
+// Init calc status
+renderStatus()
+document.getElementById('bleedVal').textContent = bleedSpaces
 </script>
 </body>
 </html>
