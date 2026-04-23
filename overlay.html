@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>FightArena Overlay</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: transparent;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 13px; color: #e2e8f0; overflow: hidden;
+  user-select: none; height: 100vh; width: 100vw;
+}
+
+/* ── Widget ── */
+.widget {
+  position: fixed; background: #1e293b; border: 1px solid #334155;
+  border-radius: 10px; box-shadow: 0 4px 24px rgba(0,0,0,0.55);
+  display: flex; flex-direction: column; overflow: hidden; z-index: 9999;
+  cursor: none;
+}
+.wh {
+  display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+  background: #0f172a; border-bottom: 1px solid #334155;
+  cursor: grab; white-space: nowrap;
+  font-size: 11px; font-weight: 600; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: .05em;
+}
+.wh:active { cursor: grabbing; }
+.wh-title { flex: 1; }
+.wdot { font-size: 10px; }
+.wdot.ok { color: #22c55e; } .wdot.err { color: #ef4444; }
+.wtoggle { cursor: pointer; background: none; border: none; color: #64748b; font-size: 10px; padding: 0 2px; }
+.wtoggle:hover { color: #94a3b8; }
+.wbody { display: flex; flex-direction: column; flex: 1; }
+
+/* ── Fight content ── */
+#fightContent { display: none; flex-direction: column; flex: 1; }
+
+/* Fights list */
+#fightsList { flex: 1; overflow-y: auto; padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; }
+.fight-item {
+  display: flex; align-items: center; gap: 6px; padding: 6px 8px;
+  background: #0f172a; border-radius: 6px; cursor: pointer;
+  border: 1px solid #1e293b; transition: border-color .15s;
+}
+.fight-item:hover { border-color: #3b82f6; }
+.fight-item-info { flex: 1; min-width: 0; }
+.fight-item-title { font-size: 11px; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fight-item-sub { font-size: 10px; color: #475569; margin-top: 1px; }
+.fight-status { font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; white-space: nowrap; }
+.fight-status.active  { background: #14532d; color: #4ade80; }
+.fight-status.waiting { background: #431407; color: #fb923c; }
+.no-fights { font-size: 11px; color: #475569; padding: 10px 8px; text-align: center; }
+
+/* ── Fight chat ── */
+#fightChat { display: none; flex-direction: column; flex: 1; }
+
+/* Members bar */
+.members-bar {
+  padding: 4px 8px; border-bottom: 1px solid #0f172a;
+  font-size: 10px; line-height: 1.6; color: #64748b;
+  white-space: normal; overflow: hidden;
+}
+.member-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; margin-right: 2px; vertical-align: middle; }
+.team1 { background: #f87171; } .team2 { background: #60a5fa; } .team3 { background: #4ade80; } .team0 { background: #94a3b8; }
+.member-name { color: #cbd5e1; }
+.member-name.departed { opacity: 0.4; text-decoration: line-through; }
+.hp-val { color: #f87171; }
+.sh-val { color: #60a5fa; }
+
+/* Fight chat header */
+.fight-chat-hdr { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-bottom: 1px solid #0f172a; }
+.fight-chat-title { flex: 1; font-size: 11px; color: #f59e0b; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fight-leave { font-size: 10px; color: #64748b; cursor: pointer; background: none; border: none; padding: 0 2px; }
+.fight-leave:hover { color: #ef4444; }
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* Messages */
+.msgs { flex: 1; overflow-y: auto; padding: 5px 8px; display: flex; flex-direction: column; gap: 1px; }
+#mChat  { height: calc(17 * 13px * 1.4); flex: none; }
+#mFight { height: calc(17 * 13px * 1.4); flex: none; }
+.msg { font-size: 13px; line-height: 1.4; word-break: break-word; }
+.msg-ts { font-size: 9px; color: #334155; margin-right: 3px; }
+.msg .au { color: #60a5fa; font-weight: 600; margin-right: 3px; }
+.msg .mn { font-weight: 600; }
+.msg.sys { color: #475569; font-style: italic; }
+.msg.me  { color: #a78bfa; font-style: italic; }
+.msg.do  { color: #818cf8; font-style: italic; }
+
+/* Online list (global chat) */
+.online-list { padding: 5px 8px; border-bottom: 1px solid #0f172a; font-size: 10px; color: #475569; max-height: 54px; overflow-y: auto; }
+.oname { display: inline-block; background: #0f172a; border-radius: 3px; padding: 1px 5px; margin: 1px; color: #64748b; }
+
+/* Input */
+.irow { display: flex; gap: 3px; padding: 5px 8px; border-top: 1px solid #0f172a; align-items: flex-end; }
+.irow textarea {
+  flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 4px;
+  color: #e2e8f0; font-size: 11px; padding: 4px 6px; resize: none; outline: none;
+  min-height: 26px; max-height: 80px; font-family: inherit; overflow: hidden;
+}
+.irow textarea:focus { border-color: #3b82f6; caret-color: #93c5fd; }
+.irow button {
+  background: #1e293b; border: 1px solid #334155; border-radius: 4px;
+  color: #94a3b8; cursor: pointer; padding: 3px 6px; font-size: 10px;
+}
+.irow button:hover:not(:disabled) { background: #334155; color: #e2e8f0; }
+.irow button:disabled { opacity: 0.35; cursor: default; }
+.irow .send-btn { font-size: 12px; padding: 4px 8px; }
+.lang-btn { font-size: 9px; font-weight: 700; padding: 3px 4px; min-width: 22px; letter-spacing: .03em; }
+.lang-btn.ru { color: #60a5fa; border-color: #3b82f6; }
+</style>
+</head>
+<body>
+
+<!-- Чат виджет -->
+<div class="widget" id="wChat" style="width:346px; bottom:20px; right:20px;">
+  <div class="wh" id="whChat">
+    <span class="wh-title">💬 Чат</span>
+    <span class="wdot err" id="dChat">●</span>
+    <button class="wtoggle" onclick="el?.logout()" title="Выйти / сменить сервер">⚙</button>
+    <button class="wtoggle" id="tbChat" onclick="toggle('Chat')">▼</button>
+  </div>
+  <div class="wbody" id="wbChat">
+    <div class="online-list" id="onlineList">
+      Онлайн: <span id="onlineCnt">0</span> &nbsp;<span id="onlineNames"></span>
+    </div>
+    <div class="msgs" id="mChat"></div>
+    <div class="irow">
+      <button class="lang-btn" id="lbChat" onmousedown="event.preventDefault()" onclick="toggleLang()">EN</button>
+      <textarea id="iChat" rows="1" placeholder="Написать..." onmousedown="lastClickedTA=this; el?.enterChatMode()" onblur="el?.exitChatMode()" onkeydown="hk(event,'Chat')"></textarea>
+      <button class="send-btn" id="sbChat" onclick="sendMsg('Chat')" disabled>→</button>
+    </div>
+  </div>
+</div>
+
+<!-- Виджет боя — скрыт до авторизации -->
+<div class="widget" id="wFight" style="display:none; width:346px; bottom:20px; right:386px;">
+  <div class="wh" id="whFight">
+    <span class="wh-title">⚔️ Бой</span>
+    <span class="wdot err" id="dFight">●</span>
+    <button class="wtoggle" id="tbFight" onclick="toggle('Fight')">▼</button>
+  </div>
+  <div class="wbody" id="wbFight">
+    <div id="fightContent" style="display:flex;">
+
+      <!-- Список боёв -->
+      <div id="fightsList">
+        <div class="no-fights">Загрузка…</div>
+      </div>
+
+      <!-- Чат боя -->
+      <div id="fightChat">
+        <div class="fight-chat-hdr">
+          <span class="fight-chat-title" id="fightChatTitle"></span>
+          <button class="fight-leave" onclick="leaveFight()" title="Покинуть бой">✕</button>
+        </div>
+        <div class="members-bar" id="membersBar"></div>
+        <div class="msgs" id="mFight"></div>
+        <div class="irow">
+          <button onclick="prependCmd('/me ')" title="/me — действие">/me</button>
+          <button onclick="prependCmd('/do ')" title="/do — описание">/do</button>
+          <button class="lang-btn" id="lbFight" onmousedown="event.preventDefault()" onclick="toggleLang()">EN</button>
+          <textarea id="iFight" rows="1" placeholder="Написать..." onmousedown="lastClickedTA=this; el?.enterChatMode()" onblur="el?.exitChatMode()" onkeydown="hk(event,'Fight')"></textarea>
+          <button class="send-btn" id="sbFight" onclick="sendMsg('Fight')" disabled>→</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────────────────
+let srv   = 'http://localhost:4000'
+let token = ''
+const el  = window.electronAPI
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let lastClickedTA = null
+let inputLang = 'EN'
+let chatWs = null, fightWs = null
+let currentFightId = null, currentFightTitle = ''
+let pollTimer = null
+
+// ── Auth from login window ────────────────────────────────────────────────────
+function onAuth({ token: t, srv: s }) {
+  token = t; srv = s
+  show('wFight')
+  initPositions()
+  connectChatWs()
+  loadFightsList()
+  schedulePollFight()
+}
+
+el?.onAuthToken(data => onAuth(data))
+
+el?.onWidgetToggle(({ widget, visible }) => {
+  if (widget === 'chat')  { visible ? show('wChat')  : hide('wChat')  }
+  if (widget === 'fight' && token) { visible ? show('wFight') : hide('wFight') }
+})
+
+function resetState() {
+  token = ''; srv = 'http://localhost:4000'
+  if (chatWs) { chatWs.onclose = null; chatWs.close(); chatWs = null }
+  if (fightWs) { fightWs.onclose = null; fightWs.close(); fightWs = null }
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null }
+  currentFightId = null
+  document.getElementById('fightChat').style.display = 'none'
+  document.getElementById('fightsList').style.display = 'flex'
+  dot('Chat', false); dot('Fight', false)
+  setSend('Chat', false); setSend('Fight', false)
+  hide('wFight')
+  // Restore wChat to bottom-right
+  const wc = document.getElementById('wChat')
+  wc.style.right = '20px'; wc.style.bottom = '20px'
+  wc.style.left = 'auto'; wc.style.top = 'auto'
+}
+
+function apiFetch(path, opts = {}) {
+  return fetch(srv + path, {
+    ...opts,
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers||{}) }
+  })
+}
+
+// ── Global chat WS ────────────────────────────────────────────────────────────
+function connectChatWs() {
+  const wsBase = srv.replace(/^http/, 'ws')
+  chatWs = new WebSocket(wsBase + '/chat?token=' + token)
+  chatWs.onopen  = () => { dot('Chat', true);  setSend('Chat', true) }
+  chatWs.onclose = () => { dot('Chat', false); setSend('Chat', false); setTimeout(connectChatWs, 2000) }
+  chatWs.onerror = () => {}
+  chatWs.onmessage = e => {
+    const m = JSON.parse(e.data)
+    if (m.type === 'message') appendChatMsg(m.data)
+    else if (m.type === 'history') { clearMsgs('Chat'); m.data.forEach(msg => appendChatMsg(msg)) }
+    else if (m.type === 'online') updateOnline(m.data)
+  }
+}
+
+// ── Fight WS ──────────────────────────────────────────────────────────────────
+function connectFightWs(fightId, fightTitle) {
+  if (fightWs) { fightWs.onclose = null; fightWs.close(); fightWs = null }
+  currentFightId = fightId; currentFightTitle = fightTitle
+  document.getElementById('fightChatTitle').textContent = fightTitle
+  document.getElementById('fightsList').style.display = 'none'
+  document.getElementById('fightChat').style.display = 'flex'
+  clearMsgs('Fight')
+  loadFightHistory(fightId)
+  loadMembers(fightId)
+
+  const wsBase = srv.replace(/^http/, 'ws')
+  fightWs = new WebSocket(wsBase + '/ws?token=' + token + '&fight=' + fightId)
+  fightWs.onopen  = () => { dot('Fight', true);  setSend('Fight', true) }
+  fightWs.onclose = () => {
+    dot('Fight', false); setSend('Fight', false)
+    if (currentFightId === fightId) setTimeout(() => connectFightWs(fightId, fightTitle), 2000)
+  }
+  fightWs.onerror = () => {}
+  fightWs.onmessage = e => {
+    const m = JSON.parse(e.data)
+    if (m.type === 'message') appendFightMsg(m.data)
+    else if (m.type === 'reload_messages') {
+      loadFightHistory(fightId)
+      loadMembers(fightId)
+    }
+  }
+}
+
+function leaveFight() {
+  currentFightId = null
+  if (fightWs) { fightWs.onclose = null; fightWs.close(); fightWs = null }
+  dot('Fight', false); setSend('Fight', false)
+  document.getElementById('fightChat').style.display = 'none'
+  document.getElementById('fightsList').style.display = 'flex'
+  document.getElementById('membersBar').innerHTML = ''
+  clearMsgs('Fight')
+  loadFightsList()
+}
+
+// ── Members bar ───────────────────────────────────────────────────────────────
+async function loadMembers(fightId) {
+  try {
+    const r = await apiFetch('/api/fights/' + fightId + '/members')
+    if (!r.ok) return
+    const members = await r.json()
+    const bar = document.getElementById('membersBar')
+    if (!members.length) { bar.innerHTML = ''; return }
+    bar.innerHTML = members.map((m, i) => {
+      const teamCls = 'team' + (m.team || 0)
+      const depCls  = m.departed ? ' departed' : ''
+      const hp  = m.hp  ?? '—'
+      const sh  = m.shield ?? null
+      const sep = i < members.length - 1 ? '<span style="color:#334155">, </span>' : ''
+      return `<span class="member-dot ${teamCls}"></span><span class="member-name${depCls}">${esc(m.game_name || '?')}</span> <span class="hp-val">❤${hp}</span>${sh !== null ? ` <span class="sh-val">🛡${sh}</span>` : ''}${sep}`
+    }).join('')
+  } catch {}
+}
+
+// ── Fight history ─────────────────────────────────────────────────────────────
+async function loadFightHistory(fightId) {
+  try {
+    const r = await apiFetch('/api/fights/' + fightId + '/messages')
+    if (!r.ok) return
+    const msgs = await r.json()
+    clearMsgs('Fight')
+    msgs.forEach(m => appendFightMsg(m))
+  } catch {}
+}
+
+// ── Fights list ───────────────────────────────────────────────────────────────
+async function loadFightsList() {
+  const box = document.getElementById('fightsList')
+  try {
+    const r = await apiFetch('/api/fights')
+    if (!r.ok) return
+    const fights = await r.json()
+    const active = fights.filter(f => f.status !== 'finished')
+    if (!active.length) { box.innerHTML = '<div class="no-fights">Нет активных боёв</div>'; return }
+    box.innerHTML = active.map(f => {
+      const statusLabel = f.status === 'active' ? 'Идёт' : 'Ожидание'
+      const statusCls   = f.status === 'active' ? 'active' : 'waiting'
+      const sub = f.admin_name ? `Организатор: ${esc(f.admin_name)}` : ''
+      return `<div class="fight-item" onclick="connectFightWs('${f.id}','${esc(f.title)}')">
+        <div class="fight-item-info">
+          <div class="fight-item-title">${esc(f.title)}</div>
+          ${sub ? `<div class="fight-item-sub">${sub}</div>` : ''}
+        </div>
+        <span class="fight-status ${statusCls}">${statusLabel}</span>
+      </div>`
+    }).join('')
+  } catch { box.innerHTML = '<div class="no-fights">Ошибка загрузки</div>' }
+}
+
+// ── Poll ──────────────────────────────────────────────────────────────────────
+function schedulePollFight() { pollFight(); pollTimer = setInterval(pollFight, 5000) }
+async function pollFight() {
+  if (!currentFightId) { loadFightsList(); return }
+  try {
+    const r = await apiFetch('/api/fights/my')
+    if (!r.ok) return
+    const fight = await r.json()
+    if (!fight || !fight.id) leaveFight()
+  } catch {}
+}
+
+// ── Send ──────────────────────────────────────────────────────────────────────
+function sendMsg(w) {
+  const inp = document.getElementById('i' + w)
+  const txt = inp.value.trim()
+  const ws  = w === 'Chat' ? chatWs : fightWs
+  if (!txt || !ws || ws.readyState !== 1) return
+  ws.send(JSON.stringify({ type: 'message', content: txt }))
+  inp.value = ''; resetTA(inp)
+}
+
+function prependCmd(cmd) {
+  const inp = document.getElementById('iFight')
+  if (!inp.value.startsWith(cmd)) inp.value = cmd + inp.value
+  lastClickedTA = inp
+  el?.enterChatMode()
+}
+
+// ── VK character maps (hook sends KK<vk>:<shifted>) ──────────────────────────
+const VK_EN  = {65:'a',66:'b',67:'c',68:'d',69:'e',70:'f',71:'g',72:'h',73:'i',74:'j',75:'k',76:'l',77:'m',78:'n',79:'o',80:'p',81:'q',82:'r',83:'s',84:'t',85:'u',86:'v',87:'w',88:'x',89:'y',90:'z',48:'0',49:'1',50:'2',51:'3',52:'4',53:'5',54:'6',55:'7',56:'8',57:'9',186:';',187:'=',188:',',189:'-',190:'.',191:'/',192:'`',219:'[',220:'\\',221:']',222:"'"}
+const VK_ENS = {65:'A',66:'B',67:'C',68:'D',69:'E',70:'F',71:'G',72:'H',73:'I',74:'J',75:'K',76:'L',77:'M',78:'N',79:'O',80:'P',81:'Q',82:'R',83:'S',84:'T',85:'U',86:'V',87:'W',88:'X',89:'Y',90:'Z',48:')',49:'!',50:'@',51:'#',52:'$',53:'%',54:'^',55:'&',56:'*',57:'(',186:':',187:'+',188:'<',189:'_',190:'>',191:'?',192:'~',219:'{',220:'|',221:'}',222:'"'}
+const VK_RU  = {65:'ф',66:'и',67:'с',68:'в',69:'у',70:'а',71:'п',72:'р',73:'ш',74:'о',75:'л',76:'д',77:'ь',78:'т',79:'щ',80:'з',81:'й',82:'к',83:'ы',84:'е',85:'г',86:'м',87:'ц',88:'ч',89:'н',90:'я',48:'0',49:'1',50:'2',51:'3',52:'4',53:'5',54:'6',55:'7',56:'8',57:'9',186:'ж',187:'=',188:'б',189:'-',190:'ю',191:'.',192:'ё',219:'х',220:'\\',221:'ъ',222:'э'}
+const VK_RUS = {65:'Ф',66:'И',67:'С',68:'В',69:'У',70:'А',71:'П',72:'Р',73:'Ш',74:'О',75:'Л',76:'Д',77:'Ь',78:'Т',79:'Щ',80:'З',81:'Й',82:'К',83:'Ы',84:'Е',85:'Г',86:'М',87:'Ц',88:'Ч',89:'Н',90:'Я',48:')',49:'!',50:'"',51:'№',52:';',53:'%',54:':',55:'?',56:'*',57:'(',186:'Ж',187:'+',188:'Б',189:'_',190:'Ю',191:',',192:'Ё',219:'Х',220:'/',221:'Ъ',222:'Э'}
+
+function insertAt(ta, ch) {
+  const s = ta.selectionStart, e = ta.selectionEnd
+  ta.value = ta.value.slice(0, s) + ch + ta.value.slice(e)
+  ta.selectionStart = ta.selectionEnd = s + ch.length
+  ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 80) + 'px'
+}
+function deleteAt(ta) {
+  const s = ta.selectionStart, e = ta.selectionEnd
+  if (s !== e) { ta.value = ta.value.slice(0,s)+ta.value.slice(e); ta.selectionStart=ta.selectionEnd=s }
+  else if (s > 0) { ta.value = ta.value.slice(0,s-1)+ta.value.slice(s); ta.selectionStart=ta.selectionEnd=s-1 }
+  ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 80) + 'px'
+}
+
+function toggleLang() {
+  inputLang = inputLang === 'EN' ? 'RU' : 'EN'
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.textContent = inputLang
+    b.classList.toggle('ru', inputLang === 'RU')
+  })
+}
+
+// ── Key input from WH_KEYBOARD_LL hook ────────────────────────────────────────
+el?.onKeyInput(payload => {
+  const ta = lastClickedTA
+  if (!ta) return
+  if (payload.startsWith('KK')) {
+    const [vkStr, sh] = payload.slice(2).split(':')
+    const vk = parseInt(vkStr), shifted = sh === '1'
+    const map = inputLang === 'RU' ? (shifted ? VK_RUS : VK_RU) : (shifted ? VK_ENS : VK_EN)
+    const ch = map[vk]
+    if (ch) insertAt(ta, ch)
+  } else if (payload.startsWith('KV')) {
+    const vk = parseInt(payload.slice(2))
+    if (vk === 8)  { deleteAt(ta) }
+    else if (vk === 32) { insertAt(ta, ' ') }
+    else if (vk === 13) {
+      const w = ta.id === 'iChat' ? 'Chat' : 'Fight'
+      sendMsg(w); lastClickedTA = null; el?.exitChatMode()
+    } else if (vk === 27) { lastClickedTA = null; el?.exitChatMode() }
+  }
+})
+
+function hk(e, w) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault(); sendMsg(w); e.target.blur(); el?.exitChatMode(); return
+  }
+  if (e.key === 'Escape') {
+    e.target.blur(); el?.exitChatMode(); return
+  }
+  const t = e.target
+  setTimeout(() => { t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 80) + 'px' }, 0)
+}
+function resetTA(el) { el.style.height = 'auto'; el.style.height = '26px' }
+
+// ── Messages ──────────────────────────────────────────────────────────────────
+function fmtTime(isoStr) {
+  if (!isoStr) return ''
+  try {
+    const d = new Date(isoStr)
+    return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0')
+  } catch { return '' }
+}
+
+function appendChatMsg(m) {
+  if (!m) return
+  const box = document.getElementById('mChat')
+  const d = document.createElement('div'); d.className = 'msg'
+  const name = m.game_name || m.author_name || '?'
+  const text = m.content || m.text || ''
+  const ts   = fmtTime(m.created_at)
+  if (m.is_system) {
+    d.className += ' sys'
+    d.innerHTML = `<span class="msg-ts">${ts}</span>${esc(text)}`
+  } else {
+    d.innerHTML = `<span class="msg-ts">${ts}</span><span class="au">${esc(name)}:</span>${esc(text)}`
+  }
+  box.appendChild(d); box.scrollTop = box.scrollHeight
+}
+
+function appendFightMsg(m) {
+  if (!m) return
+  const box = document.getElementById('mFight')
+  const d = document.createElement('div'); d.className = 'msg'
+  const name = m.game_name || '?'
+  const text = m.content || ''
+  const ts   = fmtTime(m.created_at)
+
+  if (m.is_system) {
+    d.className += ' sys'
+    d.innerHTML = `<span class="msg-ts">${ts}</span>${esc(text)}`
+  } else if (text.startsWith('/me ')) {
+    d.className += ' me'
+    d.innerHTML = `<span class="msg-ts">${ts}</span>* <span class="mn">${esc(name)}</span> ${esc(text.slice(4))}`
+  } else if (text.startsWith('/do ')) {
+    d.className += ' do'
+    d.innerHTML = `<span class="msg-ts">${ts}</span>➤ <span class="mn">${esc(name)}:</span> ${esc(text.slice(4))}`
+  } else {
+    const stats = (m.hp != null)
+      ? ` <span style="font-size:9px;color:#475569">(❤${m.hp}${m.shield != null ? ' 🛡'+m.shield : ''})</span>`
+      : ''
+    d.innerHTML = `<span class="msg-ts">${ts}</span><span class="au">${esc(name)}${stats}:</span>${esc(text)}`
+  }
+  box.appendChild(d); box.scrollTop = box.scrollHeight
+}
+
+function clearMsgs(w) { document.getElementById('m' + w).innerHTML = '' }
+function updateOnline(names) {
+  document.getElementById('onlineCnt').textContent = names.length
+  document.getElementById('onlineNames').innerHTML = names.map(n => `<span class="oname">${esc(n)}</span>`).join('')
+}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+
+// ── Widget helpers ────────────────────────────────────────────────────────────
+function dot(w, ok) { document.getElementById('d'+w).className = 'wdot ' + (ok?'ok':'err') }
+function setSend(w, on) { document.getElementById('sb'+w).disabled = !on }
+function show(id) { document.getElementById(id).style.display = 'flex' }
+function hide(id) { document.getElementById(id).style.display = 'none' }
+
+function toggle(w) {
+  const body = document.getElementById('wb' + w)
+  const btn  = document.getElementById('tb' + w)
+  const wid  = document.getElementById('w' + w)
+  const collapsed = body.style.display === 'none'
+  body.style.display = collapsed ? 'flex' : 'none'
+  btn.textContent = collapsed ? '▼' : '▲'
+  wid.style.width = collapsed ? '346px' : 'auto'
+}
+
+// ── Mouse passthrough ─────────────────────────────────────────────────────────
+document.querySelectorAll('.widget').forEach(w => {
+  w.addEventListener('mouseenter', () => window.electronAPI?.setIgnoreMouseEvents(false))
+  w.addEventListener('mouseleave', () => {
+    window.electronAPI?.setIgnoreMouseEvents(true)
+    if (lastClickedTA) { lastClickedTA = null; el?.exitChatMode() }
+  })
+})
+
+// ── Drag & Position ───────────────────────────────────────────────────────────
+function initPositions() {
+  ['wChat','wFight'].forEach(id => {
+    const w = document.getElementById(id)
+    if (w.style.display === 'none') return
+    const r  = w.getBoundingClientRect()
+    const cs = getComputedStyle(w)
+    if (cs.bottom !== 'auto' && cs.bottom !== '') {
+      w.style.top = (window.innerHeight - r.height - parseInt(cs.bottom||'20')) + 'px'
+      w.style.bottom = 'auto'
+    }
+    if (cs.right !== 'auto' && cs.right !== '') {
+      w.style.left = (window.innerWidth - r.width - parseInt(cs.right||'20')) + 'px'
+      w.style.right = 'auto'
+    }
+  })
+}
+
+function makeDraggable(widgetId, headerId) {
+  const widget = document.getElementById(widgetId)
+  const header = document.getElementById(headerId)
+  let drag = false, ox = 0, oy = 0
+  header.addEventListener('mousedown', e => {
+    if (e.target.tagName === 'BUTTON') return
+    drag = true
+    ox = e.clientX - widget.getBoundingClientRect().left
+    oy = e.clientY - widget.getBoundingClientRect().top
+    window.electronAPI?.setIgnoreMouseEvents(false)
+    e.preventDefault()
+  })
+  document.addEventListener('mousemove', e => {
+    if (!drag) return
+    widget.style.left = (e.clientX - ox) + 'px'
+    widget.style.top  = (e.clientY - oy) + 'px'
+  })
+  document.addEventListener('mouseup', () => { drag = false })
+}
+
+makeDraggable('wChat', 'whChat')
+makeDraggable('wFight', 'whFight')
+
+el?.onFocusChatInput(() => { lastClickedTA?.focus() })
+</script>
+</body>
+</html>

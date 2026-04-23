@@ -1,0 +1,16 @@
+appId: com.fightarena.overlay
+productName: FightArena Overlay
+npmRebuild: false
+asar: true
+files:
+  - "**/*"
+  - "!node_modules/**"
+  - "!dist/**"
+win:
+  target:
+    - target: portable
+      arch:
+        - x64
+  icon: icon.png
+directories:
+  output: dist

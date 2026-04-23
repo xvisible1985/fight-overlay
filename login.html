@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>FightArena — Вход</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 13px; background: #0f172a; color: #e2e8f0;
+  display: flex; align-items: center; justify-content: center;
+  height: 100vh; padding: 24px;
+}
+.form { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 0; }
+h2 { font-size: 16px; font-weight: 700; color: #f1f5f9; margin-bottom: 20px; text-align: center; letter-spacing: .03em; }
+label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; margin-top: 14px; display: block; }
+label:first-of-type { margin-top: 0; }
+input[type=text], input[type=password] {
+  width: 100%; padding: 8px 10px; background: #1e293b;
+  border: 1px solid #334155; border-radius: 6px;
+  color: #e2e8f0; font-size: 13px; outline: none;
+}
+input:focus { border-color: #3b82f6; }
+.remember { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 12px; color: #64748b; cursor: pointer; }
+.remember input { accent-color: #3b82f6; width: auto; cursor: pointer; }
+button {
+  margin-top: 20px; padding: 10px; background: #3b82f6; color: #fff;
+  border: none; border-radius: 6px; font-size: 14px; font-weight: 600;
+  cursor: pointer; width: 100%;
+}
+button:hover:not(:disabled) { background: #2563eb; }
+button:disabled { background: #475569; cursor: default; }
+.error { color: #f87171; font-size: 11px; margin-top: 10px; text-align: center; min-height: 16px; }
+</style>
+</head>
+<body>
+<div class="form">
+  <h2>⚔️ FightArena</h2>
+
+  <label>Адрес сервера</label>
+  <input type="text" id="srv" placeholder="http://localhost:4000">
+
+  <label>Логин (email)</label>
+  <input type="text" id="email" autocomplete="username">
+
+  <label>Пароль</label>
+  <input type="password" id="pass" autocomplete="current-password">
+
+  <label class="remember">
+    <input type="checkbox" id="remember"> Сохранить данные
+  </label>
+
+  <button id="btn" onclick="doLogin()">Войти</button>
+  <div class="error" id="err"></div>
+</div>
+
+<script>
+const api = window.loginAPI
+
+// Pre-fill saved values
+const saved = api.getSaved()
+document.getElementById('srv').value   = saved.srv   || 'http://localhost:4000'
+document.getElementById('email').value = saved.email || ''
+document.getElementById('remember').checked = saved.remember || false
+
+document.getElementById('pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin()
+})
+
+async function doLogin() {
+  const btn   = document.getElementById('btn')
+  const err   = document.getElementById('err')
+  const srv   = document.getElementById('srv').value.trim().replace(/\/$/, '')
+  const email = document.getElementById('email').value.trim()
+  const pass  = document.getElementById('pass').value
+  const remember = document.getElementById('remember').checked
+
+  if (!email || !pass) { err.textContent = 'Введите логин и пароль'; return }
+  btn.disabled = true; btn.textContent = 'Подключение…'; err.textContent = ''
+
+  try {
+    const r = await fetch(srv + '/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    })
+    const d = await r.json()
+    if (!r.ok) throw new Error(d.error || 'Ошибка сервера')
+    api.loginSuccess({ token: d.token, srv, email, remember })
+  } catch(e) {
+    err.textContent = e.message || 'Нет соединения с сервером'
+    btn.disabled = false; btn.textContent = 'Войти'
+  }
+}
+</script>
+</body>
+</html>

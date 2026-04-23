@@ -1,0 +1,38 @@
+{
+  "name": "fight-overlay",
+  "version": "0.0.0",
+  "description": "FightArena Overlay",
+  "main": "main.cjs",
+  "type": "commonjs",
+  "scripts": {
+    "start": "electron .",
+    "build": "node build.cjs",
+    "build1": "node build1.cjs"
+  },
+  "build": {
+    "appId": "com.fightarena.overlay",
+    "productName": "FightArena Overlay",
+    "npmRebuild": false,
+    "asar": true,
+    "files": [
+      "**/*",
+      "!node_modules/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "icon.png"
+    },
+    "directories": {
+      "output": "dist"
+    }
+  },
+  "devDependencies": {
+    "electron": "^36.0.0",
+    "electron-builder": "^25.1.8"
+  }
+}
