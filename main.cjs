@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, screen, globalShortcut } = require('electron')
+const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, screen, globalShortcut, clipboard, shell } = require('electron')
 const path = require('path')
 const zlib = require('zlib')
 const fs   = require('fs')
@@ -6,8 +6,8 @@ const os   = require('os')
 const { exec, spawn } = require('child_process')
 
 // ── Win32 helper ──────────────────────────────────────────────────────────────
-const helperCs  = path.join(os.tmpdir(), 'FAHelper.cs')
-const helperExe = path.join(os.tmpdir(), 'FAHelper.exe')
+const helperCs  = path.join(os.tmpdir(), 'FAHelper3.cs')
+const helperExe = path.join(os.tmpdir(), 'FAHelper3.exe')
 
 // Всегда перекомпилируем
 if (fs.existsSync(helperExe)) { try { fs.unlinkSync(helperExe) } catch {} }
@@ -18,6 +18,7 @@ const HELPER_SRC = [
   '  [StructLayout(LayoutKind.Sequential)] struct RECT { public int L,T,R,B; }',
   '  [StructLayout(LayoutKind.Sequential)] struct KBDLL { public uint vk,sc,fl,ts; public IntPtr ei; }',
   '  [StructLayout(LayoutKind.Sequential)] struct MSG  { public IntPtr hw; public uint msg; public IntPtr wp,lp; public uint ts; public int px,py; }',
+  '  [StructLayout(LayoutKind.Sequential)] struct MSLL { public int px,py; public uint md,fl,ts; public IntPtr ei; }',
   '  static readonly IntPtr TOPMOST = new IntPtr(-1);',
   '  const uint NOACTIVATE = 0x0010, NOMOVE = 0x0002, NOSIZE = 0x0001;',
   '  const int GWL_EXSTYLE = -20;',
@@ -45,15 +46,21 @@ const HELPER_SRC = [
   '  static IntPtr hookHwnd = IntPtr.Zero;',
   '  static IntPtr hookHandle = IntPtr.Zero;',
   '  static bool modShift = false;',
+  '  static bool modAlt   = false;',
   '  static HookProc hookProc;',
+  '  static IntPtr mouseHookHwnd = IntPtr.Zero;',
+  '  static IntPtr mouseHookHandle = IntPtr.Zero;',
+  '  static HookProc mouseHookProc;',
   '  static IntPtr KeyProc(int c, IntPtr w, IntPtr l) {',
   '    if (c >= 0 && hookHwnd != IntPtr.Zero) {',
   '      int wm = w.ToInt32();',
   '      if (wm==0x100||wm==0x101||wm==0x104||wm==0x105) {',
   '        var k=(KBDLL)Marshal.PtrToStructure(l,typeof(KBDLL));',
   '        uint vk=k.vk; bool dn=(wm==0x100||wm==0x104);',
-  '        if(vk==16||vk==160||vk==161){modShift=dn;return CallNextHookEx(hookHandle,c,w,l);}',
-  '        if(vk==17||vk==18||vk==91||vk==92) return CallNextHookEx(hookHandle,c,w,l);',
+  '        if(vk==16||vk==160||vk==161){modShift=dn;if(dn&&modAlt){Console.WriteLine("TOGGLELANG");Console.Out.Flush();}return CallNextHookEx(hookHandle,c,w,l);}',
+  '        if(vk==17||vk==162||vk==163){Console.WriteLine(dn?"CTRLDOWN":"CTRLUP");Console.Out.Flush();return CallNextHookEx(hookHandle,c,w,l);}',
+  '        if(vk==18||vk==164||vk==165){modAlt=dn;if(dn&&modShift){Console.WriteLine("TOGGLELANG");Console.Out.Flush();}return CallNextHookEx(hookHandle,c,w,l);}',
+  '        if(vk==91||vk==92) return CallNextHookEx(hookHandle,c,w,l);',
   '        if(dn){',
   '          bool isL=vk>=65&&vk<=90; bool isN=vk>=48&&vk<=57; bool isP=(vk>=186&&vk<=192)||(vk>=219&&vk<=222);',
   '          if(isL||isN||isP){bool caps=(GetAsyncKeyState(20)&1)!=0;bool sh=isL?(modShift^caps):modShift;Console.WriteLine("KK"+vk+":"+(sh?"1":"0"));Console.Out.Flush();}',
@@ -63,6 +70,15 @@ const HELPER_SRC = [
   '      }',
   '    }',
   '    return CallNextHookEx(hookHandle,c,w,l);',
+  '  }',
+  '  static IntPtr MouseProc(int c, IntPtr w, IntPtr l) {',
+  '    if (c >= 0 && mouseHookHwnd != IntPtr.Zero && w.ToInt32() == 0x020A) {',
+  '      var m = (MSLL)Marshal.PtrToStructure(l, typeof(MSLL));',
+  '      int lp = ((int)(short)m.py) << 16 | ((int)(short)m.px & 0xFFFF);',
+  '      PostMessage(mouseHookHwnd, 0x020A, new IntPtr((int)m.md), new IntPtr(lp));',
+  '      return new IntPtr(1);',
+  '    }',
+  '    return CallNextHookEx(mouseHookHandle, c, w, l);',
   '  }',
   '  static void Main(string[] a) {',
   '    if (a.Length > 0 && a[0]=="DAEMON") { RunDaemon(); return; }',
@@ -119,12 +135,27 @@ const HELPER_SRC = [
   '      if (hookHandle != IntPtr.Zero) { UnhookWindowsHookEx(hookHandle); hookHandle = IntPtr.Zero; }',
   '      return "ok";',
   '    }',
+  '    if (a[0]=="MHOOKSTART" && a.Length > 1) {',
+  '      mouseHookHwnd = new IntPtr(long.Parse(a[1]));',
+  '      if (mouseHookHandle == IntPtr.Zero) {',
+  '        var thr = new Thread(() => {',
+  '          mouseHookProc = MouseProc;',
+  '          mouseHookHandle = SetWindowsHookEx(14, mouseHookProc, GetModuleHandle(null), 0);',
+  '          int rc; MSG mc;',
+  '          while ((rc=GetMessage(out mc,IntPtr.Zero,0,0))!=0 && rc!=-1) {}',
+  '        });',
+  '        thr.IsBackground = true; thr.Start();',
+  '      }',
+  '      return "ok";',
+  '    }',
+  '    if (a[0]=="MHOOKSTOP") { mouseHookHwnd = IntPtr.Zero; return "ok"; }',
   '    return "";',
   '  }',
   '}'
 ].join('\n')
 
 // ── State ─────────────────────────────────────────────────────────────────────
+let ctrlHeld       = false
 let savedGameHwnd  = null
 let lastGameHwnd   = null   // не сбрасывается — для restore-fallback
 let ourHwnd        = null
@@ -171,8 +202,30 @@ function startDaemon() {
 function handleDaemonLine(line) {
   if (!mainWindow) return
 
+  // Modifier state tracking
+  if (line === 'CTRLDOWN') { ctrlHeld = true;  return }
+  if (line === 'CTRLUP')   { ctrlHeld = false; return }
+  if (line === 'TOGGLELANG') {
+    if (mainWindow) mainWindow.webContents.send('toggle-lang')
+    return
+  }
+
   // Клавиши из WH_KEYBOARD_LL hook → пересылаем в renderer
   if (line.startsWith('KK') || line.startsWith('KV')) {
+    if (ctrlHeld) {
+      // Ctrl+key: обрабатываем сами, не шлём в renderer как символ
+      const vk = parseInt(line.slice(2))
+      if (vk === 86 && chatModeActive && mainWindow) { // Ctrl+V — paste
+        const img = clipboard.readImage()
+        if (!img.isEmpty()) {
+          mainWindow.webContents.send('paste-image', img.toPNG().toString('base64'))
+        } else {
+          const text = clipboard.readText()
+          if (text) mainWindow.webContents.send('paste-text', text)
+        }
+      }
+      return
+    }
     if (chatModeActive) mainWindow.webContents.send('key-input', line)
     return
   }
@@ -308,14 +361,9 @@ function makePNG(w, h, r, g, b) {
 let mainWindow = null
 let loginWindow = null
 let tray = null
-let widgetVisible = { chat: true, fight: true, warriors: false, calc: false }
-try {
-  const wp = path.join(app.getPath('userData'), 'widgets.json')
-  if (fs.existsSync(wp)) widgetVisible = { ...widgetVisible, ...JSON.parse(fs.readFileSync(wp, 'utf8')) }
-} catch {}
-function saveWidgets() {
-  try { fs.writeFileSync(path.join(app.getPath('userData'), 'widgets.json'), JSON.stringify(widgetVisible)) } catch {}
-}
+let nbarVisible = true
+// All widgets start hidden — user opens them via the Nordheim bar
+const widgetVisible = { chat: false, fight: false, warriors: false, calc: false }
 
 // Clear stale Code Cache so overlay.html is never served from cached bytecode
 function clearCodeCache() {
@@ -376,9 +424,7 @@ function createWindow() {
 }
 
 function loadIcon() {
-  const iconPath = path.join(__dirname, 'icon.png')
-  if (fs.existsSync(iconPath)) return nativeImage.createFromPath(iconPath).resize({ width: 32, height: 32 })
-  try { require('./generate-icon.cjs') } catch {}
+  const iconPath = path.join(__dirname, 'tree_2.png')
   if (fs.existsSync(iconPath)) return nativeImage.createFromPath(iconPath).resize({ width: 32, height: 32 })
   return nativeImage.createFromBuffer(makePNG(32, 32, 255, 140, 0))
 }
@@ -386,32 +432,20 @@ function loadIcon() {
 function rebuildTrayMenu() {
   if (!tray) return
   tray.setContextMenu(Menu.buildFromTemplate([
-    { label: 'Показать', click: () => mainWindow?.show() },
-    { label: 'Скрыть',   click: () => mainWindow?.hide() },
+    nbarVisible
+      ? { label: 'Скрыть Нордхейм',    click: () => sendNbarToggle(false) }
+      : { label: 'Показать Нордхейм',   click: () => sendNbarToggle(true)  },
     { type: 'separator' },
-    {
-      label: 'Виджеты', submenu: [
-        {
-          label: 'Чат', type: 'checkbox', checked: widgetVisible.chat,
-          click: (item) => { widgetVisible.chat = item.checked; saveWidgets(); mainWindow?.webContents.send('widget-toggle', { widget: 'chat', visible: item.checked }); rebuildTrayMenu() }
-        },
-        {
-          label: 'Жители', type: 'checkbox', checked: widgetVisible.warriors,
-          click: (item) => { widgetVisible.warriors = item.checked; saveWidgets(); mainWindow?.webContents.send('widget-toggle', { widget: 'warriors', visible: item.checked }); rebuildTrayMenu() }
-        },
-        {
-          label: 'Бой', type: 'checkbox', checked: widgetVisible.fight,
-          click: (item) => { widgetVisible.fight = item.checked; saveWidgets(); mainWindow?.webContents.send('widget-toggle', { widget: 'fight', visible: item.checked }); rebuildTrayMenu() }
-        },
-        {
-          label: 'Калькулятор', type: 'checkbox', checked: widgetVisible.calc,
-          click: (item) => { widgetVisible.calc = item.checked; saveWidgets(); mainWindow?.webContents.send('widget-toggle', { widget: 'calc', visible: item.checked }); rebuildTrayMenu() }
-        },
-      ]
-    },
+    { label: 'Подключиться',  click: () => createLoginWindow() },
     { type: 'separator' },
-    { label: 'Выход',    click: () => app.quit() },
+    { label: 'Выход',         click: () => app.quit() },
   ]))
+}
+
+function sendNbarToggle(visible) {
+  nbarVisible = visible
+  if (mainWindow) mainWindow.webContents.send('nbar-toggle', visible)
+  rebuildTrayMenu()
 }
 
 function createTray() {
@@ -419,15 +453,24 @@ function createTray() {
   tray = new Tray(icon)
   tray.setToolTip('FightArena Overlay')
   rebuildTrayMenu()
-  tray.on('click', () => { if (mainWindow) mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show() })
+  tray.on('click', () => sendNbarToggle(!nbarVisible))
 }
 
 // ── IPC ───────────────────────────────────────────────────────────────────────
+ipcMain.on('write-clipboard', (_, text) => { clipboard.writeText(String(text)) })
+ipcMain.on('login-close', () => { if (loginWindow) { loginWindow.close(); loginWindow = null } })
+ipcMain.on('nbar-state', (_, visible) => { nbarVisible = visible; rebuildTrayMenu() })
+
 ipcMain.on('set-ignore-mouse-events', (_, ignore) => {
   if (mainWindow) mainWindow.setIgnoreMouseEvents(ignore, { forward: true })
-  if (ignore && chatModeActive) {
-    chatModeActive = false
-    sendHelper('HOOKSTOP')
+  if (ignore) {
+    sendHelper('MHOOKSTOP')
+    if (chatModeActive) {
+      chatModeActive = false
+      sendHelper('HOOKSTOP')
+    }
+  } else {
+    if (ourHwnd) sendHelper('MHOOKSTART ' + ourHwnd)
   }
 })
 
@@ -448,6 +491,48 @@ ipcMain.on('login-success', (_, { token, srv, email, remember }) => {
     mainWindow.webContents.send('auth-token', { token, srv })
     setTimeout(sendWidgetState, 300)
   }
+})
+ipcMain.on('open-external', (_, url) => { shell.openExternal(url) })
+ipcMain.on('open-image', (_, imgUrl) => {
+  const imgWin = new BrowserWindow({
+    width: 1000, height: 750,
+    title: 'Просмотр изображения',
+    frame: true, transparent: false,
+    alwaysOnTop: true,
+    webPreferences: { nodeIntegration: false, contextIsolation: true },
+    backgroundColor: '#0d0d0d',
+  })
+  imgWin.setMenu(null)
+  const safe = imgUrl.replace(/"/g, '&quot;').replace(/</g, '&lt;')
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Фото</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d0d0d;display:flex;align-items:center;justify-content:center;height:100vh;overflow:hidden}
+img{max-width:100%;max-height:100vh;object-fit:contain;border-radius:4px}
+.hint{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.25);font-size:11px;font-family:sans-serif;pointer-events:none}
+</style></head>
+<body>
+<img src="${safe}">
+<div class="hint">ESC — закрыть</div>
+<script>document.addEventListener('keydown',e=>{if(e.key==='Escape')window.close()})</script>
+</body></html>`
+  imgWin.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html))
+})
+ipcMain.on('open-game-window', (_, tableId, authToken, serverUrl) => {
+  const gameWin = new BrowserWindow({
+    width: 900, height: 650,
+    title: 'Дурак',
+    frame: true, transparent: false,
+    alwaysOnTop: true,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'game-preload.cjs')
+    },
+    backgroundColor: '#0d3320',
+  })
+  gameWin.setMenu(null)
+  const params = new URLSearchParams({ tableId, token: authToken, srv: serverUrl })
+  gameWin.loadFile(path.join(__dirname, 'game-window.html'), { search: params.toString() })
 })
 ipcMain.on('logout', () => {
   savedLogin.token = ''

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Дурак</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #0d3320; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #e2e8f0; display: flex; align-items: center; justify-content: center;
+  height: 100vh; flex-direction: column; gap: 12px;
+}
+.title { font-size: 24px; font-weight: 700; color: #4ade80; }
+.sub   { font-size: 13px; color: #475569; }
+.tid   { font-size: 11px; color: #1a5c35; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="title">🃏 Дурак</div>
+<div class="sub">Игровой стол загружается… (Spec 2)</div>
+<div class="tid" id="tableInfo"></div>
+<script>
+  const p = new URLSearchParams(location.search)
+  document.getElementById('tableInfo').textContent = 'Table: ' + (p.get('tableId') || '?')
+</script>
+</body>
+</html>
