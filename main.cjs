@@ -155,6 +155,7 @@ const HELPER_SRC = [
 ].join('\n')
 
 // ── State ─────────────────────────────────────────────────────────────────────
+const gameWindows = new Map()
 let ctrlHeld       = false
 let savedGameHwnd  = null
 let lastGameHwnd   = null   // не сбрасывается — для restore-fallback
@@ -518,6 +519,9 @@ img{max-width:100%;max-height:100vh;object-fit:contain;border-radius:4px}
   imgWin.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html))
 })
 ipcMain.on('open-game-window', (_, tableId, authToken, serverUrl) => {
+  if (!tableId || !authToken || !serverUrl) return
+  const existing = gameWindows.get(tableId)
+  if (existing && !existing.isDestroyed()) { existing.focus(); return }
   const gameWin = new BrowserWindow({
     width: 900, height: 650,
     title: 'Дурак',
@@ -531,6 +535,8 @@ ipcMain.on('open-game-window', (_, tableId, authToken, serverUrl) => {
     backgroundColor: '#0d3320',
   })
   gameWin.setMenu(null)
+  gameWin.on('closed', () => gameWindows.delete(tableId))
+  gameWindows.set(tableId, gameWin)
   const params = new URLSearchParams({ tableId, token: authToken, srv: serverUrl })
   gameWin.loadFile(path.join(__dirname, 'game-window.html'), { search: params.toString() })
 })
