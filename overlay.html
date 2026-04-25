@@ -1200,6 +1200,32 @@ async function startGameTable() {
   if (!r.ok) { const e = await r.json(); showToast(e.error || 'Ошибка', 'err') }
 }
 
+function showGameInvite(msg) {
+  _pendingInviteTableId = msg.table_id
+  document.getElementById('giFrom').textContent  = msg.from
+  document.getElementById('giInfo').textContent  =
+    (msg.type_label || 'Дурак') + (msg.bet > 0 ? ` · Ставка ${msg.bet} монет` : ' · Без ставки')
+  const el = document.getElementById('gameInvite')
+  el.style.display = 'flex'
+  window.electronAPI?.setIgnoreMouseEvents(false)
+}
+async function acceptGameInvite() {
+  document.getElementById('gameInvite').style.display = 'none'
+  if (!_pendingInviteTableId) return
+  const r = await apiFetch('/api/games/tables/' + _pendingInviteTableId + '/join', { method: 'POST' })
+  if (!r.ok) { const e = await r.json(); showToast(e.error || 'Не удалось войти', 'err') }
+  else {
+    show('wGames')
+    switchGamesTab('mine')
+    await loadGamesData()
+  }
+  _pendingInviteTableId = null
+}
+function declineGameInvite() {
+  document.getElementById('gameInvite').style.display = 'none'
+  _pendingInviteTableId = null
+}
+
 function connectGamesWs() {
   if (gamesWs && gamesWs.readyState < 2) return
   const wsBase = srv.replace(/^https/, 'wss').replace(/^http/, 'ws')
@@ -1775,6 +1801,14 @@ function ctxDo(id) {
   else if (id === 'chat-invite') { if (cid) startAddParticipant(cid) }
   else if (id === 'warrior-dm')     { if (ctxTarget?.name) openDmWith(ctxTarget.name) }
   else if (id === 'player-profile') { if (ctxTarget?.name) openPlayerProfile(ctxTarget.name) }
+  else if (id === 'warrior-game-invite') {
+    if (ctxTarget?.name && gMyTableId) {
+      apiFetch('/api/games/tables/' + gMyTableId + '/invite', {
+        method: 'POST',
+        body: JSON.stringify({ game_name: ctxTarget.name })
+      }).then(r => { if (!r.ok) r.json().then(e => showToast(e.error || 'Ошибка', 'err')) })
+    }
+  }
   else if (id === 'msg-copy')       { if (ctxTarget?.text) el?.writeClipboard(ctxTarget.text) }
   else if (id === 'msg-quote')      { if (ctxTarget?.text) quoteMsg(ctxTarget.name || '?', ctxTarget.text) }
 }
@@ -1958,7 +1992,9 @@ async function confirmCreateChat() {
 
 function warriorCtx(e, name) {
   ctxTarget = { name }
-  showCtx(e, [{ id: 'warrior-dm', label: '💬 Написать' }])
+  const items = [{ id: 'warrior-dm', label: '💬 Написать' }]
+  if (gMyTableId) items.push({ id: 'warrior-game-invite', label: '🃏 Пригласить за стол' })
+  showCtx(e, items)
 }
 
 // ── Fight WS ──────────────────────────────────────────────────────────────────
