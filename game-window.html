@@ -424,7 +424,7 @@ if (window.gameAPI && tableId && token) {
       const me = state.players.find(p => p.user_id === myUserId)
       document.getElementById('myName').textContent = me?.game_name || ''
       document.getElementById('myPortrait').innerHTML = me ? renderPortrait(me) : ''
-      document.getElementById('tbTitle').textContent = `Дурак — ${msg.type === 'transfer' ? 'Переводной' : 'Подкидной'}`
+      document.getElementById('tbTitle').textContent = `Дурак — ${state.type === 'transfer' ? 'Переводной' : 'Подкидной'}`
       document.getElementById('betInfo').textContent = msg.bet > 0 ? `Банк: ${msg.bet * msg.players.length}` : ''
       renderOpponents(); renderTable(); renderHand(); updateTimer()
     } else if (msg.type === 'attack' || msg.type === 'defend' || msg.type === 'throw_in' || msg.type === 'transfer') {
