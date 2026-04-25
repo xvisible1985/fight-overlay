@@ -157,6 +157,295 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0f1a; }
     </div>
   </div>
 </div>
-<script>/* Task 12 JS goes here */</script>
+<script>
+const p = new URLSearchParams(location.search)
+const tableId = p.get('tableId') || ''
+const token   = p.get('token') || ''
+const srv     = p.get('srv') || 'https://nordheimunion.ru'
+
+const BASE_W = 860, BASE_H = 580
+const root = document.getElementById('scaleRoot')
+new ResizeObserver(() => {
+  const s = Math.min(document.body.clientWidth / BASE_W, document.body.clientHeight / BASE_H)
+  root.style.transform = `scale(${s})`
+}).observe(document.body)
+
+let state = null
+let myUserId = null
+let selectedHandCard = null
+let selectedAttackCard = null
+let timerInterval = null
+
+const suit = s => ({'♠':'black','♣':'black','♥':'red','♦':'red'}[s] || 'black')
+
+function cardHTML(card) {
+  return `<span class="card-rank">${card.rank}</span><span class="card-suit">${card.suit}</span><span class="card-rank-br">${card.rank}</span>`
+}
+
+function renderPortrait(player) {
+  if (player.avatar_url) {
+    return `<img src="${srv}${player.avatar_url}" onerror="this.parentNode.innerHTML=sil('${player.gender}')">`
+  }
+  return sil(player.gender)
+}
+
+function sil(gender) {
+  if (gender === 'female') {
+    return `<svg viewBox="0 0 24 32" fill="#94a3b8" style="width:26px;height:34px;opacity:.3"><ellipse cx="12" cy="8" rx="5" ry="6"/><path d="M3 28 Q4 17 12 17 Q20 17 21 28Z"/><path d="M7 22 Q12 26 17 22 Q15 29 9 29Z" opacity=".6"/></svg>`
+  }
+  return `<svg viewBox="0 0 24 32" fill="#94a3b8" style="width:26px;height:34px;opacity:.3"><ellipse cx="12" cy="8" rx="5" ry="6"/><path d="M3 28 Q4 18 12 18 Q20 18 21 28Z"/></svg>`
+}
+
+function roleLabel(player) {
+  if (!state) return ''
+  const aIdx = state.attackerIdx, dIdx = state.defenderIdx
+  const idx = state.players.findIndex(p => p.user_id === player.user_id)
+  if (state.exits.find(e => e.user_id === player.user_id)) return 'Вышел'
+  if (!player.connected) return 'Отключён'
+  if (idx === aIdx) return '<span class="ps-role atk">Атакует</span>'
+  if (idx === dIdx) return '<span class="ps-role def">Защищается</span>'
+  return '<span class="ps-role">Ждёт</span>'
+}
+
+function renderOpponents() {
+  if (!state) return
+  const area = document.getElementById('opponentsArea')
+  const others = state.players.filter(p => p.user_id !== myUserId)
+  area.innerHTML = others.map(player => {
+    const aIdx = state.attackerIdx, dIdx = state.defenderIdx
+    const idx = state.players.findIndex(p => p.user_id === player.user_id)
+    const isAtk = idx === aIdx, isDef = idx === dIdx
+    const exited = state.exits.find(e => e.user_id === player.user_id)
+    const disc = !player.connected
+    const cls = `player-slot${isAtk?' attacker':isDef?' defender':''}${exited?' exited':''}${disc?' disconnected':''}`
+    const pCls = `portrait${isAtk?' attacker':isDef?' defender':''}`
+    const cards = Array.from({length: player.cardCount}, () => '<div class="card-back"></div>').join('')
+    const timer = state.timerEndsAt && (isDef && state.phase === 'defense')
+      ? `<span class="ps-timer" data-uid="${player.user_id}"></span>` : ''
+    return `<div class="${cls}">${timer}<div class="${pCls}">${renderPortrait(player)}</div><div class="ps-info"><div class="ps-name">${player.game_name}</div>${roleLabel(player)}<div class="ps-cards">${cards}</div></div></div>`
+  }).join('')
+}
+
+function renderTable() {
+  if (!state) return
+  const pairs = document.getElementById('pairsArea')
+  pairs.innerHTML = state.table.map((pair, i) => {
+    const ac = pair.attack, dc = pair.defend
+    const acEl = `<div class="card ${suit(ac.suit)} attack-card-pos" data-pair="${i}" data-role="attack">${cardHTML(ac)}</div>`
+    const dcEl = dc ? `<div class="card ${suit(dc.suit)} defend-card-pos">${cardHTML(dc)}</div>` : ''
+    return `<div class="attack-pair">${acEl}${dcEl}</div>`
+  }).join('')
+
+  const trumpArea = document.getElementById('trumpArea')
+  if (state.trumpCard) {
+    trumpArea.innerHTML = `
+      <div class="trump-card-wrap">
+        ${state.deckCount > 1 ? '<div class="deck-stack"></div>' : ''}
+        <div class="trump-card ${suit(state.trumpCard.suit)}">${cardHTML(state.trumpCard)}</div>
+      </div>
+      <div class="trump-label">Козырь ${state.trump}</div>
+      <div class="deck-count">${state.deckCount}</div>`
+  } else {
+    trumpArea.innerHTML = `<div class="trump-label">Козырь ${state.trump}</div><div class="deck-count">Колода: 0</div>`
+  }
+
+  document.getElementById('discardArea').innerHTML = `
+    <div class="discard-pile">сброс</div>
+    <div class="discard-count">Сброс: ${state.discardCount}</div>`
+}
+
+function renderHand() {
+  if (!state) return
+  const hand = state.myHand || []
+  const myIdx = state.players.findIndex(p => p.user_id === myUserId)
+  const isAttacker = myIdx === state.attackerIdx
+  const isDefender = myIdx === state.defenderIdx
+  const canPlay = (state.phase === 'attack' && isAttacker) ||
+                  (state.phase === 'defense' && isDefender) ||
+                  (state.phase === 'throw' && !isDefender)
+
+  const handEl = document.getElementById('myHand')
+  handEl.innerHTML = hand.map((card, i) => {
+    const sel = selectedHandCard && selectedHandCard.rank === card.rank && selectedHandCard.suit === card.suit ? ' selected' : ''
+    const dim = canPlay ? '' : ' dim'
+    return `<div class="hand-card ${suit(card.suit)}${sel}${dim}" data-i="${i}" onclick="selectHandCard(${i})">${cardHTML(card)}</div>`
+  }).join('')
+
+  updateTimer()
+  updateButtons()
+}
+
+function selectHandCard(i) {
+  const card = state?.myHand?.[i]
+  if (!card) return
+  const myIdx = state.players.findIndex(p => p.user_id === myUserId)
+  const isAttacker = myIdx === state.attackerIdx
+  const isDefender = myIdx === state.defenderIdx
+  const phase = state.phase
+
+  if (phase === 'attack' && isAttacker) {
+    selectedHandCard = (selectedHandCard?.rank === card.rank && selectedHandCard?.suit === card.suit) ? null : card
+  } else if (phase === 'throw' && !isDefender) {
+    selectedHandCard = (selectedHandCard?.rank === card.rank && selectedHandCard?.suit === card.suit) ? null : card
+  } else if (phase === 'defense' && isDefender) {
+    selectedHandCard = (selectedHandCard?.rank === card.rank && selectedHandCard?.suit === card.suit) ? null : card
+  }
+  renderHand()
+  updateButtons()
+}
+
+function updateButtons() {
+  if (!state) return
+  const myIdx = state.players.findIndex(p => p.user_id === myUserId)
+  const isAttacker = myIdx === state.attackerIdx
+  const isDefender = myIdx === state.defenderIdx
+  const phase = state.phase
+
+  const btnAction = document.getElementById('btnAction')
+  const btnSec    = document.getElementById('btnSecondary')
+  const btnTake   = document.getElementById('btnTake')
+  const statusEl  = document.getElementById('statusMsg')
+
+  btnTake.style.display = 'none'
+
+  if (phase === 'attack' && isAttacker) {
+    btnAction.textContent = selectedHandCard ? `Атаковать ${selectedHandCard.suit}${selectedHandCard.rank}` : 'Атаковать'
+    btnAction.disabled = !selectedHandCard
+    btnSec.textContent = 'Пас'; btnSec.disabled = state.table.length === 0
+    statusEl.textContent = 'Ваш ход — выберите карту для атаки'
+  } else if (phase === 'defense' && isDefender) {
+    btnAction.textContent = 'Отбить'
+    btnAction.disabled = !(selectedHandCard && selectedAttackCard)
+    btnTake.style.display = 'inline-block'
+    if (state.type === 'transfer' && state.table.every(p => !p.defend)) {
+      btnSec.textContent = 'Перевести'; btnSec.disabled = !selectedHandCard
+    } else {
+      btnSec.textContent = ''; btnSec.disabled = true
+    }
+    statusEl.textContent = 'Защита — выберите карту на столе, затем карту из руки'
+  } else if (phase === 'throw' && !isDefender) {
+    btnAction.textContent = selectedHandCard ? `Подкинуть ${selectedHandCard.suit}${selectedHandCard.rank}` : 'Подкинуть'
+    btnAction.disabled = !selectedHandCard
+    btnSec.textContent = 'Пас'; btnSec.disabled = false
+    statusEl.textContent = 'Можно подкинуть карту или спасовать'
+  } else {
+    btnAction.textContent = '—'; btnAction.disabled = true
+    btnSec.textContent = ''; btnSec.disabled = true
+    const attName = state.players[state.attackerIdx]?.game_name
+    const defName = state.players[state.defenderIdx]?.game_name
+    statusEl.textContent = `${attName} атакует · ${defName} защищается`
+  }
+}
+
+function doAction() {
+  if (!state || !selectedHandCard) return
+  const myIdx = state.players.findIndex(p => p.user_id === myUserId)
+  const phase = state.phase
+  if (phase === 'attack' && myIdx === state.attackerIdx) {
+    window.gameAPI.sendAction('attack', { cards: [selectedHandCard] })
+  } else if (phase === 'defense' && myIdx === state.defenderIdx && selectedAttackCard) {
+    window.gameAPI.sendAction('defend', { attack_card: selectedAttackCard, defend_card: selectedHandCard })
+  } else if (phase === 'throw' && myIdx !== state.defenderIdx) {
+    window.gameAPI.sendAction('throw_in', { card: selectedHandCard })
+  }
+  selectedHandCard = null; selectedAttackCard = null
+}
+
+function doSecondary() {
+  if (!state) return
+  const myIdx = state.players.findIndex(p => p.user_id === myUserId)
+  const phase = state.phase
+  if ((phase === 'attack' || phase === 'throw') && myIdx !== state.defenderIdx) {
+    window.gameAPI.sendAction('pass')
+  } else if (phase === 'defense' && myIdx === state.defenderIdx && state.type === 'transfer' && selectedHandCard) {
+    window.gameAPI.sendAction('transfer', { card: selectedHandCard })
+    selectedHandCard = null
+  }
+}
+
+function doTake() {
+  window.gameAPI.sendAction('take')
+  selectedHandCard = null; selectedAttackCard = null
+}
+
+document.getElementById('pairsArea').addEventListener('click', e => {
+  const el = e.target.closest('[data-role="attack"]')
+  if (!el) return
+  const myIdx = state?.players.findIndex(p => p.user_id === myUserId)
+  if (!state || state.phase !== 'defense' || myIdx !== state.defenderIdx) return
+  const pairIdx = parseInt(el.dataset.pair)
+  const pair = state.table[pairIdx]
+  if (!pair || pair.defend) return
+  selectedAttackCard = pair.attack
+  updateButtons()
+  document.querySelectorAll('[data-role="attack"]').forEach(c => c.classList.remove('selected'))
+  el.classList.add('selected')
+})
+
+function updateTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null }
+  const tbTimer = document.getElementById('tbTimer')
+  if (!state?.timerEndsAt) { tbTimer.classList.remove('active'); return }
+
+  tbTimer.classList.add('active')
+  function tick() {
+    const secs = Math.max(0, Math.ceil((state.timerEndsAt - Date.now()) / 1000))
+    tbTimer.textContent = `${secs}с`
+    if (secs === 0) { clearInterval(timerInterval); timerInterval = null }
+  }
+  tick()
+  timerInterval = setInterval(tick, 500)
+}
+
+function applyState(s) {
+  state = s
+  selectedHandCard = null; selectedAttackCard = null
+  renderOpponents()
+  renderTable()
+  renderHand()
+  updateTimer()
+}
+
+function renderEnd(results) {
+  document.getElementById('endResults').innerHTML = results.map(r => `
+    <div class="end-row">
+      <span class="end-place">${r.place}</span>
+      <span class="end-name">${r.game_name}${r.user_id === myUserId ? ' (вы)' : ''}</span>
+      <span class="end-payout">${r.payout > 0 ? '+' + r.payout : r.place === results.length ? 'Дурак' : '0'}</span>
+    </div>`).join('')
+  document.getElementById('endScreen').classList.add('show')
+}
+
+if (window.gameAPI && tableId && token) {
+  window.gameAPI.onEvent(msg => {
+    if (msg.type === 'game_state') {
+      myUserId = msg.myUserId || myUserId
+      state = msg
+      const me = state.players.find(p => p.user_id === myUserId)
+      document.getElementById('myName').textContent = me?.game_name || ''
+      document.getElementById('myPortrait').innerHTML = me ? renderPortrait(me) : ''
+      document.getElementById('tbTitle').textContent = `Дурак — ${msg.type === 'transfer' ? 'Переводной' : 'Подкидной'}`
+      document.getElementById('betInfo').textContent = msg.bet > 0 ? `Банк: ${msg.bet * msg.players.length}` : ''
+      renderOpponents(); renderTable(); renderHand(); updateTimer()
+    } else if (msg.type === 'attack' || msg.type === 'defend' || msg.type === 'throw_in' || msg.type === 'transfer') {
+      if (msg.table) state.table = msg.table
+      renderTable(); updateButtons()
+    } else if (msg.type === 'take' || msg.type === 'round_end') {
+      state.table = []; renderTable()
+    } else if (msg.type === 'timer_start') {
+      state.timerEndsAt = Date.now() + msg.seconds * 1000
+      updateTimer()
+    } else if (msg.type === 'player_reconnected' || msg.type === 'player_exit') {
+      const pl = state?.players?.find(pl => pl.user_id === msg.user_id)
+      if (pl) { pl.connected = msg.type === 'player_reconnected'; renderOpponents() }
+    } else if (msg.type === 'game_over') {
+      renderEnd(msg.results)
+    }
+  })
+  window.gameAPI.connect(tableId, token, srv)
+} else {
+  document.getElementById('statusMsg').textContent = 'Нет параметров подключения'
+}
+</script>
 </body>
 </html>
