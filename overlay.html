@@ -900,6 +900,16 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
           <input class="gtf-inp" id="gtfBet" type="number" min="0" value="0" placeholder="0">
         </div>
         <div>
+          <div class="gtf-label">Таймаут хода</div>
+          <input type="number" id="gtfTurnTimeout" class="gtf-inp" min="10" max="120" value="30" style="width:60px">
+          <span style="font-size:10px;color:#475569">сек</span>
+        </div>
+        <div>
+          <div class="gtf-label">Таймаут подкидывания</div>
+          <input type="number" id="gtfThrowTimeout" class="gtf-inp" min="5" max="60" value="10" style="width:60px">
+          <span style="font-size:10px;color:#475569">сек</span>
+        </div>
+        <div>
           <div class="gtf-label">Название</div>
           <input class="gtf-inp" id="gtfName" type="text" placeholder="Мой стол" onmousedown="activateInput(this)" onblur="deactivateInput()">
         </div>
@@ -1183,9 +1193,11 @@ async function joinGameTable(tableId) {
 async function submitCreateTable() {
   const name = document.getElementById('gtfName').value.trim() || 'Мой стол'
   const bet  = parseInt(document.getElementById('gtfBet').value) || 0
+  const turn_timeout = Math.max(10, Math.min(120, parseInt(document.getElementById('gtfTurnTimeout').value) || 30))
+  const throw_timeout = Math.max(5, Math.min(60, parseInt(document.getElementById('gtfThrowTimeout').value) || 10))
   const r = await apiFetch('/api/games/tables', {
     method: 'POST',
-    body: JSON.stringify({ name, type: gtfType, max_players: gtfPlayers, bet })
+    body: JSON.stringify({ name, type: gtfType, max_players: gtfPlayers, bet, turn_timeout, throw_timeout })
   })
   if (!r.ok) { const e = await r.json(); showToast(e.error || 'Ошибка', 'err'); return }
   const table = await r.json()
