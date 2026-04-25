@@ -19,7 +19,7 @@ body {
   display: flex; flex-direction: column; overflow: hidden; z-index: 9999;
 }
 .wh {
-  display: flex; align-items: center; gap: 6px; padding: 6px 10px;
+  display: flex; align-items: center; gap: 8px; padding: 9px 10px;
   background: #0f172a; border-bottom: 1px solid #334155;
   cursor: grab; white-space: nowrap; flex-shrink: 0;
   font-size: 11px; font-weight: 600; color: #94a3b8;
@@ -29,7 +29,7 @@ body {
 .wh-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .wdot { font-size: 10px; flex-shrink: 0; }
 .wdot.ok { color: #22c55e; } .wdot.err { color: #ef4444; }
-.wtoggle { cursor: pointer; background: none; border: none; color: #64748b; font-size: 10px; padding: 0 2px; flex-shrink: 0; }
+.wtoggle { cursor: pointer; background: none; border: none; color: #64748b; font-size: 16px; padding: 0 4px; flex-shrink: 0; line-height: 1; }
 .wtoggle:hover { color: #94a3b8; }
 .wbody { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
 
@@ -41,35 +41,77 @@ body {
 
 /* ── Messages ── */
 .msgs { flex: 1; overflow-y: auto; padding: 5px 8px; display: flex; flex-direction: column; gap: 1px; }
-#mChat  { height: calc(17 * 13px * 1.4); flex: none; }
-.msg { font-size: 13px; line-height: 1.4; word-break: break-word; }
-.msg-ts { font-size: 9px; color: #334155; margin-right: 3px; }
+#mChat  { flex: 1; font-size: 13px; }
+.msg { line-height: 1.4; word-break: break-word; }
+.msg-ts { font-size: 9px; color: #64748b; margin-right: 3px; }
 .msg .au { color: #60a5fa; font-weight: 600; margin-right: 3px; }
 .msg .mn { font-weight: 600; }
 .msg.sys { color: #475569; font-style: italic; }
 .msg.me  { color: #a78bfa; font-style: italic; }
 .msg.do  { color: #818cf8; font-style: italic; }
+.date-sep {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 9px; color: #334155; margin: 4px 0; white-space: nowrap;
+}
+.date-sep::before, .date-sep::after {
+  content: ''; flex: 1; height: 1px; background: #1e293b;
+}
 
-/* ── Online list ── */
-.online-list { padding: 5px 8px; border-bottom: 1px solid #0f172a; font-size: 10px; color: #475569; max-height: 54px; overflow-y: auto; flex-shrink: 0; }
-.oname { display: inline-block; background: #0f172a; border-radius: 3px; padding: 1px 5px; margin: 1px; color: #64748b; }
+/* ── PChat new-chat inline ── */
+.pchat-tab-add {
+  background: #0f172a; border: 1px solid #1e293b; border-radius: 4px;
+  color: #475569; cursor: pointer; font-size: 13px; font-weight: 600;
+  padding: 1px 7px; line-height: 1.4; flex-shrink: 0;
+}
+.pchat-tab-add:hover { border-color: #475569; color: #94a3b8; }
+.pchat-new-inp {
+  background: #0f172a; border: 1px solid #3b82f6; border-radius: 4px;
+  color: #e2e8f0; font-size: 10px; padding: 2px 6px; outline: none; width: 110px; flex-shrink: 0;
+}
+.pchat-new-ok     { background: none; border: none; color: #22c55e; cursor: pointer; font-size: 13px; padding: 0 2px; }
+.pchat-new-cancel { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 13px; padding: 0 2px; }
+
+/* ── PChat tabs ── */
+.pchat-tabs {
+  display: flex; flex-wrap: wrap; gap: 3px; padding: 5px 8px;
+  border-bottom: 1px solid #0f172a; flex-shrink: 0; overflow-y: auto; max-height: 72px;
+}
+.pchat-tab {
+  display: flex; align-items: center; gap: 3px;
+  background: #0f172a; border: 1px solid #1e293b; border-radius: 4px;
+  color: #64748b; cursor: pointer; font-size: 10px; font-weight: 600;
+  padding: 3px 7px; white-space: nowrap; max-width: 110px;
+}
+.pchat-tab:hover { border-color: #475569; color: #94a3b8; }
+.pchat-tab.active { border-color: #3b82f6; color: #60a5fa; background: #1e3a5f33; }
+.pchat-tab-name { overflow: hidden; text-overflow: ellipsis; }
+.pchat-tab-dot { width: 5px; height: 5px; border-radius: 50%; background: #f59e0b; flex-shrink: 0; }
+
+/* ── Resize handle ── */
+.resize-handle {
+  position: absolute; bottom: 0; right: 0; width: 14px; height: 14px;
+  cursor: se-resize;
+  background: linear-gradient(135deg, transparent 50%, #475569 50%);
+  opacity: 0.5; border-radius: 0 0 8px 0;
+}
+.resize-handle:hover { opacity: 1; }
 
 /* ── Input ── */
 .irow { display: flex; gap: 3px; padding: 5px 8px; border-top: 1px solid #0f172a; align-items: flex-end; flex-shrink: 0; }
 .irow textarea {
   flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 4px;
-  color: #e2e8f0; font-size: 11px; padding: 4px 6px; resize: none; outline: none;
-  min-height: 26px; max-height: 80px; font-family: inherit; overflow: hidden;
+  color: #e2e8f0; font-size: 13px; padding: 4px 6px; resize: none; outline: none;
+  min-height: 28px; max-height: 120px; font-family: inherit; overflow: hidden;
 }
 .irow textarea:focus { border-color: #3b82f6; caret-color: #93c5fd; }
 .irow button {
   background: #1e293b; border: 1px solid #334155; border-radius: 4px;
-  color: #94a3b8; cursor: pointer; padding: 3px 6px; font-size: 10px; flex-shrink: 0;
+  color: #94a3b8; cursor: pointer; padding: 4px 8px; font-size: 12px; flex-shrink: 0;
 }
 .irow button:hover:not(:disabled) { background: #334155; color: #e2e8f0; }
 .irow button:disabled { opacity: 0.35; cursor: default; }
 .irow .send-btn { font-size: 12px; padding: 4px 8px; }
-.lang-btn { font-size: 9px; font-weight: 700; padding: 3px 4px; min-width: 22px; letter-spacing: .03em; }
+.lang-btn { font-size: 9px; font-weight: 700; padding: 4px 6px; min-width: 28px; letter-spacing: .03em; }
 .lang-btn.ru { color: #60a5fa; border-color: #3b82f6; }
 
 /* ── Font size buttons ── */
@@ -81,33 +123,260 @@ body {
 .fsz-btn:hover { color: #94a3b8; border-color: #475569; }
 .fsz-btn.active { color: #60a5fa; border-color: #3b82f6; }
 
+/* ── Font settings panel ── */
+.font-panel-overlay { position: fixed; inset: 0; z-index: 19000; }
+.font-panel {
+  position: fixed; z-index: 19001;
+  background: #1e293b; border: 1px solid #334155; border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7); padding: 16px 18px;
+  min-width: 250px; transform: translateX(-100%);
+}
+.fp-title { font-size: 11px; font-weight: 700; color: #64748b; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 13px; }
+.fp-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.fp-label { font-size: 12px; color: #475569; width: 56px; flex-shrink: 0; }
+.fp-btns { display: flex; gap: 5px; }
+.fp-btn {
+  background: #0f172a; border: 1px solid #334155; border-radius: 5px;
+  color: #64748b; cursor: pointer; font-size: 13px; font-weight: 700;
+  padding: 4px 12px; transition: all .15s;
+}
+.fp-btn:hover:not(.active) { border-color: #475569; color: #94a3b8; }
+.fp-btn.active { background: #1e3a5f; border-color: #3b82f6; color: #60a5fa; }
+.fp-btn.bold { font-weight: 700; }
+.fp-btn.italic { font-style: italic; }
+.fp-sel {
+  flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 5px;
+  color: #e2e8f0; font-size: 12px; padding: 4px 8px; cursor: pointer; outline: none;
+}
+.fp-sel option { background: #0f172a; }
+.fp-color { width: 36px; height: 26px; padding: 0; border: 1px solid #334155; border-radius: 4px; cursor: pointer; appearance: none; }
+.cw-color-sw { width: 2em; height: 2em; flex-shrink: 0; border: 1px solid #334155; border-radius: 5px; cursor: pointer; padding: 0; appearance: none; }
+/* ── Custom color picker ── */
+#colorPicker {
+  position: fixed; z-index: 25000;
+  background: #1e293b; border: 1px solid #475569; border-radius: 8px;
+  padding: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+}
+#cpSwatches { display: grid; grid-template-columns: repeat(8, 20px); gap: 3px; margin-bottom: 7px; }
+.cp-swatch { width: 20px; height: 20px; border-radius: 3px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); padding: 0; appearance: none; }
+.cp-swatch:hover { outline: 2px solid #94a3b8; }
+.cp-swatch.active { outline: 2px solid #fff; }
+.cp-bottom { display: flex; align-items: center; gap: 5px; }
+#cpHex { width: 68px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #e2e8f0; font-size: 11px; padding: 2px 5px; outline: none; }
+#cpPreview { width: 20px; height: 20px; border-radius: 3px; border: 1px solid #334155; flex-shrink: 0; }
+.cp-btn { background: none; border: 1px solid #334155; border-radius: 4px; color: #94a3b8; cursor: pointer; font-size: 10px; padding: 2px 6px; }
+.cp-btn.ok { border-color: #3b82f6; color: #60a5fa; }
+.cp-btn:hover { color: #e2e8f0; }
+/* ── Emoji picker ── */
+#emojiPicker {
+  position: fixed; z-index: 25000;
+  background: #1e293b; border: 1px solid #475569; border-radius: 8px;
+  padding: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+  display: grid; grid-template-columns: repeat(8, 28px); gap: 2px;
+}
+.ep-btn { width: 28px; height: 28px; background: none; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; padding: 0; line-height: 1; }
+.ep-btn:hover { background: #334155; }
+.emoji-open-btn { font-size: 14px; padding: 4px 6px; line-height: 1; }
+.fp-colorval { font-size: 11px; color: #475569; letter-spacing: .04em; flex: 1; }
+.fp-reset {
+  width: 100%; margin-top: 8px;
+  background: #0f172a; border: 1px solid #334155; border-radius: 5px;
+  color: #475569; cursor: pointer; font-size: 12px; padding: 6px;
+  transition: color .15s, border-color .15s;
+}
+.fp-reset:hover { color: #94a3b8; border-color: #475569; }
+
+/* ── Toast notifications ── */
+.toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+  background: #1e293b; border: 1px solid #334155; border-radius: 8px;
+  color: #e2e8f0; font-size: 11px; padding: 7px 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6); z-index: 30000;
+  pointer-events: none; white-space: nowrap;
+  animation: toastIn .2s ease, toastOut .3s ease 1.7s forwards;
+}
+.toast.ok  { border-color: #22c55e; color: #4ade80; }
+.toast.err { border-color: #ef4444; color: #f87171; }
+@keyframes toastIn  { from { opacity: 0; bottom: 16px } to { opacity: 1; bottom: 28px } }
+@keyframes toastOut { from { opacity: 1 } to { opacity: 0 } }
+
 /* ── Nordheim Bar ── */
 #nbar {
   position: fixed; z-index: 10000;
   background: #0f172a; border: 1px solid #334155;
-  border-radius: 10px; box-shadow: 0 4px 24px rgba(0,0,0,0.7);
-  display: none; flex-direction: column; overflow: hidden; min-width: 180px;
+  border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.7);
+  display: none; flex-direction: column; overflow: hidden; min-width: 210px;
 }
 .nb-hdr {
-  display: flex; align-items: center; padding: 6px 10px; gap: 6px;
+  display: flex; align-items: center; padding: 10px 12px; gap: 8px;
   border-bottom: 1px solid #1e293b; cursor: grab;
-  font-size: 11px; font-weight: 700; color: #94a3b8;
+  font-size: 13px; font-weight: 700; color: #94a3b8;
   letter-spacing: .06em; text-transform: uppercase;
 }
 .nb-hdr:active { cursor: grabbing; }
 .nb-hdr-title { flex: 1; }
-.nb-close { background: none; border: none; color: #475569; cursor: pointer; font-size: 11px; padding: 0 2px; }
+.nb-close { background: none; border: none; color: #475569; cursor: pointer; font-size: 16px; padding: 0 3px; line-height: 1; }
 .nb-close:hover { color: #ef4444; }
-.nb-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 6px 8px; }
+.nb-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 10px 10px; }
 .nb-btn {
-  display: flex; align-items: center; justify-content: center; gap: 4px;
-  background: #1e293b; border: 1px solid #334155; border-radius: 6px;
-  color: #64748b; cursor: pointer; font-size: 10px; font-weight: 600;
-  padding: 5px 6px; transition: all .15s; white-space: nowrap;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  background: #1e293b; border: 1px solid #334155; border-radius: 8px;
+  color: #64748b; cursor: pointer; font-size: 13px; font-weight: 600;
+  padding: 8px 10px; transition: all .15s; white-space: nowrap;
 }
 .nb-btn:hover { background: #1e3a5f; border-color: #3b82f6; color: #93c5fd; }
 .nb-btn.active { background: #1e3a5f; border-color: #3b82f6; color: #93c5fd; }
-.nb-cnt { font-size: 9px; color: #4ade80; font-weight: 700; }
+.nb-cnt { font-size: 11px; color: #4ade80; font-weight: 700; }
+
+/* ── Games widget ── */
+#wGames { width: 300px; }
+.games-tabs { display: flex; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
+.games-tab {
+  flex: 1; background: none; border: none; border-bottom: 2px solid transparent;
+  color: #475569; cursor: pointer; font-size: 10px; font-weight: 700;
+  padding: 5px 8px; letter-spacing: .04em; text-transform: uppercase; transition: all .15s;
+}
+.games-tab:hover { color: #94a3b8; }
+.games-tab.active { color: #a78bfa; border-bottom-color: #7c3aed; }
+.games-list { flex: 1; overflow-y: auto; padding: 6px 8px; display: flex; flex-direction: column; gap: 5px; }
+.game-table-card {
+  background: #0f172a; border: 1px solid #1e293b; border-radius: 7px;
+  padding: 7px 9px; cursor: pointer; transition: border-color .15s;
+}
+.game-table-card:hover { border-color: #7c3aed; }
+.gtc-top { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.gtc-title { font-size: 12px; font-weight: 700; color: #e2e8f0; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gtc-bet { font-size: 11px; color: #f59e0b; font-weight: 700; flex-shrink: 0; }
+.gtc-meta { display: flex; align-items: center; gap: 6px; font-size: 10px; }
+.gtc-type { background: #1e293b; border: 1px solid #334155; border-radius: 3px; padding: 1px 5px; font-size: 9px; color: #64748b; flex-shrink: 0; }
+.gtc-players { color: #4ade80; font-weight: 600; }
+.gtc-join { background: #1e1b4b; border: 1px solid #7c3aed; border-radius: 4px; color: #a78bfa; font-size: 9px; font-weight: 700; padding: 2px 8px; cursor: pointer; flex-shrink: 0; margin-left: auto; }
+.gtc-join:disabled { opacity: .35; cursor: default; }
+.games-create-btn {
+  background: #1e1b4b; border: 1px solid #7c3aed; border-radius: 6px;
+  color: #a78bfa; font-size: 11px; font-weight: 700; padding: 7px; text-align: center;
+  cursor: pointer; margin: 0 8px 8px; flex-shrink: 0;
+}
+.games-create-btn:hover { background: #2d1b6b; }
+.games-balance-bar {
+  display: flex; align-items: center; gap: 5px; padding: 5px 10px;
+  background: #0a0f1a; border-top: 1px solid #0f172a;
+  font-size: 10px; color: #475569; flex-shrink: 0;
+}
+.games-balance-val { color: #f59e0b; font-weight: 700; font-size: 12px; }
+.no-tables { font-size: 11px; color: #475569; padding: 10px 8px; text-align: center; }
+.gtf-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 9px; }
+.gtf-label { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; margin-bottom: 3px; }
+.gtf-seg { display: flex; gap: 4px; }
+.gtf-seg-btn {
+  flex: 1; background: #0f172a; border: 1px solid #1e293b; border-radius: 5px;
+  color: #475569; font-size: 10px; font-weight: 600; padding: 4px; text-align: center; cursor: pointer;
+}
+.gtf-seg-btn.active { background: #1e1b4b; border-color: #7c3aed; color: #a78bfa; }
+.gtf-inp {
+  width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 5px;
+  color: #e2e8f0; font-size: 12px; padding: 5px 8px; outline: none; font-family: inherit;
+}
+.gtf-inp:focus { border-color: #7c3aed; }
+.gtf-actions { display: flex; gap: 6px; margin-top: 3px; }
+.gtf-cancel { flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #475569; font-size: 11px; font-weight: 600; padding: 7px; text-align: center; cursor: pointer; }
+.gtf-submit { flex: 2; background: #1e1b4b; border: 1px solid #7c3aed; border-radius: 6px; color: #a78bfa; font-size: 11px; font-weight: 700; padding: 7px; text-align: center; cursor: pointer; }
+.gtf-submit:hover { background: #2d1b6b; }
+.gtf-start-btn {
+  background: #14532d; border: 1px solid #22c55e; border-radius: 6px;
+  color: #4ade80; font-size: 11px; font-weight: 700; padding: 7px; text-align: center;
+  cursor: pointer; margin: 0 8px 8px; flex-shrink: 0;
+}
+.gtf-start-btn:disabled { opacity: .35; cursor: default; }
+#gameInvite {
+  position: fixed; inset: 0; z-index: 11000;
+  background: rgba(0,0,0,0.65); display: none;
+  align-items: center; justify-content: center;
+}
+.gi-box {
+  background: #1e293b; border: 1px solid #334155; border-radius: 14px;
+  padding: 22px 26px; width: 290px; text-align: center;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+}
+.gi-icon { font-size: 30px; margin-bottom: 8px; }
+.gi-from { font-size: 15px; font-weight: 700; color: #f1f5f9; }
+.gi-sub { font-size: 11px; color: #64748b; margin-top: 3px; }
+.gi-info { font-size: 12px; color: #a78bfa; font-weight: 600; margin: 10px 0 14px; }
+.gi-btns { display: flex; gap: 8px; justify-content: center; }
+.gi-accept { background: #1d4ed8; border: none; border-radius: 7px; color: #fff; font-size: 13px; font-weight: 600; padding: 8px 18px; cursor: pointer; }
+.gi-accept:hover { background: #2563eb; }
+.gi-decline { background: #1e293b; border: 1px solid #334155; border-radius: 7px; color: #94a3b8; font-size: 13px; font-weight: 600; padding: 8px 18px; cursor: pointer; }
+.gi-decline:hover { background: #334155; }
+
+/* ── Chat bottom panel ── */
+.chat-foot {
+  flex-shrink: 0; background: #0b1120; border-top: 1px solid #1e293b;
+}
+.chat-toolbar {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 8px; border-bottom: 1px solid #16243b; flex-shrink: 0;
+}
+.chat-toolbar .emoji-open-btn { margin-left: auto; }
+#wChat .irow { padding: 5px 8px; border-top: none; }
+/* ── Participants bar ── */
+.pchat-members {
+  padding: 4px 8px 3px; font-size: 10px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px; flex-shrink: 0;
+}
+.mem-label {
+  font-size: inherit; color: #475569; flex-shrink: 0; white-space: nowrap; letter-spacing: .02em;
+}
+.mem-chip {
+  display: inline-flex; align-items: center;
+  background: #182535; border: 1px solid #2d3f56; border-radius: 10px;
+  padding: 1px 8px; font-size: inherit; font-weight: 600;
+  cursor: pointer; white-space: nowrap; color: #94a3b8; user-select: none;
+}
+.mem-chip:hover { background: #1e3050; border-color: #475569; }
+
+/* ── Command shortcuts row ── */
+.cmd-row { display: flex; gap: 3px; flex-shrink: 0; }
+.irow-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.irow-mid .ta-wrap { flex: none; }
+.cmd-btn {
+  background: #0f172a; border: 1px solid #1e293b; border-radius: 4px;
+  color: #475569; cursor: pointer; font-size: 9px; font-weight: 700;
+  padding: 2px 7px; transition: all .15s;
+}
+.cmd-btn:hover { border-color: #475569; color: #94a3b8; }
+.cmd-btn.active { border-color: #f59e0b; color: #f59e0b; background: #1e293b; }
+.irow button.active { border-color: #f59e0b; color: #f59e0b; }
+.irow textarea.rp-mode { }
+textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
+.ta-wrap { position: relative; flex: 1; min-width: 0; }
+.ta-wrap textarea { width: 100%; box-sizing: border-box; color: transparent !important; caret-color: transparent; }
+.ta-wrap textarea::placeholder { color: #475569; }
+.ta-mirror {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+  font-size: 11px; font-family: inherit; line-height: 1.4;
+  padding: 4px 6px; box-sizing: border-box;
+  color: #e2e8f0; white-space: pre-wrap; word-break: break-word;
+}
+@keyframes fa-caret-blink { 0%,49%{opacity:1}50%,100%{opacity:0} }
+.fake-caret { display: inline-block; width: 1.5px; height: 1em; background: #93c5fd; vertical-align: text-bottom; animation: fa-caret-blink 1s step-end infinite; margin: 0 -1px; }
+.chat-img { max-width: 100%; max-height: 180px; border-radius: 4px; cursor: pointer; display: block; margin-top: 3px; object-fit: contain; user-select: none; }
+.msg-uploading { opacity: 0.5; font-size: 10px; color: #64748b; }
+.msgs .msg { user-select: text; }
+.quote-line { display: block; border-left: 2px solid #475569; padding-left: 5px; color: #64748b; font-style: italic; margin: 1px 0; }
+
+/* ── Add-participant banner ── */
+.wadd-banner {
+  display: flex; align-items: center; gap: 6px; padding: 5px 8px;
+  background: #1e3a5f; border-bottom: 1px solid #3b82f6; font-size: 10px; color: #93c5fd; flex-shrink: 0;
+}
+.wadd-banner-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.wadd-done { background: #1d4ed8; border: none; border-radius: 4px; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 8px; cursor: pointer; flex-shrink: 0; }
+.wadd-done:hover { background: #2563eb; }
+.wadd-cancel { background: none; border: none; color: #64748b; cursor: pointer; font-size: 11px; padding: 0 2px; flex-shrink: 0; }
+.wadd-cancel:hover { color: #ef4444; }
+.warrior-item.addable { cursor: pointer; }
+.warrior-item.addable:hover { background: #1e3a5f22; }
+.warrior-item.added { opacity: 0.7; }
 
 /* ── Warriors widget ── */
 #wWarriors { width: 230px; }
@@ -206,7 +475,6 @@ body {
 .cw-inp[type=number]::-webkit-inner-spin-button,
 .cw-inp[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
 .cw-name-inp { flex: 1; min-width: 0; }
-.cw-color-sw { width: 2em; height: 2em; flex-shrink: 0; border: 1px solid #334155; border-radius: 5px; background: transparent; cursor: pointer; padding: 1px 2px; }
 .cw-stats-row { display: flex; align-items: center; gap: .22em; }
 .cw-stat-lbl { font-size: .76em; flex-shrink: 0; }
 .cw-stat-inp { flex: 1; min-width: 0; }
@@ -264,6 +532,20 @@ body {
 }
 .sv-red { color: #f87171; } .sv-blue { color: #60a5fa; } .sv-orange { color: #e0a050; }
 
+/* ── Context menu ── */
+#ctxMenu {
+  position: fixed; z-index: 20000;
+  background: #1e293b; border: 1px solid #334155; border-radius: 6px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.7); padding: 4px 0; min-width: 140px;
+}
+.ctx-item {
+  padding: 6px 14px; color: #cbd5e1; cursor: pointer; font-size: 11px; white-space: nowrap;
+}
+.ctx-item:hover { background: #334155; color: #f1f5f9; }
+.ctx-item.danger { color: #f87171; }
+.ctx-item.danger:hover { background: #450a0a22; }
+.ctx-sep { height: 1px; background: #334155; margin: 3px 0; }
+
 /* ── Incoming challenge ── */
 #challenge {
   position: fixed; inset: 0; z-index: 11000;
@@ -301,11 +583,12 @@ body {
 <div id="nbar">
   <div class="nb-hdr" id="whNbar">
     <span class="nb-hdr-title">ᚾ Нордхейм</span>
-    <button class="nb-close" onclick="hide('nbar')" title="Скрыть">✕</button>
+    <button class="nb-close" id="nb-collapse-btn" onclick="toggleNbarCollapse()" title="Свернуть">▼</button>
+    <button class="nb-close" onclick="hideNbar()" title="Скрыть">✕</button>
   </div>
   <div class="nb-btns">
     <button class="nb-btn" id="nb-chat" onclick="nbarToggle('wChat')">
-      💬 Лобби <span class="wdot err" id="dChat">●</span>
+      💬 Чаты <span class="wdot err" id="dChat">●</span>
     </button>
     <button class="nb-btn" id="nb-warriors" onclick="nbarToggle('wWarriors')">
       👥 Жители <span class="nb-cnt" id="nbOnlineCnt"></span>
@@ -316,27 +599,42 @@ body {
     <button class="nb-btn" id="nb-calc" onclick="nbarToggle('wCalc')">
       🧮 Калькулятор
     </button>
+    <button class="nb-btn" id="nb-games" onclick="nbarToggle('wGames')" style="grid-column:1/-1">
+      🃏 Миниигры
+    </button>
   </div>
 </div>
 
 <!-- ── Chat widget ── -->
-<div class="widget" id="wChat" style="width:346px;">
+<div class="widget" id="wChat" style="display:none; width:346px; height:360px;">
   <div class="wh" id="whChat">
-    <span class="wh-title">💬 Чат</span>
-    <button class="wtoggle" onclick="el?.logout()" title="Выйти">⚙</button>
-    <button class="wtoggle" id="tbChat" onclick="toggle('Chat')">▼</button>
+    <span class="wh-title">💬 Чаты</span>
+    <button class="wtoggle" onclick="toggleFontPanel(event)" title="Настройки шрифта">⚙</button>
+    <button class="wtoggle" onclick="nbarToggle('wChat')" title="Закрыть">✕</button>
   </div>
   <div class="wbody" id="wbChat">
-    <div class="online-list">
-      Онлайн: <span id="onlineCnt">0</span> &nbsp;<span id="onlineNames"></span>
+    <!-- Chat tabs -->
+    <div class="pchat-tabs" id="pchatTabs">
+      <span style="font-size:10px;color:#334155">Загрузка…</span>
     </div>
+    <!-- Messages -->
     <div class="msgs" id="mChat"></div>
-    <div class="irow">
-      <button class="lang-btn" id="lbChat" onmousedown="event.preventDefault()" onclick="toggleLang()">EN</button>
-      <textarea id="iChat" rows="1" placeholder="Написать..." onmousedown="lastClickedTA=this; el?.enterChatMode()" onblur="el?.exitChatMode()" onkeydown="hk(event,'Chat')"></textarea>
-      <button class="send-btn" id="sbChat" onclick="sendMsg('Chat')" disabled>→</button>
+    <!-- Bottom panel: participants + toolbar + input -->
+    <div class="chat-foot">
+      <div class="pchat-members" id="pchatMembers" style="display:none;"></div>
+      <div class="chat-toolbar">
+        <button class="lang-btn" id="lbChat" onmousedown="event.preventDefault()" onclick="toggleLang()">EN</button>
+        <button id="cBtnMe"  class="cmd-btn" onmousedown="event.preventDefault()" onclick="prependChatCmd('/me ')">/me</button>
+        <button id="cBtnTry" class="cmd-btn" onmousedown="event.preventDefault()" onclick="prependChatCmd('/try ')">/try</button>
+        <button id="cBtnDo"  class="cmd-btn" onmousedown="event.preventDefault()" onclick="prependChatCmd('/do ')">/do</button>
+        <button class="emoji-open-btn" onmousedown="event.preventDefault()" onclick="toggleEmojiPicker(this,'iChat')" title="Эмодзи">😊</button>
+      </div>
+      <div class="irow">
+        <div class="ta-wrap"><textarea id="iChat" rows="1" placeholder="Написать... (Enter — отправить)" onmousedown="activateInput(this)" onblur="deactivateInput()" onkeydown="hk(event,'Chat')" oninput="updateChatCmdBtns(this);syncMirror(this)"></textarea><div class="ta-mirror" id="iChatMirror"></div></div>
+      </div>
     </div>
   </div>
+  <div class="resize-handle" id="rChat"></div>
 </div>
 
 <!-- ── Warriors widget ── -->
@@ -344,7 +642,7 @@ body {
   <div class="wh" id="whWarriors">
     <span class="wh-title">👥 Жители</span>
     <span id="wOnlineCnt" style="font-size:10px;color:#4ade80;font-weight:700;"></span>
-    <button class="wtoggle" id="tbWarriors" onclick="toggle('Warriors')">▼</button>
+    <button class="wtoggle" onclick="nbarToggle('wWarriors')" title="Закрыть">✕</button>
   </div>
   <div class="wbody" id="wbWarriors">
     <div class="w-search-row">
@@ -354,6 +652,11 @@ body {
       <button class="wfbtn active" id="wf-all"     onclick="setWarriorFilter('all')">Все</button>
       <button class="wfbtn"        id="wf-online"  onclick="setWarriorFilter('online')">● Онлайн</button>
       <button class="wfbtn"        id="wf-offline" onclick="setWarriorFilter('offline')">Оффлайн</button>
+    </div>
+    <div class="wadd-banner" id="wAddPartBanner" style="display:none;">
+      <span class="wadd-banner-text">➕ <b id="wAddPartName"></b> — кликни по жителю</span>
+      <button class="wadd-done"   onclick="stopAddParticipant()">Готово</button>
+      <button class="wadd-cancel" onclick="stopAddParticipant()">✕</button>
     </div>
     <div class="warriors-list" id="warriorsList">
       <div class="w-empty">Загрузка…</div>
@@ -369,7 +672,7 @@ body {
     <button class="fsz-btn active" id="ff-s" onclick="setFightFs('s')">S</button>
     <button class="fsz-btn"        id="ff-m" onclick="setFightFs('m')">M</button>
     <button class="fsz-btn"        id="ff-l" onclick="setFightFs('l')">L</button>
-    <button class="wtoggle" id="tbFight" onclick="toggle('Fight')">▼</button>
+    <button class="wtoggle" onclick="nbarToggle('wFight')" title="Закрыть">✕</button>
   </div>
   <div class="wbody" id="wbFight">
     <!-- Tab switcher -->
@@ -399,10 +702,10 @@ body {
         <div class="members-bar" id="membersBar"></div>
         <div class="msgs" id="mFight"></div>
         <div class="irow">
-          <button onclick="prependCmd('/me ')" title="/me">/me</button>
-          <button onclick="prependCmd('/do ')" title="/do">/do</button>
+          <button id="fBtnMe" onclick="prependCmd('/me ')" title="/me">/me</button>
+          <button id="fBtnDo" onclick="prependCmd('/do ')" title="/do">/do</button>
           <button class="lang-btn" id="lbFight" onmousedown="event.preventDefault()" onclick="toggleLang()">EN</button>
-          <textarea id="iFight" rows="1" placeholder="Написать..." onmousedown="lastClickedTA=this; el?.enterChatMode()" onblur="el?.exitChatMode()" onkeydown="hk(event,'Fight')"></textarea>
+          <div class="ta-wrap"><textarea id="iFight" rows="1" placeholder="Написать..." onmousedown="activateInput(this)" onblur="deactivateInput()" onkeydown="hk(event,'Fight')" oninput="updateFightCmdBtns(this);syncMirror(this)"></textarea><div class="ta-mirror" id="iFightMirror"></div></div>
           <button class="send-btn" id="sbFight" onclick="sendMsg('Fight')" disabled>→</button>
         </div>
       </div>
@@ -417,7 +720,8 @@ body {
     <button class="fsz-btn active" id="cf-s" onclick="setCalcFs('s')">S</button>
     <button class="fsz-btn"        id="cf-m" onclick="setCalcFs('m')">M</button>
     <button class="fsz-btn"        id="cf-l" onclick="setCalcFs('l')">L</button>
-    <button class="wtoggle" id="tbCalc" onclick="toggle('Calc')">▼</button>
+    <button class="lang-btn" id="lbCalc" onmousedown="event.preventDefault()" onclick="toggleLang()">EN</button>
+    <button class="wtoggle" onclick="nbarToggle('wCalc')" title="Закрыть">✕</button>
   </div>
   <div class="wbody" id="wbCalc">
     <div class="cw-upper">
@@ -425,7 +729,7 @@ body {
       <div class="cw-col">
         <div class="cw-name-row">
           <input class="cw-inp cw-name-inp" id="c1name" placeholder="Игрок 1" oninput="renderStatus()">
-          <input type="color" class="cw-color-sw" id="c1color" value="#c8bfb0" onchange="renderStatus()">
+          <button class="cw-color-sw" id="c1colorBtn" style="background:#c8bfb0" onclick="openColorPicker(this,'c1color',renderStatus)"></button><input type="hidden" id="c1color" value="#c8bfb0">
         </div>
         <div class="cw-stats-row">
           <label class="cw-stat-lbl">❤</label>
@@ -469,7 +773,7 @@ body {
       <div class="cw-col">
         <div class="cw-name-row">
           <input class="cw-inp cw-name-inp" id="c2name" placeholder="Игрок 2" oninput="renderStatus()">
-          <input type="color" class="cw-color-sw" id="c2color" value="#c8bfb0" onchange="renderStatus()">
+          <button class="cw-color-sw" id="c2colorBtn" style="background:#c8bfb0" onclick="openColorPicker(this,'c2color',renderStatus)"></button><input type="hidden" id="c2color" value="#c8bfb0">
         </div>
         <div class="cw-stats-row">
           <label class="cw-stat-lbl">❤</label>
@@ -525,8 +829,8 @@ body {
           <span class="cw-cnt-val" id="bleedVal">8</span>
           <button class="cw-cnt-btn" onclick="incBleed(1)">+</button>
         </div>
-        <button class="cw-act-btn" onclick="copyStatus()">📊 Статус</button>
-        <button class="cw-act-btn" onclick="copyUnion()">в Союз</button>
+        <button class="cw-act-btn" id="cw-status-btn" onclick="copyStatus(this)">Копировать</button>
+        <button class="cw-act-btn" id="cw-union-btn"  onclick="copyUnion(this)">в Союз</button>
       </div>
       <div class="cw-status-box" id="calcStatusBox"></div>
     </div>
@@ -549,6 +853,136 @@ body {
   </div>
 </div>
 
+<!-- ── Games lobby widget ── -->
+<div class="widget" id="wGames" style="display:none; height:380px;">
+  <div class="wh" id="whGames">
+    <span class="wh-title">🃏 Миниигры — Дурак</span>
+    <button class="wtoggle" onclick="nbarToggle('wGames')" title="Закрыть">✕</button>
+  </div>
+  <div class="wbody">
+    <div id="gLobbyView" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+      <div class="games-tabs">
+        <button class="games-tab active" id="gt-open"  onclick="switchGamesTab('open')">Столы</button>
+        <button class="games-tab"        id="gt-mine"  onclick="switchGamesTab('mine')">Мои игры</button>
+      </div>
+      <div class="games-list" id="gamesList"><div class="no-tables">Загрузка…</div></div>
+      <button class="games-create-btn" onclick="openCreateTableForm()">＋ Создать стол</button>
+      <button class="gtf-start-btn" id="gStartBtn" style="display:none;" onclick="startGameTable()" disabled>▶ Начать игру</button>
+      <div class="games-balance-bar">
+        💰 Баланс: <span class="games-balance-val" id="gBalance">—</span> монет
+        <button onclick="loadGamesData()" style="margin-left:auto;background:none;border:none;color:#334155;cursor:pointer;font-size:11px">↺</button>
+      </div>
+    </div>
+    <div id="gCreateView" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+      <div class="wh" style="font-size:10px;">
+        <span class="wh-title" style="text-transform:none;letter-spacing:0">Новый стол</span>
+      </div>
+      <div class="gtf-body">
+        <div>
+          <div class="gtf-label">Вариант</div>
+          <div class="gtf-seg">
+            <div class="gtf-seg-btn active" id="gtfType-throwing" onclick="setGtfType('throwing')">Подкидной</div>
+            <div class="gtf-seg-btn"        id="gtfType-transfer"  onclick="setGtfType('transfer')">Переводной</div>
+          </div>
+        </div>
+        <div>
+          <div class="gtf-label">Игроков</div>
+          <div class="gtf-seg" id="gtfPlayersSeg">
+            <div class="gtf-seg-btn" id="gtfP-2" onclick="setGtfPlayers(2)">2</div>
+            <div class="gtf-seg-btn active" id="gtfP-3" onclick="setGtfPlayers(3)">3</div>
+            <div class="gtf-seg-btn" id="gtfP-4" onclick="setGtfPlayers(4)">4</div>
+            <div class="gtf-seg-btn" id="gtfP-5" onclick="setGtfPlayers(5)">5</div>
+            <div class="gtf-seg-btn" id="gtfP-6" onclick="setGtfPlayers(6)">6</div>
+          </div>
+        </div>
+        <div>
+          <div class="gtf-label">Ставка (0 — без ставки)</div>
+          <input class="gtf-inp" id="gtfBet" type="number" min="0" value="0" placeholder="0">
+        </div>
+        <div>
+          <div class="gtf-label">Название</div>
+          <input class="gtf-inp" id="gtfName" placeholder="Мой стол" onmousedown="activateInput(this)" onblur="deactivateInput()">
+        </div>
+        <div class="gtf-actions">
+          <div class="gtf-cancel" onclick="closeCreateTableForm()">Отмена</div>
+          <div class="gtf-submit" onclick="submitCreateTable()">Создать стол</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="resize-handle" id="rGames"></div>
+</div>
+
+<!-- ── Game invite popup ── -->
+<div id="gameInvite" style="display:none;">
+  <div class="gi-box">
+    <div class="gi-icon">🃏</div>
+    <div class="gi-from" id="giFrom">Арагорн</div>
+    <div class="gi-sub">приглашает за игровой стол</div>
+    <div class="gi-info" id="giInfo">Подкидной · Ставка 50 монет</div>
+    <div class="gi-btns">
+      <button class="gi-accept"  onclick="acceptGameInvite()">Войти</button>
+      <button class="gi-decline" onclick="declineGameInvite()">Отказать</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Context menu ── -->
+<div id="ctxMenu" style="display:none;"></div>
+
+
+<!-- ── Font settings panel ── -->
+<div id="fontPanelOverlay" class="font-panel-overlay" style="display:none;" onclick="closeFontPanel()"></div>
+<div id="fontPanel" class="font-panel" style="display:none;">
+  <div class="fp-title">Шрифт чата</div>
+  <div class="fp-row">
+    <span class="fp-label">Размер</span>
+    <div class="fp-btns">
+      <button class="fp-btn" id="fps-sm" onclick="setChatFontSize('sm')">S</button>
+      <button class="fp-btn" id="fps-md" onclick="setChatFontSize('md')">M</button>
+      <button class="fp-btn" id="fps-lg" onclick="setChatFontSize('lg')">L</button>
+    </div>
+  </div>
+  <div class="fp-row">
+    <span class="fp-label">Шрифт</span>
+    <select class="fp-sel" id="fpFamily" onchange="setChatFontFamily(this.value)" onclick="event.stopPropagation()">
+      <option value="inherit">По умолчанию</option>
+      <option value="'Cormorant Garamond', Georgia, serif">Cormorant</option>
+      <option value="'Cinzel', serif">Cinzel</option>
+      <option value="'Georgia', serif">Georgia</option>
+      <option value="'Courier New', monospace">Courier New</option>
+      <option value="'Arial', sans-serif">Arial</option>
+    </select>
+  </div>
+  <div class="fp-row">
+    <span class="fp-label">Цвет</span>
+    <button class="fp-color" id="fpColorBtn" style="background:#c8bfb0" onclick="openColorPicker(this,'fpColor',v=>setChatFontColor(v));event.stopPropagation()"></button><input type="hidden" id="fpColor" value="#c8bfb0">
+    <span class="fp-colorval" id="fpColorVal">#c8bfb0</span>
+  </div>
+  <div class="fp-row">
+    <span class="fp-label">Стиль</span>
+    <div class="fp-btns">
+      <button class="fp-btn bold" id="fp-bold" onclick="toggleChatFontBold()">Ж</button>
+      <button class="fp-btn italic" id="fp-italic" onclick="toggleChatFontItalic()">К</button>
+    </div>
+  </div>
+  <button class="fp-reset" onclick="resetFontSettings()">Сбросить</button>
+</div>
+
+<!-- ── Emoji picker ── -->
+<div id="emojiPicker" style="display:none"></div>
+
+<!-- ── Custom color picker ── -->
+<div id="colorPicker" style="display:none">
+  <div id="cpSwatches"></div>
+  <div class="cp-bottom">
+    <input id="cpHex" type="text" maxlength="7" placeholder="#rrggbb" oninput="cpHexInput(this.value)" onkeydown="if(event.key==='Enter')cpHexApply()">
+    <div id="cpPreview"></div>
+    <button class="cp-btn ok" onclick="cpHexApply()">OK</button>
+    <button class="cp-btn" onclick="cpClose()">✕</button>
+  </div>
+</div>
+
 <script>
 // ── Config ────────────────────────────────────────────────────────────────────
 let srv   = 'https://nordheimunion.ru'
@@ -558,10 +992,56 @@ let currentUser = null
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let lastClickedTA = null
+
+function activateInput(ta) {
+  if (lastClickedTA && lastClickedTA !== ta) {
+    lastClickedTA.classList.remove('chat-active')
+    syncMirror(lastClickedTA)
+  }
+  lastClickedTA = ta
+  ta.classList.add('chat-active')
+  // move cursor to end if not already set
+  if (ta.selectionStart === 0 && ta.selectionEnd === 0 && ta.value.length > 0)
+    ta.selectionStart = ta.selectionEnd = ta.value.length
+  syncMirror(ta)
+  el?.enterChatMode()
+}
+function deactivateInput() {
+  if (lastClickedTA) {
+    lastClickedTA.classList.remove('chat-active')
+    syncMirror(lastClickedTA)
+  }
+  lastClickedTA = null
+  el?.exitChatMode()
+}
 let inputLang     = 'EN'
-let chatWs = null, fightWs = null
+let chatWs = null, fightWs = null, pchatWs = null
 let currentFightId = null, currentFightTitle = ''
 let pollTimer = null
+
+// PChat
+let activePChatId     = null
+let pchatChats        = []
+let pchatUnread       = {}
+let pchatCreating     = false
+let currentChatMembers = []
+
+// Add-participant mode
+let addPartChatId      = null
+let addedWarriorNames  = new Set()
+
+// Factions
+let factionColors = {}
+
+// Chat date separator tracking
+let lastMsgDate = ''
+
+// Chat font settings
+let chatFontSize   = localStorage.getItem('nw-chatfs') || 'md'
+let chatFontFamily = localStorage.getItem('nw-chatff') || 'inherit'
+let chatFontColor  = localStorage.getItem('nw-chatfc') || '#c8bfb0'
+let chatFontBold   = localStorage.getItem('nw-chatfb') === '1'
+let chatFontItalic = localStorage.getItem('nw-chatfi') === '1'
 
 // Warriors
 let allWarriors   = []
@@ -598,20 +1078,39 @@ function initPositions() {
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
+function applyAdminVisibility() {
+  const isAdmin = currentUser?.is_admin
+  for (const id of ['nb-fight', 'nb-calc']) {
+    const btn = document.getElementById(id)
+    if (btn) btn.style.display = isAdmin ? '' : 'none'
+  }
+  if (!isAdmin) {
+    for (const id of ['wFight', 'wCalc']) {
+      const w = document.getElementById(id)
+      if (w) w.style.display = 'none'
+    }
+  }
+}
+
 async function onAuth({ token: t, srv: s }) {
   token = t; srv = s
   try {
     const r = await apiFetch('/api/auth/me')
     if (r.ok) currentUser = await r.json()
   } catch {}
+  applyAdminVisibility()
   initPositions()
   showNbar()
   connectChatWs()
+  connectPChatWs()
+  loadPChats()
+  loadFactions()
   loadFightsList()
   loadWarriors()
   schedulePollFight()
   restoreFightFs()
   restoreCalcFs()
+  applyFontToChat()
 }
 
 el?.onAuthToken(data => onAuth(data))
@@ -629,15 +1128,22 @@ function resetState() {
   token = ''; srv = 'https://nordheimunion.ru'; currentUser = null
   if (chatWs)  { chatWs.onclose  = null; chatWs.close();  chatWs  = null }
   if (fightWs) { fightWs.onclose = null; fightWs.close(); fightWs = null }
+  if (pchatWs) { pchatWs.onclose = null; pchatWs.close(); pchatWs = null }
   if (pollTimer) { clearInterval(pollTimer); pollTimer = null }
   currentFightId = null; allWarriors = []; onlineIds = new Set()
+  activePChatId = null; pchatChats = []; pchatUnread = {}; pchatCreating = false
+  currentChatMembers = []; addPartChatId = null; addedWarriorNames = new Set()
+  const addBanner = document.getElementById('wAddPartBanner'); if (addBanner) addBanner.style.display = 'none'
+  const memBar = document.getElementById('pchatMembers'); if (memBar) memBar.style.display = 'none'
   hide('nbar'); hide('wFight'); hide('wWarriors'); hide('wCalc')
+  window.electronAPI?.notifyNbarState(false)
   switchFightTab('lobby')
   document.getElementById('fightChatTitle').textContent = ''
   document.getElementById('membersBar').innerHTML = ''
   clearMsgs('Chat'); clearMsgs('Fight')
   dot('Chat', false); dot('Fight', false)
   setSend('Chat', false); setSend('Fight', false)
+  document.getElementById('pchatTabs').innerHTML = '<span style="font-size:10px;color:#334155">Нет чатов</span>'
   document.getElementById('warriorsList').innerHTML = '<div class="w-empty">Жители</div>'
   updateNbarButtons()
 }
@@ -646,7 +1152,17 @@ function showNbar() {
   const n = document.getElementById('nbar')
   n.style.display = 'flex'
   updateNbarButtons()
+  window.electronAPI?.notifyNbarState(true)
 }
+
+function hideNbar() {
+  hide('nbar')
+  window.electronAPI?.notifyNbarState(false)
+}
+
+window.electronAPI?.onNbarToggle(visible => {
+  if (visible) showNbar(); else hideNbar()
+})
 
 function apiFetch(path, opts = {}) {
   return fetch(srv + path, {
@@ -672,21 +1188,616 @@ function updateNbarButtons() {
   }
 }
 
-// ── Global chat WS ────────────────────────────────────────────────────────────
+// ── Global chat WS (background: online tracking + challenges only) ────────────
 function connectChatWs() {
   const wsBase = srv.replace(/^https/, 'wss').replace(/^http/, 'ws')
   chatWs = new WebSocket(wsBase + '/chat?token=' + token)
-  chatWs.onopen  = () => { dot('Chat', true);  setSend('Chat', true) }
-  chatWs.onclose = () => { dot('Chat', false); setSend('Chat', false); if (token) setTimeout(connectChatWs, 2000) }
+  chatWs.onopen  = () => {}
+  chatWs.onclose = () => { if (token) setTimeout(connectChatWs, 2000) }
   chatWs.onerror = () => {}
   chatWs.onmessage = e => {
     const m = JSON.parse(e.data)
-    if      (m.type === 'message')    appendChatMsg(m.data)
-    else if (m.type === 'history')    { clearMsgs('Chat'); m.data.forEach(msg => appendChatMsg(msg)) }
-    else if (m.type === 'online')     updateOnline(m.data)
+    if      (m.type === 'online')     updateOnline(m.data)
     else if (m.type === 'online_ids') applyOnlineIds(m.data)
     else if (m.type === 'challenge')  showChallenge(m)
   }
+}
+
+// ── PChat WS ──────────────────────────────────────────────────────────────────
+function connectPChatWs() {
+  if (pchatWs) { pchatWs.onclose = null; pchatWs.close(); pchatWs = null }
+  const wsBase = srv.replace(/^https/, 'wss').replace(/^http/, 'ws')
+  pchatWs = new WebSocket(wsBase + '/pchat?token=' + token)
+  pchatWs.onopen = () => {
+    dot('Chat', true)
+    if (activePChatId) {
+      pchatWs.send(JSON.stringify({ type: 'join', chat_id: activePChatId }))
+      setSend('Chat', true)
+    }
+  }
+  pchatWs.onclose = () => {
+    dot('Chat', false); setSend('Chat', false)
+    if (token) setTimeout(connectPChatWs, 2000)
+  }
+  pchatWs.onerror = () => {}
+  pchatWs.onmessage = e => {
+    const m = JSON.parse(e.data)
+    if (m.type === 'history') {
+      clearMsgs('Chat')
+      ;(m.data || []).forEach(msg => appendPChatMsg(msg))
+    } else if (m.type === 'message') {
+      const msg = m.data
+      if (msg && msg.chat_id === activePChatId) {
+        appendPChatMsg(msg)
+      } else if (msg) {
+        pchatUnread[msg.chat_id] = (pchatUnread[msg.chat_id] || 0) + 1
+        renderPChatTabs()
+      }
+    } else if (m.type === 'members') {
+      currentChatMembers = m.data || []
+      renderChatMembers()
+    }
+  }
+}
+
+async function loadPChats() {
+  try {
+    const r = await apiFetch('/api/private-chats')
+    if (!r.ok) return
+    pchatChats = await r.json()
+    renderPChatTabs()
+    if (!activePChatId) {
+      const global = pchatChats.find(ch => ch.is_global)
+      if (global) openPChat(global.id)
+    }
+  } catch {}
+}
+
+function renderPChatTabs() {
+  const box = document.getElementById('pchatTabs')
+  if (!box) return
+  const tabs = pchatChats.map(ch => {
+    const icon = ch.is_global ? '🌍' : (ch.member_count > 2 ? '👥' : '💬')
+    const name = ch.is_global ? 'Глобальный' : esc(ch.name || 'Чат')
+    const ac   = ch.id === activePChatId ? ' active' : ''
+    const dot  = pchatUnread[ch.id] ? '<span class="pchat-tab-dot"></span>' : ''
+    return `<button class="pchat-tab${ac}" onclick="openPChat('${ch.id}')" oncontextmenu="chatTabCtx(event,'${ch.id}',${!!ch.is_global})">
+      ${icon} <span class="pchat-tab-name">${name}</span>${dot}
+    </button>`
+  }).join('')
+
+  const ctrl = pchatCreating
+    ? `<input id="pchatNewInp" class="pchat-new-inp" placeholder="Название чата…"
+         onmousedown="activateInput(this)" onblur="deactivateInput()">
+       <button class="pchat-new-ok"     onmousedown="event.preventDefault()" onclick="confirmCreateChat()">✓</button>
+       <button class="pchat-new-cancel" onmousedown="event.preventDefault()" onclick="cancelCreateChat()">✕</button>`
+    : `<button class="pchat-tab-add" onmousedown="event.preventDefault()" onclick="startCreateChat()" title="Новый чат">＋</button>`
+
+  box.innerHTML = (tabs || '<span style="font-size:10px;color:#334155;flex-shrink:0">Нет чатов</span>') + ctrl
+  applyFontToChat()
+}
+
+function openPChat(id) {
+  const ch = pchatChats.find(c => c.id === id)
+  if (!ch) return
+  activePChatId = id
+  delete pchatUnread[id]
+  currentChatMembers = []
+  clearMsgs('Chat')
+  renderChatMembers()
+  renderPChatTabs()
+  if (pchatWs?.readyState === 1) {
+    setSend('Chat', true)
+    pchatWs.send(JSON.stringify({ type: 'join', chat_id: id }))
+  } else {
+    connectPChatWs()
+  }
+}
+
+function sendPChatMsg() {
+  const inp = document.getElementById('iChat')
+  const txt = inp.value.trim()
+  if (!txt || !activePChatId || !pchatWs || pchatWs.readyState !== 1) return
+  pchatWs.send(JSON.stringify({ type: 'message', chat_id: activePChatId, content: txt }))
+  inp.value = ''; resetTA(inp); updateChatCmdBtns(inp)
+}
+
+function fmtDateSep(created_at) {
+  const d = created_at ? new Date(created_at) : new Date()
+  return d.toLocaleDateString('ru', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+function appendPChatMsg(m) {
+  if (!m) return
+  const box = document.getElementById('mChat')
+  // Date separator
+  const msgDate = fmtDateSep(m.created_at)
+  if (msgDate !== lastMsgDate) {
+    lastMsgDate = msgDate
+    const sep = document.createElement('div'); sep.className = 'date-sep'
+    sep.textContent = msgDate
+    box.appendChild(sep)
+  }
+  const d = document.createElement('div'); d.className = 'msg'
+  const name = m.game_name || '?', text = m.content || '', ts = fmtTime(m.created_at)
+  const fc   = m.fraction && factionColors[m.fraction] ? factionColors[m.fraction] : null
+  const nameSpan = fc
+    ? `<span style="color:${fc};font-weight:600">${esc(name)}</span>`
+    : `<span class="au">${esc(name)}</span>`
+  const fracHtml = m.fraction
+    ? `<span style="font-size:9px;color:${fc||'#64748b'}">(${esc(m.fraction)})</span> `
+    : ''
+  d.dataset.text = text; d.dataset.name = name; d.oncontextmenu = e => msgCtx(e, d); d.onclick = e => msgClick(e, d)
+  if (isChatImg(text)) {
+    d.innerHTML = `<span class="msg-ts">${ts}</span>${fracHtml}${nameSpan}: ${imgHtml(text)}`
+  } else if (text.startsWith('/me ')) {
+    d.className += ' me'
+    d.innerHTML = `<span class="msg-ts">${ts}</span>${fracHtml}* ${nameSpan} ${renderMsgText(text.slice(4))}`
+  } else if (text.startsWith('/try ')) {
+    d.className += ' do'
+    d.innerHTML = `<span class="msg-ts">${ts}</span>${fracHtml}⚡ ${nameSpan} пытается ${renderMsgText(text.slice(5))}`
+  } else if (text.startsWith('/do ')) {
+    d.className += ' do'
+    d.innerHTML = `<span class="msg-ts">${ts}</span>${fracHtml}➤ ${nameSpan}: ${renderMsgText(text.slice(4))}`
+  } else {
+    d.innerHTML = `<span class="msg-ts">${ts}</span>${fracHtml}${nameSpan}: ${renderMsgText(text)}`
+  }
+  box.appendChild(d); box.scrollTop = box.scrollHeight
+}
+
+// ── Factions ──────────────────────────────────────────────────────────────────
+async function loadFactions() {
+  try {
+    const r = await fetch(srv + '/api/landing/factions')
+    if (!r.ok) return
+    const list = await r.json()
+    factionColors = {}
+    for (const f of list) if (f.name && f.color) factionColors[f.name] = f.color
+  } catch {}
+}
+
+// ── Chat font settings ────────────────────────────────────────────────────────
+const CHAT_FS_MAP = { sm: '11px', md: '13px', lg: '16px' }
+
+function applyFontToChat() {
+  const fs  = CHAT_FS_MAP[chatFontSize] || '13px'
+  const fsN = parseFloat(fs)
+  const ff  = chatFontFamily === 'inherit' ? '' : chatFontFamily
+  const fw  = chatFontBold   ? '700' : ''
+  const fi  = chatFontItalic ? 'italic' : ''
+
+  // Messages box
+  const box = document.getElementById('mChat')
+  if (box) {
+    box.style.color = chatFontColor; box.style.fontFamily = ff
+    box.style.fontWeight = fw; box.style.fontStyle = fi; box.style.fontSize = fs
+  }
+
+  // Derived sizes for UI chrome (~77% and ~69% of message font)
+  const fsUi   = Math.max(8, Math.round(fsN * 0.77)) + 'px'
+  const fsChip = Math.max(7, Math.round(fsN * 0.69)) + 'px'
+
+  // Tabs
+  document.querySelectorAll('#pchatTabs .pchat-tab').forEach(el => el.style.fontSize = fsUi)
+
+  // Members bar — label + chips inherit from container
+  const bar = document.getElementById('pchatMembers')
+  if (bar) bar.style.fontSize = fsChip
+
+  // Input textarea + mirror
+  const ta = document.getElementById('iChat')
+  if (ta) { ta.style.fontSize = fs; if (ff) ta.style.fontFamily = ff }
+  const mirror = document.getElementById('iChatMirror')
+  if (mirror) { mirror.style.fontSize = fs; if (ff) mirror.style.fontFamily = ff }
+
+  // /me /try /do buttons
+  document.querySelectorAll('#wChat .cmd-btn').forEach(b => b.style.fontSize = fsChip)
+
+  // lang / emoji buttons in toolbar
+  document.querySelectorAll('#wChat .lang-btn, #wChat .emoji-open-btn').forEach(b => b.style.fontSize = fsUi)
+}
+
+function applyFontPanelState() {
+  document.querySelectorAll('#fps-sm,#fps-md,#fps-lg').forEach(b => b.classList.remove('active'))
+  const sb = document.getElementById('fps-' + chatFontSize)
+  if (sb) sb.classList.add('active')
+  const sel = document.getElementById('fpFamily')
+  if (sel) sel.value = chatFontFamily
+  const col = document.getElementById('fpColor')
+  if (col) col.value = chatFontColor
+  const colBtn = document.getElementById('fpColorBtn')
+  if (colBtn) colBtn.style.background = chatFontColor
+  const colVal = document.getElementById('fpColorVal')
+  if (colVal) colVal.textContent = chatFontColor
+  const boldBtn = document.getElementById('fp-bold')
+  if (boldBtn) boldBtn.classList.toggle('active', chatFontBold)
+  const italicBtn = document.getElementById('fp-italic')
+  if (italicBtn) italicBtn.classList.toggle('active', chatFontItalic)
+}
+
+function toggleFontPanel(e) {
+  e.stopPropagation()
+  const panel = document.getElementById('fontPanel')
+  const overlay = document.getElementById('fontPanelOverlay')
+  if (panel.style.display === 'none') {
+    const btn = e.currentTarget.getBoundingClientRect()
+    // Position panel so it appears below and to the left of the gear button
+    panel.style.left = btn.right + 'px'
+    panel.style.top  = (btn.bottom + 4) + 'px'
+    panel.style.display = 'block'
+    overlay.style.display = 'block'
+    applyFontPanelState()
+  } else {
+    closeFontPanel()
+  }
+}
+
+function closeFontPanel() {
+  document.getElementById('fontPanel').style.display = 'none'
+  document.getElementById('fontPanelOverlay').style.display = 'none'
+}
+
+function setChatFontSize(s) {
+  chatFontSize = s
+  try { localStorage.setItem('nw-chatfs', s) } catch {}
+  applyFontToChat(); applyFontPanelState()
+}
+
+function setChatFontFamily(v) {
+  chatFontFamily = v
+  try { localStorage.setItem('nw-chatff', v) } catch {}
+  applyFontToChat()
+}
+
+function setChatFontColor(v) {
+  chatFontColor = v
+  try { localStorage.setItem('nw-chatfc', v) } catch {}
+  const colVal = document.getElementById('fpColorVal')
+  if (colVal) colVal.textContent = v
+  applyFontToChat()
+}
+
+function toggleChatFontBold() {
+  chatFontBold = !chatFontBold
+  try { localStorage.setItem('nw-chatfb', chatFontBold ? '1' : '0') } catch {}
+  applyFontToChat(); applyFontPanelState()
+}
+
+function toggleChatFontItalic() {
+  chatFontItalic = !chatFontItalic
+  try { localStorage.setItem('nw-chatfi', chatFontItalic ? '1' : '0') } catch {}
+  applyFontToChat(); applyFontPanelState()
+}
+
+function resetFontSettings() {
+  chatFontSize = 'md'; chatFontFamily = 'inherit'
+  chatFontColor = '#c8bfb0'; chatFontBold = false; chatFontItalic = false
+  try {
+    localStorage.setItem('nw-chatfs', 'md'); localStorage.removeItem('nw-chatff')
+    localStorage.setItem('nw-chatfc', '#c8bfb0')
+    localStorage.setItem('nw-chatfb', '0'); localStorage.setItem('nw-chatfi', '0')
+  } catch {}
+  applyFontToChat(); applyFontPanelState()
+}
+
+// ── Custom color picker ───────────────────────────────────────────────────────
+const CP_COLORS = [
+  '#ef4444','#f97316','#f59e0b','#22c55e','#10b981','#06b6d4','#3b82f6','#8b5cf6',
+  '#ec4899','#f43f5e','#c8bfb0','#d4af91','#f5deb3','#deb887','#a89080','#8b7355',
+  '#dc2626','#ea580c','#d97706','#16a34a','#059669','#0891b2','#2563eb','#7c3aed',
+  '#db2777','#be185d','#ffffff','#e2e8f0','#94a3b8','#475569','#1e293b','#000000',
+]
+let _cpCallback = null, _cpValue = '#c8bfb0'
+
+function openColorPicker(btnEl, inputId, callback) {
+  const inp = document.getElementById(inputId)
+  _cpValue = inp ? inp.value : '#c8bfb0'
+  _cpCallback = v => {
+    if (inp) inp.value = v
+    btnEl.style.background = v
+    if (callback) callback(v)
+  }
+  const sw = document.getElementById('cpSwatches')
+  sw.innerHTML = ''
+  for (const c of CP_COLORS) {
+    const b = document.createElement('button')
+    b.className = 'cp-swatch' + (c === _cpValue ? ' active' : '')
+    b.style.background = c
+    b.onclick = () => { _cpValue = c; _cpCallback(c); cpClose() }
+    sw.appendChild(b)
+  }
+  const hex = document.getElementById('cpHex')
+  if (hex) hex.value = _cpValue
+  const prev = document.getElementById('cpPreview')
+  if (prev) prev.style.background = _cpValue
+  const picker = document.getElementById('colorPicker')
+  picker.style.display = 'block'
+  const r = btnEl.getBoundingClientRect()
+  const pw = picker.offsetWidth || 200, ph = picker.offsetHeight || 120
+  let left = Math.min(r.left, window.innerWidth - pw - 8)
+  let top = r.bottom + 4
+  if (top + ph > window.innerHeight - 8) top = r.top - ph - 4
+  picker.style.left = Math.max(8, left) + 'px'
+  picker.style.top = Math.max(8, top) + 'px'
+  window.electronAPI?.setIgnoreMouseEvents(false)
+}
+
+function cpClose() {
+  document.getElementById('colorPicker').style.display = 'none'
+}
+
+function cpHexInput(v) {
+  if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+    _cpValue = v
+    const prev = document.getElementById('cpPreview')
+    if (prev) prev.style.background = v
+  }
+}
+
+function cpHexApply() {
+  const v = document.getElementById('cpHex').value
+  if (/^#[0-9a-fA-F]{6}$/.test(v)) { _cpValue = v; if (_cpCallback) _cpCallback(v); cpClose() }
+}
+
+// ── Emoji picker ─────────────────────────────────────────────────────────────
+const EMOJIS = [
+  '😀','😂','😍','😎','😭','😡','🤔','😴',
+  '😏','🥳','😬','🤣','😤','🙄','😈','💀',
+  '👍','👎','👋','🙏','💪','👏','🤝','💔',
+  '❤️','🔥','⚔️','🛡️','💰','🍺','🎉','🏆',
+  '👑','🐉','🐺','🦅','🌙','⭐','💫','✨',
+]
+let _epTargetId = null
+
+function toggleEmojiPicker(btnEl, taId) {
+  const picker = document.getElementById('emojiPicker')
+  if (picker.style.display !== 'none') { picker.style.display = 'none'; return }
+  _epTargetId = taId
+  if (!picker.children.length) {
+    for (const em of EMOJIS) {
+      const b = document.createElement('button')
+      b.className = 'ep-btn'; b.textContent = em
+      b.onmousedown = e => e.preventDefault()
+      b.onclick = () => { insertEmoji(em); picker.style.display = 'none' }
+      picker.appendChild(b)
+    }
+  }
+  picker.style.display = 'grid'
+  const r = btnEl.getBoundingClientRect()
+  const pw = picker.offsetWidth || 240, ph = picker.offsetHeight || 120
+  let left = Math.min(r.left, window.innerWidth - pw - 8)
+  picker.style.left = Math.max(8, left) + 'px'
+  picker.style.top = Math.max(8, r.top - ph - 4) + 'px'
+  window.electronAPI?.setIgnoreMouseEvents(false)
+}
+
+function insertEmoji(em) {
+  const ta = _epTargetId ? document.getElementById(_epTargetId) : lastClickedTA
+  if (!ta) return
+  if (!lastClickedTA) activateInput(ta)
+  insertAt(ta, em)
+  const sbId = ta.id === 'iChat' ? 'sbChat' : 'sbFight'
+  const sb = document.getElementById(sbId)
+  if (sb) sb.disabled = ta.value.trim().length === 0
+}
+
+// ── Context menu ──────────────────────────────────────────────────────────────
+let ctxTarget = null
+
+function showCtx(e, items) {
+  const menu = document.getElementById('ctxMenu')
+  if (!menu) return
+  menu.innerHTML = items.map(it =>
+    it === '-' ? '<div class="ctx-sep"></div>'
+               : `<div class="ctx-item${it.danger?' danger':''}" onclick="ctxDo('${it.id}')">${it.label}</div>`
+  ).join('')
+  const mh = items.filter(i => i !== '-').length * 30 + 12
+  menu.style.left = Math.min(e.clientX, window.innerWidth  - 160) + 'px'
+  menu.style.top  = Math.min(e.clientY, window.innerHeight - mh)  + 'px'
+  menu.style.display = 'block'
+  e.preventDefault(); e.stopPropagation()
+}
+function hideCtx() {
+  const m = document.getElementById('ctxMenu'); if (m) m.style.display = 'none'
+  ctxTarget = null
+}
+document.addEventListener('click',       () => hideCtx())
+document.addEventListener('contextmenu', e => { if (!e.target.closest('#ctxMenu')) hideCtx() })
+document.addEventListener('keydown',     e => { if (e.key === 'Escape') hideCtx() })
+
+function ctxDo(id) {
+  const cid = ctxTarget?.chatId
+  hideCtx()
+  if      (id === 'chat-hide')   { if (cid) hideChat(cid) }
+  else if (id === 'chat-leave')  { if (cid) leaveChat(cid) }
+  else if (id === 'chat-save')   { if (cid) saveChatTranscript(cid) }
+  else if (id === 'chat-invite') { if (cid) startAddParticipant(cid) }
+  else if (id === 'warrior-dm')     { if (ctxTarget?.name) openDmWith(ctxTarget.name) }
+  else if (id === 'player-profile') { if (ctxTarget?.name) openPlayerProfile(ctxTarget.name) }
+  else if (id === 'msg-copy')       { if (ctxTarget?.text) el?.writeClipboard(ctxTarget.text) }
+  else if (id === 'msg-quote')      { if (ctxTarget?.text) quoteMsg(ctxTarget.name || '?', ctxTarget.text) }
+}
+
+function openPlayerProfile(name) {
+  const url = srv + '/warriors/' + encodeURIComponent(name)
+  window.electronAPI?.openExternal(url)
+}
+function memberChipCtx(e, name) {
+  e.preventDefault(); e.stopPropagation()
+  ctxTarget = { name }
+  showCtx(e, [
+    { id: 'warrior-dm',     label: '💬 Написать' },
+    { id: 'player-profile', label: '👤 Анкета игрока' },
+  ])
+}
+
+function chatTabCtx(e, chatId, isGlobal) {
+  ctxTarget = { chatId }
+  const items = isGlobal
+    ? [{ id: 'chat-save', label: '💾 Сохранить переписку' }]
+    : [
+        { id: 'chat-invite', label: '👤 Добавить участника' },
+        { id: 'chat-save',   label: '💾 Сохранить переписку' },
+        '-',
+        { id: 'chat-hide',   label: 'Скрыть чат' },
+        { id: 'chat-leave',  label: 'Покинуть чат', danger: true },
+      ]
+  showCtx(e, items)
+}
+
+async function hideChat(chatId) {
+  try { await apiFetch('/api/private-chats/' + chatId + '/hide', { method: 'PATCH' }) } catch {}
+  pchatChats = pchatChats.filter(c => c.id !== chatId)
+  if (activePChatId === chatId) { activePChatId = null; clearMsgs('Chat'); setSend('Chat', false) }
+  renderPChatTabs()
+}
+
+async function leaveChat(chatId) {
+  try { await apiFetch('/api/private-chats/' + chatId, { method: 'DELETE' }) } catch {}
+  pchatChats = pchatChats.filter(c => c.id !== chatId)
+  if (activePChatId === chatId) { activePChatId = null; clearMsgs('Chat'); setSend('Chat', false) }
+  renderPChatTabs()
+}
+
+let toastTimer = null
+function showToast(msg, type = '') {
+  if (toastTimer) { clearTimeout(toastTimer); const old = document.getElementById('toastEl'); if (old) old.remove() }
+  const t = document.createElement('div')
+  t.id = 'toastEl'; t.className = 'toast' + (type ? ' ' + type : '')
+  t.textContent = msg
+  document.body.appendChild(t)
+  toastTimer = setTimeout(() => { t.remove(); toastTimer = null }, 2000)
+}
+
+async function saveChatTranscript(chatId) {
+  const ch = pchatChats.find(c => c.id === chatId)
+  const today = new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  const name  = (ch?.name || 'Чат') + ' ' + today
+  try {
+    const r = await apiFetch('/api/private-chats/' + chatId + '/save-transcript', { method: 'POST', body: JSON.stringify({ name }) })
+    if (r.ok) showToast('✓ История чата сохранена', 'ok')
+    else showToast('Ошибка сохранения', 'err')
+  } catch { showToast('Ошибка сохранения', 'err') }
+}
+
+// ── Add participant via Warriors widget ───────────────────────────────────────
+function startAddParticipant(chatId) {
+  addPartChatId = chatId
+  addedWarriorNames = new Set()
+  const ch = pchatChats.find(c => c.id === chatId)
+  const nameEl = document.getElementById('wAddPartName')
+  if (nameEl) nameEl.textContent = ch?.name || 'чат'
+  document.getElementById('wAddPartBanner').style.display = 'flex'
+  show('wWarriors'); updateNbarButtons()
+  renderWarriors()
+}
+
+function stopAddParticipant() {
+  addPartChatId = null
+  addedWarriorNames = new Set()
+  document.getElementById('wAddPartBanner').style.display = 'none'
+  renderWarriors()
+  hide('wWarriors')
+  updateNbarButtons()
+}
+
+async function addParticipantToChat(gameName) {
+  if (!addPartChatId || !gameName || addedWarriorNames.has(gameName)) return
+  try {
+    await apiFetch('/api/private-chats/' + addPartChatId + '/invite', {
+      method: 'POST', body: JSON.stringify({ game_name: gameName })
+    })
+    addedWarriorNames.add(gameName)
+    renderWarriors()
+    // Refresh members list: re-join chat if it's currently open
+    if (activePChatId === addPartChatId && pchatWs?.readyState === 1) {
+      pchatWs.send(JSON.stringify({ type: 'join', chat_id: addPartChatId }))
+    } else {
+      // Optimistic: add locally from allWarriors
+      const w = allWarriors.find(x => x.game_name === gameName)
+      if (w && !currentChatMembers.find(m => m.game_name === gameName)) {
+        currentChatMembers.push({ game_name: gameName, user_id: w.user_id, fraction: w.fraction || null })
+        renderChatMembers()
+      }
+    }
+  } catch {}
+}
+
+function renderChatMembers() {
+  const bar = document.getElementById('pchatMembers')
+  if (!bar) return
+  const activeChat = pchatChats.find(c => c.id === activePChatId)
+  if (!currentChatMembers.length || !activePChatId || activeChat?.is_global) { bar.style.display = 'none'; return }
+  bar.style.display = ''
+  const chatName = activeChat?.name || 'Чат'
+  const chips = currentChatMembers.map(m => {
+    const name = m.game_name || '?'
+    const fc = m.fraction && factionColors[m.fraction] ? factionColors[m.fraction] : null
+    const colorStyle = fc ? `color:${fc};border-color:${fc}44;` : ''
+    const safeName = esc(name).replace(/'/g, '&#39;')
+    return `<span class="mem-chip" style="${colorStyle}" oncontextmenu="memberChipCtx(event,'${safeName}')">${esc(name)}</span>`
+  }).join('')
+  bar.innerHTML = `<span class="mem-label">${esc(chatName)}:</span>${chips}`
+}
+
+async function openDmWith(gameName) {
+  // Look for existing DM with this name
+  let chat = pchatChats.find(c => !c.is_global && c.name === gameName)
+  if (!chat) {
+    try {
+      const r = await apiFetch('/api/private-chats', { method: 'POST', body: JSON.stringify({ name: gameName }) })
+      if (!r.ok) return
+      const created = await r.json()
+      await apiFetch('/api/private-chats/' + created.id + '/invite', { method: 'POST', body: JSON.stringify({ game_name: gameName }) })
+      // Reload chat list
+      const lr = await apiFetch('/api/private-chats')
+      if (lr.ok) pchatChats = await lr.json()
+      chat = pchatChats.find(c => c.id === created.id)
+    } catch { return }
+  }
+  if (chat) {
+    show('wChat')
+    updateNbarButtons()
+    renderPChatTabs()
+    openPChat(chat.id)
+  }
+}
+
+function startCreateChat() {
+  pchatCreating = true
+  renderPChatTabs()
+  setTimeout(() => {
+    const inp = document.getElementById('pchatNewInp')
+    if (inp) { activateInput(inp) }
+  }, 30)
+}
+
+function cancelCreateChat() {
+  pchatCreating = false
+  deactivateInput()
+  renderPChatTabs()
+}
+
+async function confirmCreateChat() {
+  const inp  = document.getElementById('pchatNewInp')
+  const name = inp?.value.trim()
+  deactivateInput()
+  pchatCreating = false
+  if (!name) { renderPChatTabs(); return }
+  try {
+    const r = await apiFetch('/api/private-chats', { method: 'POST', body: JSON.stringify({ name }) })
+    if (!r.ok) { renderPChatTabs(); return }
+    const created = await r.json()
+    const lr = await apiFetch('/api/private-chats')
+    if (lr.ok) pchatChats = await lr.json()
+    renderPChatTabs()
+    openPChat(created.id)
+  } catch { renderPChatTabs() }
+}
+
+function warriorCtx(e, name) {
+  ctxTarget = { name }
+  showCtx(e, [{ id: 'warrior-dm', label: '💬 Написать' }])
 }
 
 // ── Fight WS ──────────────────────────────────────────────────────────────────
@@ -758,15 +1869,15 @@ function setFightFilter(f) {
   renderFightsList()
 }
 
-async function loadFightsList() {
+async function loadFightsList(silent = false) {
   const box = document.getElementById('fightsList')
-  box.innerHTML = '<div class="no-fights">Загрузка…</div>'
+  if (!silent && !allFights.length) box.innerHTML = '<div class="no-fights">Загрузка…</div>'
   try {
     const r = await apiFetch('/api/fights')
     if (!r.ok) throw new Error()
     allFights = await r.json()
     renderFightsList()
-  } catch { box.innerHTML = '<div class="no-fights">Ошибка загрузки</div>' }
+  } catch { if (!allFights.length) box.innerHTML = '<div class="no-fights">Ошибка загрузки</div>' }
 }
 
 function renderFightsList() {
@@ -820,7 +1931,7 @@ async function loadFightHistory(fightId) {
 // ── Poll ──────────────────────────────────────────────────────────────────────
 function schedulePollFight() { pollFight(); pollTimer = setInterval(pollFight, 5000) }
 async function pollFight() {
-  if (!currentFightId) { loadFightsList(); return }
+  if (!currentFightId) { loadFightsList(true); return }
   try {
     const r = await apiFetch('/api/fights/my')
     if (!r.ok) return
@@ -867,17 +1978,26 @@ function renderWarriors() {
   }).sort((a, b) => (b.online ? 1 : 0) - (a.online ? 1 : 0))
 
   if (!list.length) { box.innerHTML = '<div class="w-empty">Нет воинов</div>'; return }
+  const inAddMode = !!addPartChatId
   box.innerHTML = list.map(w => {
     const avatar = w.avatar_url
       ? `<img src="${srv}${w.avatar_url}" onerror="this.style.display='none'">`
       : esc((w.game_name || '?')[0].toUpperCase())
-    return `<div class="warrior-item">
+    const safeName = esc(w.game_name).replace(/'/g, "\\'")
+    const added    = inAddMode && addedWarriorNames.has(w.game_name)
+    const badge    = added
+      ? `<span style="color:#22c55e;font-size:12px;flex-shrink:0">✓</span>`
+      : `<div class="w-dot ${w.online ? 'on' : 'off'}"></div>`
+    const clickAttr = inAddMode
+      ? `onclick="addParticipantToChat('${safeName}')"`
+      : `oncontextmenu="warriorCtx(event,'${safeName}')"`
+    return `<div class="warrior-item${inAddMode ? ' addable' : ''}${added ? ' added' : ''}" ${clickAttr}>
       <div class="warrior-avatar">${avatar}</div>
       <div class="warrior-info">
         <div class="warrior-name">${esc(w.game_name)}</div>
         ${w.fraction ? `<div class="warrior-sub">${esc(w.fraction)}</div>` : ''}
       </div>
-      <div class="w-dot ${w.online ? 'on' : 'off'}"></div>
+      ${badge}
     </div>`
   }).join('')
 }
@@ -1067,9 +2187,14 @@ function renderLog() {
 function renderStatus() {
   const box = document.getElementById('calcStatusBox')
   if (!box) return
+  const colors = [
+    document.getElementById('c1color')?.value || '#c8bfb0',
+    document.getElementById('c2color')?.value || '#c8bfb0',
+  ]
   const lines = cols.map((col, i) => {
     const name = calcName(i)
-    let s = `${name}: HP: <span class="sv-red">${cN(col.hp)}</span> | Щит: <span class="sv-blue">${cN(col.shield)}</span> | Порезы: <span class="sv-red">${col.cuts}</span>`
+    const nc = `<span style="color:${colors[i]};font-weight:600">${name}</span>`
+    let s = `${nc}: HP: <span class="sv-red">${cN(col.hp)}</span> | Щит: <span class="sv-blue">${cN(col.shield)}</span> | Порезы: <span class="sv-red">${col.cuts}</span>`
     const t = []
     if (col.tDmg)   t.push(`−${col.tDmg} урон`)
     if (col.tAcc)   t.push(`−${col.tAcc} точн.`)
@@ -1082,10 +2207,11 @@ function renderStatus() {
 }
 
 async function calcCopy() {
+  if (window.electronAPI?.writeClipboard) { window.electronAPI.writeClipboard(calcResult); return }
   try { await navigator.clipboard.writeText(calcResult) } catch {}
 }
 
-async function copyStatus() {
+async function copyStatus(btn) {
   getCalcInputs(0); getCalcInputs(1)
   const lines = cols.map((col, i) => {
     const name = calcName(i)
@@ -1098,10 +2224,19 @@ async function copyStatus() {
     if (t.length) parts.push(`Травмы: [${t.join(', ')}]`)
     return `${name}: ${parts.join(' | ')}`
   })
-  try { await navigator.clipboard.writeText(lines.join('\n')) } catch {}
+  const statusTxt = lines.join('\n')
+  if (window.electronAPI?.writeClipboard) {
+    window.electronAPI.writeClipboard(statusTxt)
+    if (btn) { btn.textContent = '✓ Скопировано'; setTimeout(() => { btn.textContent = 'Копировать' }, 1500) }
+  } else {
+    try {
+      await navigator.clipboard.writeText(statusTxt)
+      if (btn) { btn.textContent = '✓ Скопировано'; setTimeout(() => { btn.textContent = 'Копировать' }, 1500) }
+    } catch {}
+  }
 }
 
-async function copyUnion() {
+async function copyUnion(btn) {
   getCalcInputs(0); getCalcInputs(1)
   const rv = v => `<color=#ff4444>${v}</color>`
   const bv = v => `<color=#4488ff>${v}</color>`
@@ -1128,7 +2263,15 @@ async function copyUnion() {
   bleedRefDigits = curDigits
   try { localStorage.setItem('fa_calc_bleedref', bleedRefDigits) } catch {}
   const text = '\n' + [line1, line2, ...traumaLines].join('\n')
-  try { await navigator.clipboard.writeText(text) } catch {}
+  if (window.electronAPI?.writeClipboard) {
+    window.electronAPI.writeClipboard(text)
+    if (btn) { btn.textContent = '✓ Скопировано'; setTimeout(() => { btn.textContent = 'в Союз' }, 1500) }
+  } else {
+    try {
+      await navigator.clipboard.writeText(text)
+      if (btn) { btn.textContent = '✓ Скопировано'; setTimeout(() => { btn.textContent = 'в Союз' }, 1500) }
+    } catch {}
+  }
 }
 
 const calcFsMap = { s: '14px', m: '17px', l: '21px' }
@@ -1144,18 +2287,51 @@ function restoreCalcFs() {
 
 // ── Send ──────────────────────────────────────────────────────────────────────
 function sendMsg(w) {
+  if (w === 'Chat') { sendPChatMsg(); return }
   const inp = document.getElementById('i' + w)
   const txt = inp.value.trim()
-  const ws  = w === 'Chat' ? chatWs : fightWs
-  if (!txt || !ws || ws.readyState !== 1) return
-  ws.send(JSON.stringify({ type: 'message', content: txt }))
-  inp.value = ''; resetTA(inp)
+  if (!txt || !fightWs || fightWs.readyState !== 1) return
+  fightWs.send(JSON.stringify({ type: 'message', content: txt }))
+  inp.value = ''; resetTA(inp); updateFightCmdBtns(inp)
+}
+
+function updateFightCmdBtns(inp) {
+  document.getElementById('fBtnMe').classList.toggle('active', inp.value.startsWith('/me '))
+  document.getElementById('fBtnDo').classList.toggle('active', inp.value.startsWith('/do '))
+  inp.classList.toggle('rp-mode', inp.value.startsWith('/me ') || inp.value.startsWith('/do '))
+}
+
+function updateChatCmdBtns(inp) {
+  document.getElementById('cBtnMe').classList.toggle('active',  inp.value.startsWith('/me '))
+  document.getElementById('cBtnTry').classList.toggle('active', inp.value.startsWith('/try '))
+  document.getElementById('cBtnDo').classList.toggle('active',  inp.value.startsWith('/do '))
+  inp.classList.toggle('rp-mode', ['/me ', '/try ', '/do '].some(c => inp.value.startsWith(c)))
+}
+
+function prependChatCmd(cmd) {
+  const inp = document.getElementById('iChat')
+  const cmds = ['/me ', '/try ', '/do ']
+  if (inp.value.startsWith(cmd)) {
+    inp.value = inp.value.slice(cmd.length)
+  } else {
+    const other = cmds.find(c => c !== cmd && inp.value.startsWith(c))
+    inp.value = cmd + (other ? inp.value.slice(other.length) : inp.value)
+  }
+  updateChatCmdBtns(inp)
+  syncMirror(inp)
 }
 
 function prependCmd(cmd) {
   const inp = document.getElementById('iFight')
-  if (!inp.value.startsWith(cmd)) inp.value = cmd + inp.value
-  lastClickedTA = inp; el?.enterChatMode()
+  const cmds = ['/me ', '/do ']
+  if (inp.value.startsWith(cmd)) {
+    inp.value = inp.value.slice(cmd.length)
+  } else {
+    const other = cmds.find(c => c !== cmd && inp.value.startsWith(c))
+    inp.value = cmd + (other ? inp.value.slice(other.length) : inp.value)
+  }
+  updateFightCmdBtns(inp)
+  syncMirror(inp)
 }
 
 // ── VK maps ───────────────────────────────────────────────────────────────────
@@ -1164,17 +2340,43 @@ const VK_ENS = {65:'A',66:'B',67:'C',68:'D',69:'E',70:'F',71:'G',72:'H',73:'I',7
 const VK_RU  = {65:'ф',66:'и',67:'с',68:'в',69:'у',70:'а',71:'п',72:'р',73:'ш',74:'о',75:'л',76:'д',77:'ь',78:'т',79:'щ',80:'з',81:'й',82:'к',83:'ы',84:'е',85:'г',86:'м',87:'ц',88:'ч',89:'н',90:'я',48:'0',49:'1',50:'2',51:'3',52:'4',53:'5',54:'6',55:'7',56:'8',57:'9',186:'ж',187:'=',188:'б',189:'-',190:'ю',191:'.',192:'ё',219:'х',220:'\\',221:'ъ',222:'э'}
 const VK_RUS = {65:'Ф',66:'И',67:'С',68:'В',69:'У',70:'А',71:'П',72:'Р',73:'Ш',74:'О',75:'Л',76:'Д',77:'Ь',78:'Т',79:'Щ',80:'З',81:'Й',82:'К',83:'Ы',84:'Е',85:'Г',86:'М',87:'Ц',88:'Ч',89:'Н',90:'Я',48:')',49:'!',50:'"',51:'№',52:';',53:'%',54:':',55:'?',56:'*',57:'(',186:'Ж',187:'+',188:'Б',189:'_',190:'Ю',191:',',192:'Ё',219:'Х',220:'/',221:'Ъ',222:'Э'}
 
+function renderLines(text, caretPos) {
+  // Insert sentinel at cursor position, then process line by line
+  const sentinel = '\x00'
+  const withS = caretPos != null
+    ? text.slice(0, caretPos) + sentinel + text.slice(caretPos)
+    : text
+  return withS.split('\n').map(line => {
+    const raw = line.replace(sentinel, '')
+    const isQuote = raw.startsWith('> ')
+    const content = esc(isQuote ? line.slice(2) : line)
+      .replace(sentinel, '<span class="fake-caret"></span>')
+    return isQuote ? `<span class="quote-line">${content}</span>` : content
+  }).join('<br>')
+}
+function syncMirror(ta) {
+  const mirror = document.getElementById(ta.id + 'Mirror')
+  if (!mirror) return
+  if (ta.classList.contains('chat-active')) {
+    mirror.innerHTML = renderLines(ta.value, ta.selectionStart)
+  } else {
+    mirror.innerHTML = renderLines(ta.value, null)
+  }
+  mirror.scrollTop = ta.scrollTop
+}
 function insertAt(ta, ch) {
   const s = ta.selectionStart, e = ta.selectionEnd
   ta.value = ta.value.slice(0, s) + ch + ta.value.slice(e)
   ta.selectionStart = ta.selectionEnd = s + ch.length
-  ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 80) + 'px'
+  ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 120) + 'px'
+  syncMirror(ta)
 }
 function deleteAt(ta) {
   const s = ta.selectionStart, e = ta.selectionEnd
   if (s !== e) { ta.value = ta.value.slice(0,s)+ta.value.slice(e); ta.selectionStart=ta.selectionEnd=s }
   else if (s > 0) { ta.value = ta.value.slice(0,s-1)+ta.value.slice(s); ta.selectionStart=ta.selectionEnd=s-1 }
-  ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 80) + 'px'
+  ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 120) + 'px'
+  syncMirror(ta)
 }
 function toggleLang() {
   inputLang = inputLang === 'EN' ? 'RU' : 'EN'
@@ -1183,41 +2385,137 @@ function toggleLang() {
 el?.onKeyInput(payload => {
   const ta = lastClickedTA
   if (!ta) return
+  const isNum = ta.type === 'number'
   if (payload.startsWith('KK')) {
     const [vkStr, sh] = payload.slice(2).split(':')
     const vk = parseInt(vkStr), shifted = sh === '1'
-    const map = inputLang === 'RU' ? (shifted ? VK_RUS : VK_RU) : (shifted ? VK_ENS : VK_EN)
-    const ch = map[vk]; if (ch) insertAt(ta, ch)
+    if (isNum) {
+      // number inputs only accept digits; always use EN map for digit VKs 48-57
+      const ch = VK_EN[vk]
+      if (ch >= '0' && ch <= '9') {
+        ta.value = (ta.value === '0' ? '' : ta.value) + ch
+        renderStatus()
+      }
+    } else {
+      const map = inputLang === 'RU' ? (shifted ? VK_RUS : VK_RU) : (shifted ? VK_ENS : VK_EN)
+      const ch = map[vk]; if (ch) { insertAt(ta, ch); if (ta.closest('#wCalc')) renderStatus() }
+    }
   } else if (payload.startsWith('KV')) {
     const vk = parseInt(payload.slice(2))
-    if      (vk === 8)  deleteAt(ta)
-    else if (vk === 32) insertAt(ta, ' ')
-    else if (vk === 13) { const w = ta.id === 'iChat' ? 'Chat' : 'Fight'; sendMsg(w); lastClickedTA = null; el?.exitChatMode() }
-    else if (vk === 27) { lastClickedTA = null; el?.exitChatMode() }
+    if (vk === 8) {
+      if (isNum) {
+        const s = String(ta.value)
+        ta.value = s.length > 1 ? s.slice(0, -1) : '0'
+        renderStatus()
+      } else { deleteAt(ta); if (ta.closest('#wCalc')) renderStatus() }
+    }
+    else if (vk === 32 && !isNum) insertAt(ta, ' ')
+    else if (vk === 13) {
+      if (ta.id === 'pchatNewInp') { confirmCreateChat() }
+      else if (!isNum && ta.id !== 'iChat' && ta.id !== 'iFight') { deactivateInput() }
+      else if (!isNum) { const w = ta.id === 'iChat' ? 'Chat' : 'Fight'; sendMsg(w) }
+    }
+    else if (vk === 27) {
+      if (ta.id === 'pchatNewInp') cancelCreateChat()
+      else deactivateInput()
+    }
+    else if (!isNum && vk === 46) { // Delete — удалить символ справа от курсора
+      const s = ta.selectionStart, e = ta.selectionEnd
+      if (s !== e) { ta.value = ta.value.slice(0,s)+ta.value.slice(e); ta.selectionStart=ta.selectionEnd=s }
+      else if (s < ta.value.length) { ta.value = ta.value.slice(0,s)+ta.value.slice(s+1); ta.selectionStart=ta.selectionEnd=s }
+      ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 120) + 'px'
+      syncMirror(ta)
+    }
+    else if (!isNum && vk === 37) { // Left
+      if (ta.selectionStart > 0) ta.selectionStart = ta.selectionEnd = ta.selectionStart - 1
+      syncMirror(ta)
+    }
+    else if (!isNum && vk === 39) { // Right
+      if (ta.selectionEnd < ta.value.length) ta.selectionStart = ta.selectionEnd = ta.selectionEnd + 1
+      syncMirror(ta)
+    }
+    else if (!isNum && vk === 36) { // Home
+      ta.selectionStart = ta.selectionEnd = 0
+      syncMirror(ta)
+    }
+    else if (!isNum && vk === 35) { // End
+      ta.selectionStart = ta.selectionEnd = ta.value.length
+      syncMirror(ta)
+    }
   }
 })
 function hk(e, w) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(w); e.target.blur(); el?.exitChatMode(); return }
-  if (e.key === 'Escape') { e.target.blur(); el?.exitChatMode(); return }
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(w); return }
+  if (e.key === 'Escape') { e.target.blur(); deactivateInput(); return }
   const t = e.target
-  setTimeout(() => { t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 80) + 'px' }, 0)
+  setTimeout(() => { t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 120) + 'px' }, 0)
 }
-function resetTA(ta) { ta.style.height = 'auto'; ta.style.height = '26px' }
+function resetTA(ta) { ta.style.height = 'auto'; ta.style.height = '26px'; syncMirror(ta) }
 
 // ── Messages ──────────────────────────────────────────────────────────────────
 function fmtTime(isoStr) {
   if (!isoStr) return ''
   try { const d = new Date(isoStr); return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0') } catch { return '' }
 }
+function isChatImg(text) { return /\/uploads\/chat\/[^\s"'<>]+$/.test(text) }
+function imgHtml(url) { return `<img class="chat-img" src="${esc(url)}" onerror="this.style.display='none'" onclick="event.stopPropagation();openLightbox(this.src)">` }
+function openLightbox(src) {
+  window.electronAPI?.openImage(src)
+}
+function renderMsgText(text) {
+  return esc(text).split('\n').map(line =>
+    line.startsWith('&gt; ')
+      ? `<span class="quote-line">${line.slice(5)}</span>`
+      : line
+  ).join('<br>')
+}
+function msgClick(e, el) {
+  const sel = window.getSelection()
+  if (sel && sel.toString().length > 0) return // пользователь выделяет текст — не мешаем
+  const text = el.dataset.text || ''
+  const name = el.dataset.name || ''
+  window.electronAPI?.writeClipboard(e.shiftKey ? name + ': ' + text : text)
+}
+function msgCtx(e, el) {
+  e.preventDefault(); e.stopPropagation()
+  ctxTarget = { text: el.dataset.text, name: el.dataset.name }
+  const items = [
+    { id: 'msg-copy',  label: '📋 Копировать' },
+    { id: 'msg-quote', label: '💬 Цитировать' },
+  ]
+  if (ctxTarget.name) {
+    items.push('-')
+    items.push({ id: 'warrior-dm',     label: '💬 Написать' })
+    items.push({ id: 'player-profile', label: '👤 Анкета игрока' })
+  }
+  showCtx(e, items)
+}
+function quoteMsg(name, text) {
+  const ta = lastClickedTA
+  if (!ta || (ta.id !== 'iChat' && ta.id !== 'iFight')) return
+  const line = '> ' + name + ': ' + text.replace(/\n/g, ' ') + '\n'
+  ta.value = line + ta.value
+  ta.selectionStart = ta.selectionEnd = ta.value.length
+  ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 120) + 'px'
+  syncMirror(ta)
+  if (ta.id === 'iChat') updateChatCmdBtns(ta)
+  else updateFightCmdBtns(ta)
+  activateInput(ta)
+}
+
 function appendChatMsg(m) {
   if (!m) return
   const box = document.getElementById('mChat')
   const d = document.createElement('div'); d.className = 'msg'
   const name = m.game_name || m.author_name || '?', text = m.content || m.text || '', ts = fmtTime(m.created_at)
-  d.innerHTML = m.is_system
-    ? `<span class="msg-ts">${ts}</span>${esc(text)}`
-    : `<span class="msg-ts">${ts}</span><span class="au">${esc(name)}:</span>${esc(text)}`
-  if (m.is_system) d.className += ' sys'
+  if (m.is_system) {
+    d.className += ' sys'
+    d.innerHTML = `<span class="msg-ts">${ts}</span>${esc(text)}`
+  } else if (isChatImg(text)) {
+    d.innerHTML = `<span class="msg-ts">${ts}</span><span class="au">${esc(name)}:</span>${imgHtml(text)}`
+  } else {
+    d.innerHTML = `<span class="msg-ts">${ts}</span><span class="au">${esc(name)}:</span>${esc(text)}`
+  }
   box.appendChild(d); box.scrollTop = box.scrollHeight
 }
 function appendFightMsg(m) {
@@ -1225,19 +2523,25 @@ function appendFightMsg(m) {
   const box = document.getElementById('mFight')
   const d = document.createElement('div'); d.className = 'msg'
   const name = m.game_name || '?', text = m.content || '', ts = fmtTime(m.created_at)
+  if (!m.is_system) { d.dataset.text = text; d.dataset.name = name; d.oncontextmenu = e => msgCtx(e, d); d.onclick = e => msgClick(e, d) }
   if (m.is_system) {
     d.className += ' sys'; d.innerHTML = `<span class="msg-ts">${ts}</span>${esc(text)}`
+  } else if (isChatImg(text)) {
+    d.innerHTML = `<span class="msg-ts">${ts}</span><span class="mn">${esc(name)}:</span>${imgHtml(text)}`
   } else if (text.startsWith('/me ')) {
-    d.className += ' me'; d.innerHTML = `<span class="msg-ts">${ts}</span>* <span class="mn">${esc(name)}</span> ${esc(text.slice(4))}`
+    d.className += ' me'; d.innerHTML = `<span class="msg-ts">${ts}</span>* <span class="mn">${esc(name)}</span> ${renderMsgText(text.slice(4))}`
   } else if (text.startsWith('/do ')) {
-    d.className += ' do'; d.innerHTML = `<span class="msg-ts">${ts}</span>➤ <span class="mn">${esc(name)}:</span> ${esc(text.slice(4))}`
+    d.className += ' do'; d.innerHTML = `<span class="msg-ts">${ts}</span>➤ <span class="mn">${esc(name)}:</span> ${renderMsgText(text.slice(4))}`
   } else {
     const stats = m.hp != null ? ` <span style="font-size:.85em;color:#475569">(❤${m.hp}${m.shield!=null?' 🛡'+m.shield:''})</span>` : ''
-    d.innerHTML = `<span class="msg-ts">${ts}</span><span class="au">${esc(name)}${stats}:</span>${esc(text)}`
+    d.innerHTML = `<span class="msg-ts">${ts}</span><span class="au">${esc(name)}${stats}:</span>${renderMsgText(text)}`
   }
   box.appendChild(d); box.scrollTop = box.scrollHeight
 }
-function clearMsgs(w) { document.getElementById('m' + w).innerHTML = '' }
+function clearMsgs(w) {
+  document.getElementById('m' + w).innerHTML = ''
+  if (w === 'Chat') lastMsgDate = ''
+}
 function updateOnline(names) {
   document.getElementById('onlineCnt').textContent = names.length
   document.getElementById('onlineNames').innerHTML = names.map(n => `<span class="oname">${esc(n)}</span>`).join('')
@@ -1249,26 +2553,35 @@ function dot(w, ok) { const el = document.getElementById('d' + w); if (el) el.cl
 function setSend(w, on) { const btn = document.getElementById('sb' + w); if (btn) btn.disabled = !on }
 function show(id) { const w = document.getElementById(id); if (w) w.style.display = id === 'nbar' ? 'flex' : 'flex' }
 function hide(id) { const w = document.getElementById(id); if (w) w.style.display = 'none' }
-function toggle(w) {
-  const body = document.getElementById('wb' + w)
-  const btn  = document.getElementById('tb' + w)
-  if (!body) return
-  const collapsed = body.style.display === 'none'
-  body.style.display = collapsed ? 'flex' : 'none'
+function toggleNbarCollapse() {
+  const btns = document.querySelector('.nb-btns')
+  const btn  = document.getElementById('nb-collapse-btn')
+  if (!btns) return
+  const collapsed = btns.style.display === 'none'
+  btns.style.display = collapsed ? '' : 'none'
   if (btn) btn.textContent = collapsed ? '▼' : '▲'
 }
 
 // ── Mouse passthrough ─────────────────────────────────────────────────────────
-const interactiveEls = ['wChat','wWarriors','wFight','wCalc','nbar','challenge']
+const interactiveEls = ['wChat','wWarriors','wFight','wCalc','wGames','nbar','challenge','gameInvite','ctxMenu','fontPanel','fontPanelOverlay','colorPicker','emojiPicker']
 for (const id of interactiveEls) {
   const w = document.getElementById(id)
   if (!w) continue
   w.addEventListener('mouseenter', () => window.electronAPI?.setIgnoreMouseEvents(false))
   w.addEventListener('mouseleave', () => {
     window.electronAPI?.setIgnoreMouseEvents(true)
-    if (lastClickedTA) { lastClickedTA = null; el?.exitChatMode() }
+    if (lastClickedTA) { deactivateInput() }
   })
 }
+
+// Calc widget keyboard: inputs are type=number/text so they can't get native focus
+// (window is focusable:false). On mousedown, activate the same hook-based keyboard path.
+document.getElementById('wCalc')?.addEventListener('mousedown', e => {
+  const t = e.target
+  if (t.tagName === 'INPUT' && t.type !== 'color') {
+    activateInput(t)
+  }
+})
 
 // ── Drag ──────────────────────────────────────────────────────────────────────
 function makeDraggable(wid, hid) {
@@ -1304,7 +2617,86 @@ makeDraggable('wWarriors', 'whWarriors')
 makeDraggable('wFight',    'whFight')
 makeDraggable('wCalc',     'whCalc')
 
+// ── Resize ────────────────────────────────────────────────────────────────────
+function makeResizable(wid, hid, minW = 200, minH = 160) {
+  const widget = document.getElementById(wid)
+  const handle = document.getElementById(hid)
+  if (!widget || !handle) return
+  // Restore saved size
+  try {
+    const saved = localStorage.getItem('wsz-' + wid)
+    if (saved) { const {w, h} = JSON.parse(saved); widget.style.width = w + 'px'; widget.style.height = h + 'px' }
+  } catch {}
+  let resizing = false, sx = 0, sy = 0, sw = 0, sh = 0
+  handle.addEventListener('mousedown', e => {
+    resizing = true
+    sx = e.clientX; sy = e.clientY
+    sw = widget.offsetWidth; sh = widget.offsetHeight
+    window.electronAPI?.setIgnoreMouseEvents(false)
+    e.preventDefault(); e.stopPropagation()
+  })
+  document.addEventListener('mousemove', e => {
+    if (!resizing) return
+    const w = Math.max(minW, sw + (e.clientX - sx))
+    const h = Math.max(minH, sh + (e.clientY - sy))
+    widget.style.width  = w + 'px'
+    widget.style.height = h + 'px'
+  })
+  document.addEventListener('mouseup', () => {
+    if (!resizing) return
+    resizing = false
+    try { localStorage.setItem('wsz-' + wid, JSON.stringify({ w: widget.offsetWidth, h: widget.offsetHeight })) } catch {}
+  })
+}
+
+makeResizable('wChat', 'rChat', 260, 200)
+makeResizable('wGames', 'rGames', 260, 280)
+
 el?.onFocusChatInput(() => { lastClickedTA?.focus() })
+el?.onToggleLang(() => toggleLang())
+
+// ── Paste from clipboard ──────────────────────────────────────────────────────
+el?.onPasteText(text => {
+  const ta = lastClickedTA
+  if (!ta || ta.id === 'pchatNewInp') return
+  insertAt(ta, text)
+  if (ta.id === 'iChat') updateChatCmdBtns(ta)
+  else if (ta.id === 'iFight') updateFightCmdBtns(ta)
+})
+
+el?.onPasteImage(async b64 => {
+  const ta = lastClickedTA
+  if (!ta || (ta.id !== 'iChat' && ta.id !== 'iFight')) return
+
+  // base64 PNG → Blob → upload
+  const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0))
+  const blob  = new Blob([bytes], { type: 'image/png' })
+  const form  = new FormData()
+  form.append('image', blob, 'paste.png')
+
+  // Показываем временный индикатор
+  const box = document.getElementById(ta.id === 'iChat' ? 'mChat' : 'mFight')
+  const placeholder = document.createElement('div')
+  placeholder.className = 'msg msg-uploading'
+  placeholder.textContent = '⏳ Загрузка изображения…'
+  box.appendChild(placeholder); box.scrollTop = box.scrollHeight
+
+  try {
+    const r = await fetch(srv + '/api/profile/chat-upload', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: form
+    })
+    placeholder.remove()
+    if (!r.ok) return
+    const { url } = await r.json()
+    const content = srv + url
+
+    if (ta.id === 'iFight' && fightWs?.readyState === 1) {
+      fightWs.send(JSON.stringify({ type: 'message', content }))
+    } else if (ta.id === 'iChat' && activePChatId && pchatWs?.readyState === 1) {
+      pchatWs.send(JSON.stringify({ type: 'message', chat_id: activePChatId, content }))
+    }
+  } catch { placeholder.remove() }
+})
 
 // Init calc status
 renderStatus()
