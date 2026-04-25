@@ -1326,7 +1326,7 @@ function resetState() {
   currentChatMembers = []; addPartChatId = null; addedWarriorNames = new Set()
   const addBanner = document.getElementById('wAddPartBanner'); if (addBanner) addBanner.style.display = 'none'
   const memBar = document.getElementById('pchatMembers'); if (memBar) memBar.style.display = 'none'
-  hide('nbar'); hide('wFight'); hide('wWarriors'); hide('wCalc')
+  hide('nbar'); hide('wFight'); hide('wWarriors'); hide('wCalc'); hide('wGames')
   window.electronAPI?.notifyNbarState(false)
   switchFightTab('lobby')
   document.getElementById('fightChatTitle').textContent = ''
