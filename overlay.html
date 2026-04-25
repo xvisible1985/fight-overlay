@@ -1211,6 +1211,7 @@ function showGameInvite(msg) {
 }
 async function acceptGameInvite() {
   document.getElementById('gameInvite').style.display = 'none'
+  window.electronAPI?.setIgnoreMouseEvents(true)
   if (!_pendingInviteTableId) return
   const r = await apiFetch('/api/games/tables/' + _pendingInviteTableId + '/join', { method: 'POST' })
   if (!r.ok) { const e = await r.json(); showToast(e.error || 'Не удалось войти', 'err') }
@@ -1224,6 +1225,7 @@ async function acceptGameInvite() {
 function declineGameInvite() {
   document.getElementById('gameInvite').style.display = 'none'
   _pendingInviteTableId = null
+  window.electronAPI?.setIgnoreMouseEvents(true)
 }
 
 function connectGamesWs() {
@@ -1312,6 +1314,8 @@ function resetState() {
   if (pchatWs) { pchatWs.onclose = null; pchatWs.close(); pchatWs = null }
   if (gamesWs) { gamesWs.onclose = null; gamesWs.close(); gamesWs = null }
   gAllTables = []; gMyTableId = null
+  _pendingInviteTableId = null
+  document.getElementById('gameInvite').style.display = 'none'
   const gamesList = document.getElementById('gamesList')
   if (gamesList) gamesList.innerHTML = '<div class="no-tables">Загрузка…</div>'
   const gBal = document.getElementById('gBalance')
@@ -1807,6 +1811,8 @@ function ctxDo(id) {
         method: 'POST',
         body: JSON.stringify({ game_name: ctxTarget.name })
       }).then(r => { if (!r.ok) r.json().then(e => showToast(e.error || 'Ошибка', 'err')) })
+    } else {
+      showToast('Вы не за столом', 'err')
     }
   }
   else if (id === 'msg-copy')       { if (ctxTarget?.text) el?.writeClipboard(ctxTarget.text) }
