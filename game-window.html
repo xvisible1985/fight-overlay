@@ -5,23 +5,158 @@
 <title>Дурак</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  background: #0d3320; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #e2e8f0; display: flex; align-items: center; justify-content: center;
-  height: 100vh; flex-direction: column; gap: 12px;
+html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0f1a; }
+
+/* Scale container */
+#scaleRoot {
+  width: 860px; height: 580px;
+  background: #0d3320;
+  border: 1px solid #1a5c35;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  transform-origin: top left;
+  position: absolute; top: 0; left: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #e2e8f0;
 }
-.title { font-size: 24px; font-weight: 700; color: #4ade80; }
-.sub   { font-size: 13px; color: #475569; }
-.tid   { font-size: 11px; color: #1a5c35; margin-top: 4px; }
+
+/* Title bar */
+.title-bar { background: #071a10; border-bottom: 1px solid #1a3d20; padding: 8px 16px; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #4ade80; font-weight: 600; flex-shrink: 0; }
+.tb-title { flex: 1; }
+.tb-timer { background: #451a03; border: 1px solid #f59e0b; border-radius: 4px; padding: 3px 10px; font-size: 12px; color: #f59e0b; font-weight: 700; display: none; }
+.tb-timer.active { display: inline-block; }
+.tb-info { color: #475569; font-size: 12px; }
+
+/* Portrait */
+.portrait { width: 42px; height: 58px; border-radius: 5px; overflow: hidden; border: 2px solid rgba(255,255,255,.1); flex-shrink: 0; background: #0f2440; display: flex; align-items: center; justify-content: center; }
+.portrait img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.portrait.attacker { border-color: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,.3); }
+.portrait.defender { border-color: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,.3); }
+.portrait.me { border-color: #4ade80; box-shadow: 0 0 8px rgba(74,222,128,.3); }
+.sil { width: 26px; height: 34px; opacity: .3; }
+
+/* Opponents */
+.opponents-area { display: flex; justify-content: space-around; gap: 10px; padding: 12px 16px 8px; flex-shrink: 0; }
+.player-slot { display: flex; flex-direction: row; align-items: center; gap: 10px; background: rgba(0,0,0,.25); border: 1px solid rgba(255,255,255,.07); border-radius: 9px; padding: 8px 14px; flex: 1; position: relative; transition: border-color .2s; }
+.player-slot.attacker { border-color: #ef4444; background: rgba(239,68,68,.08); }
+.player-slot.defender { border-color: #3b82f6; background: rgba(59,130,246,.08); }
+.player-slot.exited { opacity: .35; }
+.player-slot.disconnected { opacity: .5; }
+.ps-info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.ps-name { font-size: 13px; font-weight: 700; color: #94a3b8; }
+.ps-role { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: .06em; }
+.ps-role.atk { color: #f87171; }
+.ps-role.def { color: #60a5fa; }
+.ps-cards { display: flex; }
+.card-back { width: 22px; height: 32px; background: linear-gradient(135deg,#1e3a5f,#0f2440); border: 1px solid #334155; border-radius: 3px; margin-left: -6px; }
+.card-back:first-child { margin-left: 0; }
+.ps-timer { position: absolute; top: 6px; right: 10px; font-size: 12px; font-weight: 700; color: #f59e0b; }
+
+/* Table */
+.table-center { background: #0a2d18; border: 1px solid #1a5c35; border-radius: 12px; flex: 1; margin: 4px 16px; display: flex; align-items: center; padding: 14px 18px; gap: 18px; position: relative; min-height: 120px; }
+.table-label { position: absolute; top: 7px; left: 12px; font-size: 10px; color: #1a5c35; text-transform: uppercase; letter-spacing: .08em; }
+.pairs-area { display: flex; gap: 14px; flex: 1; align-items: center; justify-content: center; flex-wrap: wrap; }
+.attack-pair { position: relative; width: 62px; height: 90px; flex-shrink: 0; }
+
+/* Cards */
+.card { position: absolute; width: 56px; height: 78px; border-radius: 6px; border: 1px solid rgba(255,255,255,.15); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; box-shadow: 0 3px 10px rgba(0,0,0,.5); cursor: default; user-select: none; }
+.card.red { background: #fef2f2; color: #dc2626; }
+.card.black { background: #f8fafc; color: #1e293b; }
+.card.clickable { cursor: pointer; transition: transform .12s; }
+.card.clickable:hover { transform: translateY(-8px); }
+.card.selected { outline: 2px solid #f59e0b !important; transform: translateY(-10px); }
+.card-rank { position: absolute; top: 4px; left: 5px; font-size: 11px; font-weight: 800; line-height: 1; }
+.card-suit { font-size: 18px; line-height: 1; }
+.card-rank-br { position: absolute; bottom: 4px; right: 5px; font-size: 11px; font-weight: 800; line-height: 1; transform: rotate(180deg); }
+.attack-card-pos { top: 0; left: 0; }
+.defend-card-pos { top: 12px; left: 8px; transform: rotate(12deg); }
+.defend-card-pos.selected { transform: rotate(12deg) translateY(-8px); }
+
+/* Trump + deck */
+.trump-area { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-left: auto; }
+.trump-card-wrap { position: relative; width: 50px; height: 70px; }
+.trump-card { position: absolute; width: 50px; height: 70px; border-radius: 5px; border: 1px solid rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; flex-direction: column; box-shadow: 0 2px 10px rgba(0,0,0,.5); }
+.deck-stack { position: absolute; top: -4px; left: -4px; width: 50px; height: 70px; background: linear-gradient(135deg,#1e3a5f,#0f2440); border: 1px solid #334155; border-radius: 5px; }
+.trump-label { font-size: 9px; color: #4ade80; text-transform: uppercase; letter-spacing: .06em; }
+.deck-count { font-size: 11px; color: #475569; }
+.discard-pile { width: 50px; height: 70px; background: rgba(0,0,0,.3); border: 1px dashed #1a5c35; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #1a5c35; }
+.discard-count { font-size: 10px; color: #334155; }
+
+/* Hand */
+.hand-row { display: flex; align-items: center; padding: 6px 16px 6px; gap: 14px; flex-shrink: 0; }
+.my-portrait-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
+.my-name { font-size: 11px; color: #4ade80; font-weight: 700; max-width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hand-label { font-size: 10px; color: #1a5c35; text-transform: uppercase; letter-spacing: .06em; text-align: center; }
+.my-hand { display: flex; justify-content: center; align-items: flex-end; flex: 1; }
+.hand-card { width: 56px; height: 78px; border-radius: 6px; border: 1px solid rgba(255,255,255,.15); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; box-shadow: 0 3px 10px rgba(0,0,0,.5); margin-left: -18px; cursor: pointer; transition: transform .12s; position: relative; user-select: none; }
+.hand-card:first-child { margin-left: 0; }
+.hand-card:hover { transform: translateY(-10px); }
+.hand-card.selected { transform: translateY(-14px); outline: 2px solid #f59e0b; }
+.hand-card.red { background: #fef2f2; color: #dc2626; }
+.hand-card.black { background: #f8fafc; color: #1e293b; }
+.hand-card.dim { opacity: .4; cursor: default; }
+
+/* Action bar */
+.action-bar { background: #071a10; border-top: 1px solid #1a3d20; padding: 10px 16px 12px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.btn { background: #1a3d20; border: 1px solid #2d6a35; border-radius: 6px; color: #4ade80; font-size: 13px; font-weight: 700; padding: 7px 16px; cursor: pointer; white-space: nowrap; }
+.btn.primary { background: #14532d; border-color: #22c55e; }
+.btn.danger { background: #450a0a; border-color: #ef4444; color: #f87171; }
+.btn:disabled { opacity: .35; cursor: default; }
+.status-msg { flex: 1; font-size: 12px; color: #64748b; text-align: center; }
+.bet-info { font-size: 12px; color: #f59e0b; font-weight: 700; white-space: nowrap; }
+
+/* End screen */
+#endScreen { display: none; position: absolute; inset: 0; background: rgba(0,0,0,.85); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; }
+#endScreen.show { display: flex; }
+.end-box { background: #0d3320; border: 1px solid #1a5c35; border-radius: 12px; padding: 24px 32px; min-width: 340px; }
+.end-title { font-size: 18px; font-weight: 700; color: #4ade80; text-align: center; margin-bottom: 16px; }
+.end-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #0a2d18; }
+.end-place { font-size: 22px; width: 36px; text-align: center; }
+.end-name { flex: 1; font-size: 14px; color: #94a3b8; font-weight: 600; }
+.end-payout { font-size: 14px; color: #f59e0b; font-weight: 700; }
+.end-close { margin-top: 16px; width: 100%; }
 </style>
 </head>
 <body>
-<div class="title">🃏 Дурак</div>
-<div class="sub">Игровой стол загружается… (Spec 2)</div>
-<div class="tid" id="tableInfo"></div>
-<script>
-  const p = new URLSearchParams(location.search)
-  document.getElementById('tableInfo').textContent = 'Table: ' + (p.get('tableId') || '?')
-</script>
+<div id="scaleRoot">
+  <div class="title-bar">
+    <span class="tb-title" id="tbTitle">Дурак</span>
+    <span class="tb-timer" id="tbTimer"></span>
+    <span class="tb-info" id="tbInfo"></span>
+  </div>
+  <div class="opponents-area" id="opponentsArea"></div>
+  <div class="table-center" id="tableCenter">
+    <div class="table-label">Стол</div>
+    <div class="pairs-area" id="pairsArea"></div>
+    <div class="trump-area" id="trumpArea"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px" id="discardArea"></div>
+  </div>
+  <div class="hand-row">
+    <div class="my-portrait-wrap">
+      <div class="portrait me" id="myPortrait" style="width:48px;height:66px"></div>
+      <div class="my-name" id="myName"></div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:3px">
+      <div class="hand-label" id="handLabel">Моя рука</div>
+      <div class="my-hand" id="myHand"></div>
+    </div>
+  </div>
+  <div class="action-bar">
+    <button class="btn primary" id="btnAction" disabled onclick="doAction()"></button>
+    <button class="btn" id="btnSecondary" disabled onclick="doSecondary()"></button>
+    <button class="btn danger" id="btnTake" style="display:none" onclick="doTake()">Взять</button>
+    <div class="status-msg" id="statusMsg">Подключение…</div>
+    <div class="bet-info" id="betInfo"></div>
+  </div>
+  <div id="endScreen">
+    <div class="end-box">
+      <div class="end-title">Игра окончена</div>
+      <div id="endResults"></div>
+      <button class="btn primary end-close" onclick="window.close()">Закрыть</button>
+    </div>
+  </div>
+</div>
+<script>/* Task 12 JS goes here */</script>
 </body>
 </html>
