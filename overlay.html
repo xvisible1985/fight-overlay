@@ -901,11 +901,11 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
         </div>
         <div>
           <div class="gtf-label">Название</div>
-          <input class="gtf-inp" id="gtfName" placeholder="Мой стол" onmousedown="activateInput(this)" onblur="deactivateInput()">
+          <input class="gtf-inp" id="gtfName" type="text" placeholder="Мой стол" onmousedown="activateInput(this)" onblur="deactivateInput()">
         </div>
         <div class="gtf-actions">
-          <div class="gtf-cancel" onclick="closeCreateTableForm()">Отмена</div>
-          <div class="gtf-submit" onclick="submitCreateTable()">Создать стол</div>
+          <button class="gtf-cancel" onclick="closeCreateTableForm()">Отмена</button>
+          <button class="gtf-submit" onclick="submitCreateTable()">Создать стол</button>
         </div>
       </div>
     </div>
@@ -917,9 +917,9 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 <div id="gameInvite" style="display:none;">
   <div class="gi-box">
     <div class="gi-icon">🃏</div>
-    <div class="gi-from" id="giFrom">Арагорн</div>
+    <div class="gi-from" id="giFrom"></div>
     <div class="gi-sub">приглашает за игровой стол</div>
-    <div class="gi-info" id="giInfo">Подкидной · Ставка 50 монет</div>
+    <div class="gi-info" id="giInfo"></div>
     <div class="gi-btns">
       <button class="gi-accept"  onclick="acceptGameInvite()">Войти</button>
       <button class="gi-decline" onclick="declineGameInvite()">Отказать</button>
@@ -1075,6 +1075,7 @@ function initPositions() {
   applyPos('wWarriors',  20,  80)
   applyPos('wFight',     window.innerWidth - 366, window.innerHeight - 620)
   applyPos('wCalc',      340, 80)
+  applyPos('wGames',     window.innerWidth - 320, 80)
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -1180,7 +1181,7 @@ function nbarToggle(id) {
 }
 
 function updateNbarButtons() {
-  const pairs = [['wChat','nb-chat'], ['wWarriors','nb-warriors'], ['wFight','nb-fight'], ['wCalc','nb-calc']]
+  const pairs = [['wChat','nb-chat'], ['wWarriors','nb-warriors'], ['wFight','nb-fight'], ['wCalc','nb-calc'], ['wGames','nb-games']]
   for (const [wid, bid] of pairs) {
     const w = document.getElementById(wid)
     const b = document.getElementById(bid)
@@ -2616,6 +2617,7 @@ makeDraggable('wChat',     'whChat')
 makeDraggable('wWarriors', 'whWarriors')
 makeDraggable('wFight',    'whFight')
 makeDraggable('wCalc',     'whCalc')
+makeDraggable('wGames',    'whGames')
 
 // ── Resize ────────────────────────────────────────────────────────────────────
 function makeResizable(wid, hid, minW = 200, minH = 160) {
