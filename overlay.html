@@ -1055,6 +1055,15 @@ let allFights   = []
 // Incoming challenge
 let pendingChallenge = null
 
+// ── Games state ───────────────────────────────────────────────────────────────
+let gamesWs = null
+let gAllTables = []
+let gMyTableId = null
+let gCurrentTab = 'open'
+let gtfType = 'throwing'
+let gtfPlayers = 3
+let _pendingInviteTableId = null
+
 // ── Positions ─────────────────────────────────────────────────────────────────
 function savePos(id, x, y) { try { localStorage.setItem('fa_pos_' + id, JSON.stringify({x, y})) } catch {} }
 function loadPos(id, dx, dy) {
@@ -1076,6 +1085,149 @@ function initPositions() {
   applyPos('wFight',     window.innerWidth - 366, window.innerHeight - 620)
   applyPos('wCalc',      340, 80)
   applyPos('wGames',     window.innerWidth - 320, 80)
+}
+
+// ── Games ─────────────────────────────────────────────────────────────────────
+function setGtfType(t) {
+  gtfType = t
+  document.querySelectorAll('[id^="gtfType-"]').forEach(b => b.classList.remove('active'))
+  document.getElementById('gtfType-' + t)?.classList.add('active')
+}
+function setGtfPlayers(n) {
+  gtfPlayers = n
+  document.querySelectorAll('[id^="gtfP-"]').forEach(b => b.classList.remove('active'))
+  document.getElementById('gtfP-' + n)?.classList.add('active')
+}
+function switchGamesTab(tab) {
+  gCurrentTab = tab
+  document.querySelectorAll('.games-tab').forEach(b => b.classList.remove('active'))
+  document.getElementById('gt-' + tab)?.classList.add('active')
+  renderGamesTables()
+}
+function openCreateTableForm() {
+  document.getElementById('gLobbyView').style.display = 'none'
+  document.getElementById('gCreateView').style.display = 'flex'
+}
+function closeCreateTableForm() {
+  document.getElementById('gLobbyView').style.display = 'flex'
+  document.getElementById('gCreateView').style.display = 'none'
+}
+
+async function loadGamesData() {
+  try {
+    const [tablesR, balR] = await Promise.all([
+      apiFetch('/api/games/tables'),
+      apiFetch('/api/games/balance')
+    ])
+    if (tablesR.ok) gAllTables = await tablesR.json()
+    if (balR.ok) {
+      const { balance } = await balR.json()
+      const el = document.getElementById('gBalance')
+      if (el) el.textContent = balance.toLocaleString('ru-RU')
+    }
+    renderGamesTables()
+  } catch {}
+}
+
+function renderGamesTables() {
+  const list = document.getElementById('gamesList')
+  const startBtn = document.getElementById('gStartBtn')
+  if (!list) return
+
+  let tables = gCurrentTab === 'mine'
+    ? gAllTables.filter(t => t.players?.some(p => p.user_id === currentUser?.id))
+    : gAllTables.filter(t => t.status === 'waiting')
+
+  const myTable = gAllTables.find(t => t.created_by === currentUser?.id && t.status === 'waiting')
+  gMyTableId = myTable?.id ?? null
+  if (startBtn) {
+    startBtn.style.display = myTable ? '' : 'none'
+    startBtn.disabled = !myTable || (myTable.players?.length ?? 0) < 2
+  }
+
+  if (!tables.length) {
+    list.innerHTML = `<div class="no-tables">${gCurrentTab === 'mine' ? 'Вы не за одним столом' : 'Нет открытых столов'}</div>`
+    return
+  }
+  list.innerHTML = tables.map(t => {
+    const cnt = t.players?.length ?? 0
+    const type = t.type === 'throwing' ? 'Подкидной' : 'Переводной'
+    const betStr = t.bet > 0 ? `💰 ${t.bet}` : 'Без ставки'
+    const alreadyIn = t.players?.some(p => p.user_id === currentUser?.id)
+    const full = cnt >= t.max_players
+    const joinDisabled = alreadyIn || full ? 'disabled' : ''
+    const joinLabel = alreadyIn ? '✓ За столом' : full ? 'Полный' : 'Войти'
+    return `<div class="game-table-card">
+      <div class="gtc-top">
+        <span class="gtc-title">${esc(t.name)}</span>
+        <span class="gtc-bet">${betStr}</span>
+      </div>
+      <div class="gtc-meta">
+        <span class="gtc-type">${type}</span>
+        <span class="gtc-players">● ${cnt}/${t.max_players}</span>
+        <button class="gtc-join" ${joinDisabled} onclick="joinGameTable('${t.id}')">${joinLabel}</button>
+      </div>
+    </div>`
+  }).join('')
+}
+
+async function joinGameTable(tableId) {
+  const r = await apiFetch('/api/games/tables/' + tableId + '/join', { method: 'POST' })
+  if (!r.ok) { const e = await r.json(); showToast(e.error || 'Ошибка', 'err'); return }
+  const table = await r.json()
+  const idx = gAllTables.findIndex(t => t.id === tableId)
+  if (idx >= 0) gAllTables[idx] = table; else gAllTables.push(table)
+  renderGamesTables()
+}
+
+async function submitCreateTable() {
+  const name = document.getElementById('gtfName').value.trim() || 'Мой стол'
+  const bet  = parseInt(document.getElementById('gtfBet').value) || 0
+  const r = await apiFetch('/api/games/tables', {
+    method: 'POST',
+    body: JSON.stringify({ name, type: gtfType, max_players: gtfPlayers, bet })
+  })
+  if (!r.ok) { const e = await r.json(); showToast(e.error || 'Ошибка', 'err'); return }
+  const table = await r.json()
+  gAllTables.unshift(table)
+  closeCreateTableForm()
+  switchGamesTab('mine')
+}
+
+async function startGameTable() {
+  if (!gMyTableId) return
+  const r = await apiFetch('/api/games/tables/' + gMyTableId + '/start', { method: 'POST' })
+  if (!r.ok) { const e = await r.json(); showToast(e.error || 'Ошибка', 'err') }
+}
+
+function connectGamesWs() {
+  if (gamesWs && gamesWs.readyState < 2) return
+  const wsBase = srv.replace(/^https/, 'wss').replace(/^http/, 'ws')
+  gamesWs = new WebSocket(wsBase + '/ws/games?token=' + token)
+  gamesWs.onclose = () => { if (token) setTimeout(connectGamesWs, 3000) }
+  gamesWs.onerror = () => {}
+  gamesWs.onmessage = e => {
+    try {
+      const msg = JSON.parse(e.data)
+      if (msg.type === 'table_created') {
+        if (!gAllTables.find(t => t.id === msg.table.id)) gAllTables.unshift(msg.table)
+        renderGamesTables()
+      } else if (msg.type === 'player_joined' || msg.type === 'player_left') {
+        const idx = gAllTables.findIndex(t => t.id === msg.table_id)
+        if (idx >= 0 && msg.table) gAllTables[idx] = msg.table
+        renderGamesTables()
+      } else if (msg.type === 'table_removed') {
+        gAllTables = gAllTables.filter(t => t.id !== msg.table_id)
+        renderGamesTables()
+      } else if (msg.type === 'game_invite') {
+        showGameInvite(msg)
+      } else if (msg.type === 'game_started') {
+        window.electronAPI?.openGameWindow(msg.table_id, token, srv)
+        gAllTables = gAllTables.filter(t => t.id !== msg.table_id)
+        renderGamesTables()
+      }
+    } catch {}
+  }
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -1104,6 +1256,8 @@ async function onAuth({ token: t, srv: s }) {
   showNbar()
   connectChatWs()
   connectPChatWs()
+  connectGamesWs()
+  loadGamesData()
   loadPChats()
   loadFactions()
   loadFightsList()
