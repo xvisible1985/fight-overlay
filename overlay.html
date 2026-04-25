@@ -1126,7 +1126,7 @@ async function loadGamesData() {
       if (el) el.textContent = balance.toLocaleString('ru-RU')
     }
     renderGamesTables()
-  } catch {}
+  } catch { renderGamesTables() }
 }
 
 function renderGamesTables() {
@@ -1165,7 +1165,7 @@ function renderGamesTables() {
       <div class="gtc-meta">
         <span class="gtc-type">${type}</span>
         <span class="gtc-players">● ${cnt}/${t.max_players}</span>
-        <button class="gtc-join" ${joinDisabled} onclick="joinGameTable('${t.id}')">${joinLabel}</button>
+        <button class="gtc-join" ${joinDisabled} data-tid="${esc(String(t.id))}">${joinLabel}</button>
       </div>
     </div>`
   }).join('')
@@ -1284,6 +1284,12 @@ function resetState() {
   if (chatWs)  { chatWs.onclose  = null; chatWs.close();  chatWs  = null }
   if (fightWs) { fightWs.onclose = null; fightWs.close(); fightWs = null }
   if (pchatWs) { pchatWs.onclose = null; pchatWs.close(); pchatWs = null }
+  if (gamesWs) { gamesWs.onclose = null; gamesWs.close(); gamesWs = null }
+  gAllTables = []; gMyTableId = null
+  const gamesList = document.getElementById('gamesList')
+  if (gamesList) gamesList.innerHTML = '<div class="no-tables">Загрузка…</div>'
+  const gBal = document.getElementById('gBalance')
+  if (gBal) gBal.textContent = '—'
   if (pollTimer) { clearInterval(pollTimer); pollTimer = null }
   currentFightId = null; allWarriors = []; onlineIds = new Set()
   activePChatId = null; pchatChats = []; pchatUnread = {}; pchatCreating = false
@@ -2807,6 +2813,10 @@ function makeResizable(wid, hid, minW = 200, minH = 160) {
 
 makeResizable('wChat', 'rChat', 260, 200)
 makeResizable('wGames', 'rGames', 260, 280)
+document.getElementById('gamesList')?.addEventListener('click', e => {
+  const btn = e.target.closest('.gtc-join')
+  if (btn && !btn.disabled) joinGameTable(btn.dataset.tid)
+})
 
 el?.onFocusChatInput(() => { lastClickedTA?.focus() })
 el?.onToggleLang(() => toggleLang())
