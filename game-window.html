@@ -178,6 +178,11 @@ let selectedAttackCard = null
 let timerInterval = null
 
 const suit = s => ({'♠':'black','♣':'black','♥':'red','♦':'red'}[s] || 'black')
+const RANKS = ['6','7','8','9','10','J','Q','K','A']
+function canBeat(atk, def, trump) {
+  if (atk.suit === def.suit) return RANKS.indexOf(def.rank) > RANKS.indexOf(atk.rank)
+  return def.suit === trump && atk.suit !== trump
+}
 
 function cardHTML(card) {
   return `<span class="card-rank">${card.rank}</span><span class="card-suit">${card.suit}</span><span class="card-rank-br">${card.rank}</span>`
@@ -283,9 +288,15 @@ function renderHand() {
   const handEl = document.getElementById('myHand')
   handEl.innerHTML = hand.map((card, i) => {
     const isSel = selectedHandCards.some(c => c.rank === card.rank && c.suit === card.suit)
-    // In attack phase with a selection, dim cards of different rank
-    const rankMismatch = phase === 'attack' && isAttacker && firstSel && card.rank !== firstSel.rank
-    const shouldDim = !canPlay || (rankMismatch && !isSel)
+    let shouldDim = !canPlay
+    if (!shouldDim) {
+      if (phase === 'attack' && isAttacker && firstSel && card.rank !== firstSel.rank && !isSel)
+        shouldDim = true
+      // В защите: если выбрана карта атаки, затемняем карты которые не могут её побить
+      if (phase === 'defense' && isDefender && !throwWindowActive && selectedAttackCard &&
+          !canBeat(selectedAttackCard, card, state.trump) && !isSel)
+        shouldDim = true
+    }
     const sel = isSel ? ' selected' : ''
     const dim = shouldDim ? ' dim' : ''
     return `<div class="hand-card ${suit(card.suit)}${sel}${dim}" data-i="${i}" onclick="selectHandCard(${i})">${cardHTML(card)}</div>`
@@ -313,7 +324,19 @@ function selectHandCard(i) {
     }
   } else if (phase === 'defense' && isDefender && !throwWindowActive) {
     const isSel = selectedHandCards[0]?.rank === card.rank && selectedHandCards[0]?.suit === card.suit
-    selectedHandCards = isSel ? [] : [card]
+    if (selectedAttackCard && canBeat(selectedAttackCard, card, state.trump)) {
+      if (isSel) {
+        // второй клик — отбиваем
+        window.gameAPI.sendAction('defend', { attack_card: selectedAttackCard, defend_card: card })
+        selectedHandCards = []; selectedAttackCard = null
+        document.querySelectorAll('[data-role="attack"]').forEach(c => c.classList.remove('selected'))
+        renderHand(); return
+      } else {
+        selectedHandCards = [card]
+      }
+    } else if (!selectedAttackCard) {
+      selectedHandCards = isSel ? [] : [card]
+    }
   } else if ((phase === 'defense' && !isDefender) || (phase === 'throw' && !isDefender)) {
     const isSel = selectedHandCards[0]?.rank === card.rank && selectedHandCards[0]?.suit === card.suit
     selectedHandCards = isSel ? [] : [card]
@@ -345,20 +368,20 @@ function updateButtons() {
     btnSec.textContent = ''; btnSec.disabled = true
     statusEl.textContent = 'Ваш ход'
   } else if (phase === 'defense' && isDefender) {
+    btnAction.textContent = '—'; btnAction.disabled = true
     if (throwWindowActive) {
-      btnAction.textContent = 'Защита'; btnAction.disabled = true
       btnSec.textContent = ''; btnSec.disabled = true
       statusEl.textContent = 'Ждите подкидывания…'
     } else {
-      btnAction.textContent = 'Отбить'
-      btnAction.disabled = !(card && selectedAttackCard)
       btnTake.style.display = 'inline-block'
       if (state.gameType === 'transfer' && state.table.every(pair => !pair.defend)) {
         btnSec.textContent = 'Перевести'; btnSec.disabled = !card
       } else {
         btnSec.textContent = ''; btnSec.disabled = true
       }
-      statusEl.textContent = 'Защита'
+      if (!selectedAttackCard) statusEl.textContent = 'Выберите карту на столе'
+      else if (!card) statusEl.textContent = 'Выберите карту из руки'
+      else statusEl.textContent = 'Ещё раз — отбить'
     }
   } else if ((phase === 'defense' && !isDefender) || (phase === 'throw' && !isDefender)) {
     btnAction.textContent = card ? `Подкинуть ${card.suit}${card.rank}` : 'Подкинуть'
@@ -385,8 +408,6 @@ function doAction() {
 
   if (phase === 'attack' && myIdx === state.attackerIdx && selectedHandCards.length > 0) {
     window.gameAPI.sendAction('attack', { cards: [...selectedHandCards] })
-  } else if (phase === 'defense' && myIdx === state.defenderIdx && card && selectedAttackCard && !isThrowWindowActive()) {
-    window.gameAPI.sendAction('defend', { attack_card: selectedAttackCard, defend_card: card })
   } else if ((phase === 'defense' && myIdx !== state.defenderIdx) || (phase === 'throw' && myIdx !== state.defenderIdx)) {
     if (card) window.gameAPI.sendAction('throw_in', { card })
   }
@@ -425,9 +446,10 @@ document.getElementById('pairsArea').addEventListener('click', e => {
   const pair = state.table[pairIdx]
   if (!pair || pair.defend) return
   selectedAttackCard = pair.attack
-  updateButtons()
+  selectedHandCards = []
   document.querySelectorAll('[data-role="attack"]').forEach(c => c.classList.remove('selected'))
   el.classList.add('selected')
+  renderHand()
 })
 
 function updateTimer() {
