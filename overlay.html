@@ -353,6 +353,13 @@ body {
 .irow button.active { border-color: #f59e0b; color: #f59e0b; }
 .irow textarea.rp-mode { }
 textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
+.gtf-inp-wrap { position: relative; display: block; }
+.gtf-inp-wrap .gtf-inp.chat-active { color: transparent !important; caret-color: transparent; }
+.gtf-mirror {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+  font-size: 12px; font-family: inherit; padding: 5px 8px; box-sizing: border-box;
+  color: #e2e8f0; white-space: nowrap; display: flex; align-items: center;
+}
 .ta-wrap { position: relative; flex: 1; min-width: 0; }
 .ta-wrap textarea { width: 100%; box-sizing: border-box; color: transparent !important; caret-color: transparent; }
 .ta-wrap textarea::placeholder { color: #475569; }
@@ -903,7 +910,7 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
         </div>
         <div>
           <div class="gtf-label">Ставка (0 — без ставки)</div>
-          <input class="gtf-inp" id="gtfBet" type="number" min="0" value="0" placeholder="0">
+          <div class="gtf-inp-wrap"><input class="gtf-inp" id="gtfBet" type="number" min="0" value="0" placeholder="0" onmousedown="activateInput(this)" onblur="deactivateInput()"><div class="gtf-mirror" id="gtfBetMirror"></div></div>
         </div>
         <div>
           <div class="gtf-label">Таймаут хода</div>
@@ -917,7 +924,7 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
         </div>
         <div>
           <div class="gtf-label">Название</div>
-          <input class="gtf-inp" id="gtfName" type="text" placeholder="Мой стол" onmousedown="activateInput(this)" onblur="deactivateInput()">
+          <div class="gtf-inp-wrap"><input class="gtf-inp" id="gtfName" type="text" placeholder="Мой стол" onmousedown="activateInput(this)" onblur="deactivateInput()"><div class="gtf-mirror" id="gtfNameMirror"></div></div>
         </div>
         <div class="gtf-actions">
           <button class="gtf-cancel" onclick="closeCreateTableForm()">Отмена</button>
@@ -2598,11 +2605,10 @@ function renderLines(text, caretPos) {
 function syncMirror(ta) {
   const mirror = document.getElementById(ta.id + 'Mirror')
   if (!mirror) return
-  if (ta.classList.contains('chat-active')) {
-    mirror.innerHTML = renderLines(ta.value, ta.selectionStart)
-  } else {
-    mirror.innerHTML = renderLines(ta.value, null)
-  }
+  const caretPos = ta.classList.contains('chat-active')
+    ? (ta.selectionStart ?? ta.value.length)
+    : null
+  mirror.innerHTML = renderLines(ta.value, caretPos)
   mirror.scrollTop = ta.scrollTop
 }
 function insertAt(ta, ch) {
@@ -2636,6 +2642,7 @@ el?.onKeyInput(payload => {
       if (ch >= '0' && ch <= '9') {
         ta.value = (ta.value === '0' ? '' : ta.value) + ch
         if (ta.closest('#wCalc')) renderStatus()
+        syncMirror(ta)
       }
     } else {
       const map = inputLang === 'RU' ? (shifted ? VK_RUS : VK_RU) : (shifted ? VK_ENS : VK_EN)
@@ -2648,6 +2655,7 @@ el?.onKeyInput(payload => {
         const s = String(ta.value)
         ta.value = s.length > 1 ? s.slice(0, -1) : '0'
         if (ta.closest('#wCalc')) renderStatus()
+        syncMirror(ta)
       } else { deleteAt(ta); if (ta.closest('#wCalc')) renderStatus() }
     }
     else if (vk === 32 && !isNum) insertAt(ta, ' ')
