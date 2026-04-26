@@ -288,7 +288,7 @@ function renderHand() {
   const throwWindowActive = isThrowWindowActive()
 
   const canPlay = (phase === 'attack' && isAttacker) ||
-                  (phase === 'defense' && isDefender && !throwWindowActive) ||
+                  (phase === 'defense' && isDefender) ||
                   (phase === 'defense' && !isDefender) ||
                   (phase === 'throw' && !isDefender)
 
@@ -301,7 +301,7 @@ function renderHand() {
       if (phase === 'attack' && isAttacker && firstSel && card.rank !== firstSel.rank && !isSel)
         shouldDim = true
       // В защите: если выбрана карта атаки, затемняем карты которые не могут её побить
-      if (phase === 'defense' && isDefender && !throwWindowActive && selectedAttackCard &&
+      if (phase === 'defense' && isDefender && selectedAttackCard &&
           !canBeat(selectedAttackCard, card, state.trump) && !isSel)
         shouldDim = true
     }
@@ -330,7 +330,7 @@ function selectHandCard(i) {
     } else if (selectedHandCards.length === 0 || card.rank === selectedHandCards[0].rank) {
       selectedHandCards.push(card)
     }
-  } else if (phase === 'defense' && isDefender && !throwWindowActive) {
+  } else if (phase === 'defense' && isDefender) {
     const isSel = selectedHandCards[0]?.rank === card.rank && selectedHandCards[0]?.suit === card.suit
     if (selectedAttackCard && canBeat(selectedAttackCard, card, state.trump)) {
       selectedHandCards = isSel ? [] : [card]
@@ -361,33 +361,30 @@ function updateButtons() {
   const statusEl  = document.getElementById('statusMsg')
 
   btnTake.style.display = 'none'
+  btnTake.disabled = false
 
   if (phase === 'attack' && isAttacker) {
     btnAction.textContent = 'Атаковать'; btnAction.disabled = selectedHandCards.length === 0
     btnSec.textContent = ''; btnSec.disabled = true
     statusEl.textContent = 'Ваш ход'
   } else if (phase === 'defense' && isDefender) {
-    const canDefend = !throwWindowActive && !!(selectedAttackCard && card && canBeat(selectedAttackCard, card, state.trump))
+    const canDefend = !!(selectedAttackCard && card && canBeat(selectedAttackCard, card, state.trump))
     btnAction.textContent = 'Отбить'; btnAction.disabled = !canDefend
-    if (throwWindowActive) {
-      btnSec.textContent = ''; btnSec.disabled = true
-      statusEl.textContent = 'Ждите подкидывания…'
+    btnTake.style.display = 'inline-block'
+    btnTake.disabled = throwWindowActive
+    if (state.gameType === 'transfer' && state.table.every(pair => !pair.defend)) {
+      btnSec.textContent = 'Перевести'; btnSec.disabled = !card
     } else {
-      btnTake.style.display = 'inline-block'
-      if (state.gameType === 'transfer' && state.table.every(pair => !pair.defend)) {
-        btnSec.textContent = 'Перевести'; btnSec.disabled = !card
-      } else {
-        btnSec.textContent = ''; btnSec.disabled = true
-      }
-      if (!selectedAttackCard) statusEl.textContent = 'Выберите карту на столе'
-      else if (!card) statusEl.textContent = 'Выберите карту из руки'
-      else statusEl.textContent = canDefend ? 'Нажмите Отбить' : 'Карта не побивает'
+      btnSec.textContent = ''; btnSec.disabled = true
     }
+    if (!selectedAttackCard) statusEl.textContent = 'Выберите карту на столе'
+    else if (!card) statusEl.textContent = 'Выберите карту из руки'
+    else statusEl.textContent = canDefend ? 'Нажмите Отбить' : 'Карта не побивает'
   } else if ((phase === 'defense' && !isDefender) || (phase === 'throw' && !isDefender)) {
     btnAction.textContent = card ? `Подкинуть ${card.suit}${card.rank}` : 'Подкинуть'
     btnAction.disabled = !card
     if (isAttacker) {
-      if (throwWindowActive) {
+      if (throwWindowActive && phase === 'throw') {
         const secs = Math.max(0, Math.ceil((state.throwWindowEndsAt - Date.now()) / 1000))
         btnSec.textContent = `Бито (${secs}с)`
         btnSec.disabled = true
@@ -452,12 +449,18 @@ function doTake() {
   renderHand()
 }
 
+document.addEventListener('mousemove', () => {
+  if (!state || state.phase !== 'defense') return
+  const myIdx = state.players.findIndex(p => p.user_id === myUserId)
+  if (myIdx !== state.defenderIdx) return
+  sendDefenderActivity()
+})
+
 document.getElementById('pairsArea').addEventListener('click', e => {
   const el = e.target.closest('[data-role="attack"]')
   if (!el) return
   const myIdx = state?.players.findIndex(p => p.user_id === myUserId)
   if (!state || state.phase !== 'defense' || myIdx !== state.defenderIdx) return
-  if (isThrowWindowActive()) return
   const pairIdx = parseInt(el.dataset.pair)
   const pair = state.table[pairIdx]
   if (!pair || pair.defend) return
@@ -477,7 +480,7 @@ function updateTimer() {
   const myIdx = state.players.findIndex(p => p.user_id === myUserId)
   const isAtk = myIdx === state.attackerIdx
   const hasDefTimer = !!(state.timerEndsAt && state.phase === 'defense')
-  const hasThrowWin = !!(state.throwWindowEndsAt && state.throwWindowEndsAt > Date.now() && isAtk)
+  const hasThrowWin = !!(state.throwWindowEndsAt && state.throwWindowEndsAt > Date.now() && isAtk && state.phase === 'throw')
 
   if (!hasDefTimer && !hasThrowWin) { tbTimer.classList.remove('active'); return }
 
@@ -493,7 +496,7 @@ function updateTimer() {
     }
     // Бито button: throw window countdown (attacker only)
     const myIdx2 = state.players.findIndex(p => p.user_id === myUserId)
-    if (myIdx2 === state.attackerIdx && state.throwWindowEndsAt) {
+    if (myIdx2 === state.attackerIdx && state.throwWindowEndsAt && state.phase === 'throw') {
       const secs = Math.max(0, Math.ceil((state.throwWindowEndsAt - Date.now()) / 1000))
       const btnSec = document.getElementById('btnSecondary')
       if (secs > 0) {

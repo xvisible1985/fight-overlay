@@ -531,7 +531,7 @@ ipcMain.on('open-game-window', (_, tableId, authToken, serverUrl) => {
     minWidth: 880, minHeight: 630,
     title: 'Дурак',
     frame: true, transparent: false,
-    show: false,
+    show: false, skipTaskbar: true,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -548,7 +548,10 @@ ipcMain.on('open-game-window', (_, tableId, authToken, serverUrl) => {
     try {
       const buf = gameWin.getNativeWindowHandle()
       const hwnd = buf.length >= 8 ? Number(buf.readBigUInt64LE()) : buf.readUInt32LE()
-      if (hwnd) gameWindowHwnds.set(tableId, hwnd)
+      if (hwnd) {
+        gameWindowHwnds.set(tableId, hwnd)
+        sendHelper('NOACT ' + hwnd)
+      }
     } catch {}
   })
   gameWin.loadFile(path.join(__dirname, 'game-window.html'), {
