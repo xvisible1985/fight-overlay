@@ -265,7 +265,7 @@ body {
 }
 .games-balance-val { color: #f59e0b; font-weight: 700; font-size: 12px; }
 .no-tables { font-size: 11px; color: #475569; padding: 10px 8px; text-align: center; }
-.gtf-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 9px; }
+.gtf-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 9px; overflow-y: auto; flex: 1; }
 .gtf-label { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; margin-bottom: 3px; }
 .gtf-seg { display: flex; gap: 4px; }
 .gtf-seg-btn {
@@ -288,6 +288,11 @@ body {
   cursor: pointer; margin: 0 8px 8px; flex-shrink: 0;
 }
 .gtf-start-btn:disabled { opacity: .35; cursor: default; }
+.gtc-delete {
+  background: #450a0a; border: 1px solid #7f1d1d; border-radius: 4px;
+  color: #f87171; font-size: 10px; font-weight: 600; padding: 3px 8px; cursor: pointer; flex-shrink: 0;
+}
+.gtc-delete:hover { background: #7f1d1d; }
 #gameInvite {
   position: fixed; inset: 0; z-index: 11000;
   background: rgba(0,0,0,0.65); display: none;
@@ -854,7 +859,7 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 </div>
 
 <!-- ── Games lobby widget ── -->
-<div class="widget" id="wGames" style="display:none; height:380px;">
+<div class="widget" id="wGames" style="display:none; height:470px;">
   <div class="wh" id="whGames">
     <span class="wh-title">🃏 Миниигры — Дурак</span>
     <button class="wtoggle" onclick="nbarToggle('wGames')" title="Закрыть">✕</button>
@@ -868,6 +873,7 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
       <div class="games-list" id="gamesList"><div class="no-tables">Загрузка…</div></div>
       <button class="games-create-btn" onclick="openCreateTableForm()">＋ Создать стол</button>
       <button class="gtf-start-btn" id="gStartBtn" style="display:none;" onclick="startGameTable()" disabled>▶ Начать игру</button>
+      <button id="gTestWinBtn" style="display:none;margin:4px 8px 0;padding:4px 10px;background:#1a1a2e;border:1px dashed #334155;border-radius:5px;color:#64748b;font-size:11px;cursor:pointer" onclick="window.electronAPI?.openGameWindow(gMyTableId||'test-id', token, srv)">🧪 тест окна</button>
       <div class="games-balance-bar">
         💰 Баланс: <span class="games-balance-val" id="gBalance">—</span> монет
         <button onclick="loadGamesData()" style="margin-left:auto;background:none;border:none;color:#334155;cursor:pointer;font-size:11px">↺</button>
@@ -1150,10 +1156,12 @@ function renderGamesTables() {
 
   const myTable = gAllTables.find(t => t.created_by === currentUser?.id && t.status === 'waiting')
   gMyTableId = myTable?.id ?? null
+  const testBtn = document.getElementById('gTestWinBtn')
   if (startBtn) {
     startBtn.style.display = myTable ? '' : 'none'
-    startBtn.disabled = !myTable || (myTable.players?.length ?? 0) < 2
+    startBtn.disabled = !myTable || (myTable.players?.length ?? 0) < 1 // TEST
   }
+  if (testBtn) testBtn.style.display = myTable ? '' : 'none'
 
   if (!tables.length) {
     list.innerHTML = `<div class="no-tables">${gCurrentTab === 'mine' ? 'Вы не за одним столом' : 'Нет открытых столов'}</div>`
@@ -1164,9 +1172,11 @@ function renderGamesTables() {
     const type = t.type === 'throwing' ? 'Подкидной' : 'Переводной'
     const betStr = t.bet > 0 ? `💰 ${t.bet}` : 'Без ставки'
     const alreadyIn = t.players?.some(p => p.user_id === currentUser?.id)
+    const isCreator = t.created_by === currentUser?.id
     const full = cnt >= t.max_players
     const joinDisabled = alreadyIn || full ? 'disabled' : ''
     const joinLabel = alreadyIn ? '✓ За столом' : full ? 'Полный' : 'Войти'
+    const deleteBtn = isCreator ? `<button class="gtc-delete" onclick="deleteGameTable('${esc(String(t.id))}')">✕ Удалить</button>` : ''
     return `<div class="game-table-card">
       <div class="gtc-top">
         <span class="gtc-title">${esc(t.name)}</span>
@@ -1175,10 +1185,18 @@ function renderGamesTables() {
       <div class="gtc-meta">
         <span class="gtc-type">${type}</span>
         <span class="gtc-players">● ${cnt}/${t.max_players}</span>
-        <button class="gtc-join" ${joinDisabled} data-tid="${esc(String(t.id))}">${joinLabel}</button>
+        ${deleteBtn || `<button class="gtc-join" ${joinDisabled} data-tid="${esc(String(t.id))}">${joinLabel}</button>`}
       </div>
     </div>`
   }).join('')
+}
+
+async function deleteGameTable(tableId) {
+  const r = await apiFetch('/api/games/tables/' + tableId + '/leave', { method: 'DELETE' })
+  if (!r.ok) { const e = await r.json(); showToast(e.error || 'Ошибка', 'err'); return }
+  gAllTables = gAllTables.filter(t => t.id !== tableId)
+  if (gMyTableId === tableId) gMyTableId = null
+  renderGamesTables()
 }
 
 async function joinGameTable(tableId) {
@@ -1190,20 +1208,27 @@ async function joinGameTable(tableId) {
   renderGamesTables()
 }
 
+let _submittingTable = false
 async function submitCreateTable() {
-  const name = document.getElementById('gtfName').value.trim() || 'Мой стол'
-  const bet  = parseInt(document.getElementById('gtfBet').value) || 0
-  const turn_timeout = Math.max(10, Math.min(120, parseInt(document.getElementById('gtfTurnTimeout').value) || 30))
-  const throw_timeout = Math.max(5, Math.min(60, parseInt(document.getElementById('gtfThrowTimeout').value) || 10))
-  const r = await apiFetch('/api/games/tables', {
-    method: 'POST',
-    body: JSON.stringify({ name, type: gtfType, max_players: gtfPlayers, bet, turn_timeout, throw_timeout })
-  })
-  if (!r.ok) { const e = await r.json(); showToast(e.error || 'Ошибка', 'err'); return }
-  const table = await r.json()
-  gAllTables.unshift(table)
-  closeCreateTableForm()
-  switchGamesTab('mine')
+  if (_submittingTable) return
+  _submittingTable = true
+  try {
+    const name = document.getElementById('gtfName').value.trim() || 'Мой стол'
+    const bet  = parseInt(document.getElementById('gtfBet').value) || 0
+    const turn_timeout = Math.max(10, Math.min(120, parseInt(document.getElementById('gtfTurnTimeout').value) || 30))
+    const throw_timeout = Math.max(5, Math.min(60, parseInt(document.getElementById('gtfThrowTimeout').value) || 10))
+    const r = await apiFetch('/api/games/tables', {
+      method: 'POST',
+      body: JSON.stringify({ name, type: gtfType, max_players: gtfPlayers, bet, turn_timeout, throw_timeout })
+    })
+    if (!r.ok) { const e = await r.json(); showToast(e.error || 'Ошибка', 'err'); return }
+    const table = await r.json()
+    if (!gAllTables.find(t => t.id === table.id)) gAllTables.unshift(table)
+    closeCreateTableForm()
+    switchGamesTab('mine')
+  } finally {
+    _submittingTable = false
+  }
 }
 
 async function startGameTable() {
@@ -2550,10 +2575,11 @@ function prependCmd(cmd) {
 }
 
 // ── VK maps ───────────────────────────────────────────────────────────────────
-const VK_EN  = {65:'a',66:'b',67:'c',68:'d',69:'e',70:'f',71:'g',72:'h',73:'i',74:'j',75:'k',76:'l',77:'m',78:'n',79:'o',80:'p',81:'q',82:'r',83:'s',84:'t',85:'u',86:'v',87:'w',88:'x',89:'y',90:'z',48:'0',49:'1',50:'2',51:'3',52:'4',53:'5',54:'6',55:'7',56:'8',57:'9',186:';',187:'=',188:',',189:'-',190:'.',191:'/',192:'`',219:'[',220:'\\',221:']',222:"'"}
-const VK_ENS = {65:'A',66:'B',67:'C',68:'D',69:'E',70:'F',71:'G',72:'H',73:'I',74:'J',75:'K',76:'L',77:'M',78:'N',79:'O',80:'P',81:'Q',82:'R',83:'S',84:'T',85:'U',86:'V',87:'W',88:'X',89:'Y',90:'Z',48:')',49:'!',50:'@',51:'#',52:'$',53:'%',54:'^',55:'&',56:'*',57:'(',186:':',187:'+',188:'<',189:'_',190:'>',191:'?',192:'~',219:'{',220:'|',221:'}',222:'"'}
-const VK_RU  = {65:'ф',66:'и',67:'с',68:'в',69:'у',70:'а',71:'п',72:'р',73:'ш',74:'о',75:'л',76:'д',77:'ь',78:'т',79:'щ',80:'з',81:'й',82:'к',83:'ы',84:'е',85:'г',86:'м',87:'ц',88:'ч',89:'н',90:'я',48:'0',49:'1',50:'2',51:'3',52:'4',53:'5',54:'6',55:'7',56:'8',57:'9',186:'ж',187:'=',188:'б',189:'-',190:'ю',191:'.',192:'ё',219:'х',220:'\\',221:'ъ',222:'э'}
-const VK_RUS = {65:'Ф',66:'И',67:'С',68:'В',69:'У',70:'А',71:'П',72:'Р',73:'Ш',74:'О',75:'Л',76:'Д',77:'Ь',78:'Т',79:'Щ',80:'З',81:'Й',82:'К',83:'Ы',84:'Е',85:'Г',86:'М',87:'Ц',88:'Ч',89:'Н',90:'Я',48:')',49:'!',50:'"',51:'№',52:';',53:'%',54:':',55:'?',56:'*',57:'(',186:'Ж',187:'+',188:'Б',189:'_',190:'Ю',191:',',192:'Ё',219:'Х',220:'/',221:'Ъ',222:'Э'}
+const NP = {96:'0',97:'1',98:'2',99:'3',100:'4',101:'5',102:'6',103:'7',104:'8',105:'9',110:'.'}
+const VK_EN  = {65:'a',66:'b',67:'c',68:'d',69:'e',70:'f',71:'g',72:'h',73:'i',74:'j',75:'k',76:'l',77:'m',78:'n',79:'o',80:'p',81:'q',82:'r',83:'s',84:'t',85:'u',86:'v',87:'w',88:'x',89:'y',90:'z',48:'0',49:'1',50:'2',51:'3',52:'4',53:'5',54:'6',55:'7',56:'8',57:'9',186:';',187:'=',188:',',189:'-',190:'.',191:'/',192:'`',219:'[',220:'\\',221:']',222:"'",...NP}
+const VK_ENS = {65:'A',66:'B',67:'C',68:'D',69:'E',70:'F',71:'G',72:'H',73:'I',74:'J',75:'K',76:'L',77:'M',78:'N',79:'O',80:'P',81:'Q',82:'R',83:'S',84:'T',85:'U',86:'V',87:'W',88:'X',89:'Y',90:'Z',48:')',49:'!',50:'@',51:'#',52:'$',53:'%',54:'^',55:'&',56:'*',57:'(',186:':',187:'+',188:'<',189:'_',190:'>',191:'?',192:'~',219:'{',220:'|',221:'}',222:'"',...NP}
+const VK_RU  = {65:'ф',66:'и',67:'с',68:'в',69:'у',70:'а',71:'п',72:'р',73:'ш',74:'о',75:'л',76:'д',77:'ь',78:'т',79:'щ',80:'з',81:'й',82:'к',83:'ы',84:'е',85:'г',86:'м',87:'ц',88:'ч',89:'н',90:'я',48:'0',49:'1',50:'2',51:'3',52:'4',53:'5',54:'6',55:'7',56:'8',57:'9',186:'ж',187:'=',188:'б',189:'-',190:'ю',191:'.',192:'ё',219:'х',220:'\\',221:'ъ',222:'э',...NP}
+const VK_RUS = {65:'Ф',66:'И',67:'С',68:'В',69:'У',70:'А',71:'П',72:'Р',73:'Ш',74:'О',75:'Л',76:'Д',77:'Ь',78:'Т',79:'Щ',80:'З',81:'Й',82:'К',83:'Ы',84:'Е',85:'Г',86:'М',87:'Ц',88:'Ч',89:'Н',90:'Я',48:')',49:'!',50:'"',51:'№',52:';',53:'%',54:':',55:'?',56:'*',57:'(',186:'Ж',187:'+',188:'Б',189:'_',190:'Ю',191:',',192:'Ё',219:'Х',220:'/',221:'Ъ',222:'Э',...NP}
 
 function renderLines(text, caretPos) {
   // Insert sentinel at cursor position, then process line by line
@@ -2609,7 +2635,7 @@ el?.onKeyInput(payload => {
       const ch = VK_EN[vk]
       if (ch >= '0' && ch <= '9') {
         ta.value = (ta.value === '0' ? '' : ta.value) + ch
-        renderStatus()
+        if (ta.closest('#wCalc')) renderStatus()
       }
     } else {
       const map = inputLang === 'RU' ? (shifted ? VK_RUS : VK_RU) : (shifted ? VK_ENS : VK_EN)
@@ -2621,12 +2647,13 @@ el?.onKeyInput(payload => {
       if (isNum) {
         const s = String(ta.value)
         ta.value = s.length > 1 ? s.slice(0, -1) : '0'
-        renderStatus()
+        if (ta.closest('#wCalc')) renderStatus()
       } else { deleteAt(ta); if (ta.closest('#wCalc')) renderStatus() }
     }
     else if (vk === 32 && !isNum) insertAt(ta, ' ')
     else if (vk === 13) {
       if (ta.id === 'pchatNewInp') { confirmCreateChat() }
+      else if (ta.id === 'gtfName') { deactivateInput(); submitCreateTable() }
       else if (!isNum && ta.id !== 'iChat' && ta.id !== 'iFight') { deactivateInput() }
       else if (!isNum) { const w = ta.id === 'iChat' ? 'Chat' : 'Fight'; sendMsg(w) }
     }
@@ -2789,9 +2816,15 @@ for (const id of interactiveEls) {
   })
 }
 
-// Calc widget keyboard: inputs are type=number/text so they can't get native focus
+// Calc/Games widget keyboard: inputs are type=number/text so they can't get native focus
 // (window is focusable:false). On mousedown, activate the same hook-based keyboard path.
 document.getElementById('wCalc')?.addEventListener('mousedown', e => {
+  const t = e.target
+  if (t.tagName === 'INPUT' && t.type !== 'color') {
+    activateInput(t)
+  }
+})
+document.getElementById('wGames')?.addEventListener('mousedown', e => {
   const t = e.target
   if (t.tagName === 'INPUT' && t.type !== 'color') {
     activateInput(t)
@@ -2866,7 +2899,7 @@ function makeResizable(wid, hid, minW = 200, minH = 160) {
 }
 
 makeResizable('wChat', 'rChat', 260, 200)
-makeResizable('wGames', 'rGames', 260, 280)
+makeResizable('wGames', 'rGames', 260, 360)
 document.getElementById('gamesList')?.addEventListener('click', e => {
   const btn = e.target.closest('.gtc-join')
   if (btn && !btn.disabled) joinGameTable(btn.dataset.tid)

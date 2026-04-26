@@ -62,8 +62,8 @@ const HELPER_SRC = [
   '        if(vk==18||vk==164||vk==165){modAlt=dn;if(dn&&modShift){Console.WriteLine("TOGGLELANG");Console.Out.Flush();}return CallNextHookEx(hookHandle,c,w,l);}',
   '        if(vk==91||vk==92) return CallNextHookEx(hookHandle,c,w,l);',
   '        if(dn){',
-  '          bool isL=vk>=65&&vk<=90; bool isN=vk>=48&&vk<=57; bool isP=(vk>=186&&vk<=192)||(vk>=219&&vk<=222);',
-  '          if(isL||isN||isP){bool caps=(GetAsyncKeyState(20)&1)!=0;bool sh=isL?(modShift^caps):modShift;Console.WriteLine("KK"+vk+":"+(sh?"1":"0"));Console.Out.Flush();}',
+  '          bool isL=vk>=65&&vk<=90; bool isN=vk>=48&&vk<=57; bool isP=(vk>=186&&vk<=192)||(vk>=219&&vk<=222); bool isNP=(vk>=96&&vk<=105)||vk==110;',
+  '          if(isL||isN||isP||isNP){bool caps=(GetAsyncKeyState(20)&1)!=0;bool sh=isL?(modShift^caps):(isNP?false:modShift);Console.WriteLine("KK"+vk+":"+(sh?"1":"0"));Console.Out.Flush();}',
   '          if(vk==32||vk==13||vk==8||vk==27||vk==46||vk==35||vk==36||vk==37||vk==38||vk==39||vk==40){Console.WriteLine("KV"+vk);Console.Out.Flush();}',
   '        }',
   '        return new IntPtr(1);',
@@ -521,12 +521,13 @@ img{max-width:100%;max-height:100vh;object-fit:contain;border-radius:4px}
 ipcMain.on('open-game-window', (_, tableId, authToken, serverUrl) => {
   if (!tableId || !authToken || !serverUrl) return
   const existing = gameWindows.get(tableId)
-  if (existing && !existing.isDestroyed()) { existing.focus(); return }
+  if (existing && !existing.isDestroyed()) { existing.showInactive(); return }
   const gameWin = new BrowserWindow({
-    width: 900, height: 650,
+    width: 960, height: 720,
+    minWidth: 880, minHeight: 630,
     title: 'Дурак',
     frame: true, transparent: false,
-    alwaysOnTop: true,
+    show: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -535,10 +536,14 @@ ipcMain.on('open-game-window', (_, tableId, authToken, serverUrl) => {
     backgroundColor: '#0d3320',
   })
   gameWin.setMenu(null)
+  gameWin.setAlwaysOnTop(true, 'floating')
+  gameWin.webContents.openDevTools({ mode: 'detach' })
   gameWin.on('closed', () => gameWindows.delete(tableId))
   gameWindows.set(tableId, gameWin)
-  const params = new URLSearchParams({ tableId, token: authToken, srv: serverUrl })
-  gameWin.loadFile(path.join(__dirname, 'game-window.html'), { search: params.toString() })
+  gameWin.once('ready-to-show', () => { gameWin.showInactive() })
+  gameWin.loadFile(path.join(__dirname, 'game-window.html'), {
+    query: { tableId, token: authToken, srv: serverUrl }
+  })
 })
 ipcMain.on('logout', () => {
   savedLogin.token = ''
