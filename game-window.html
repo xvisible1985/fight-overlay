@@ -430,6 +430,15 @@ if (window.gameAPI && tableId && token) {
       document.getElementById('tbTitle').textContent = `Дурак — ${msg.gameType === 'transfer' ? 'Переводной' : 'Подкидной'}`
       document.getElementById('betInfo').textContent = msg.bet > 0 ? `Банк: ${msg.bet * msg.players.length}` : ''
       renderOpponents(); renderTable(); renderHand(); updateTimer()
+    } else if (msg.type === 'hand_update') {
+      state.myHand = msg.myHand
+      if (msg.players) state.players = msg.players
+      if (msg.attackerIdx !== undefined) state.attackerIdx = msg.attackerIdx
+      if (msg.defenderIdx !== undefined) state.defenderIdx = msg.defenderIdx
+      if (msg.phase) state.phase = msg.phase
+      if (msg.passedIds) state.passedIds = msg.passedIds
+      selectedHandCard = null; selectedAttackCard = null
+      renderOpponents(); renderHand()
     } else if (msg.type === 'attack' || msg.type === 'defend' || msg.type === 'throw_in' || msg.type === 'transfer') {
       if (msg.table) state.table = msg.table
       renderTable(); updateButtons()
