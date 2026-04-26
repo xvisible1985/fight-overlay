@@ -437,8 +437,12 @@ if (window.gameAPI && tableId && token) {
       if (msg.defenderIdx !== undefined) state.defenderIdx = msg.defenderIdx
       if (msg.phase) state.phase = msg.phase
       if (msg.passedIds) state.passedIds = msg.passedIds
+      if (msg.table !== undefined) state.table = msg.table
+      if (msg.deckCount !== undefined) state.deckCount = msg.deckCount
+      if (msg.discardCount !== undefined) state.discardCount = msg.discardCount
+      if (msg.timerEndsAt !== undefined) state.timerEndsAt = msg.timerEndsAt
       selectedHandCard = null; selectedAttackCard = null
-      renderOpponents(); renderHand()
+      renderOpponents(); renderTable(); renderHand(); updateTimer()
     } else if (msg.type === 'attack' || msg.type === 'defend' || msg.type === 'throw_in' || msg.type === 'transfer') {
       if (msg.table) state.table = msg.table
       renderTable(); updateButtons()

@@ -536,7 +536,7 @@ ipcMain.on('open-game-window', (_, tableId, authToken, serverUrl) => {
     backgroundColor: '#0d3320',
   })
   gameWin.setMenu(null)
-  gameWin.setAlwaysOnTop(true, 'floating')
+  gameWin.setAlwaysOnTop(true, 'screen-saver')
   gameWin.webContents.openDevTools({ mode: 'detach' })
   gameWin.on('closed', () => gameWindows.delete(tableId))
   gameWindows.set(tableId, gameWin)
