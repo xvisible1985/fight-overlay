@@ -318,7 +318,10 @@ function selectHandCard(i) {
   if (phase === 'attack' && isAttacker) {
     const idx = selectedHandCards.findIndex(c => c.rank === card.rank && c.suit === card.suit)
     if (idx !== -1) {
-      selectedHandCards.splice(idx, 1)
+      // второй клик по выбранной карте — атакуем
+      window.gameAPI.sendAction('attack', { cards: [...selectedHandCards] })
+      selectedHandCards = []
+      renderHand(); return
     } else if (selectedHandCards.length === 0 || card.rank === selectedHandCards[0].rank) {
       selectedHandCards.push(card)
     }
@@ -362,11 +365,9 @@ function updateButtons() {
   btnTake.style.display = 'none'
 
   if (phase === 'attack' && isAttacker) {
-    const n = selectedHandCards.length
-    btnAction.textContent = n > 0 ? `Атаковать (${n})` : 'Атаковать'
-    btnAction.disabled = n === 0
+    btnAction.textContent = '—'; btnAction.disabled = true
     btnSec.textContent = ''; btnSec.disabled = true
-    statusEl.textContent = 'Ваш ход'
+    statusEl.textContent = selectedHandCards.length > 0 ? 'Ещё раз — атаковать' : 'Ваш ход'
   } else if (phase === 'defense' && isDefender) {
     btnAction.textContent = '—'; btnAction.disabled = true
     if (throwWindowActive) {
@@ -406,9 +407,7 @@ function doAction() {
   const phase = state.phase
   const card = selectedHandCards[0]
 
-  if (phase === 'attack' && myIdx === state.attackerIdx && selectedHandCards.length > 0) {
-    window.gameAPI.sendAction('attack', { cards: [...selectedHandCards] })
-  } else if ((phase === 'defense' && myIdx !== state.defenderIdx) || (phase === 'throw' && myIdx !== state.defenderIdx)) {
+  if ((phase === 'defense' && myIdx !== state.defenderIdx) || (phase === 'throw' && myIdx !== state.defenderIdx)) {
     if (card) window.gameAPI.sendAction('throw_in', { card })
   }
   selectedHandCards = []; selectedAttackCard = null
