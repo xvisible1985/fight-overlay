@@ -317,7 +317,7 @@ function updateButtons() {
     btnAction.textContent = 'Отбить'
     btnAction.disabled = !(selectedHandCard && selectedAttackCard)
     btnTake.style.display = 'inline-block'
-    if (state.type === 'transfer' && state.table.every(p => !p.defend)) {
+    if (state.gameType === 'transfer' && state.table.every(p => !p.defend)) {
       btnSec.textContent = 'Перевести'; btnSec.disabled = !selectedHandCard
     } else {
       btnSec.textContent = ''; btnSec.disabled = true
@@ -357,7 +357,7 @@ function doSecondary() {
   const phase = state.phase
   if ((phase === 'attack' || phase === 'throw') && myIdx !== state.defenderIdx) {
     window.gameAPI.sendAction('pass')
-  } else if (phase === 'defense' && myIdx === state.defenderIdx && state.type === 'transfer' && selectedHandCard) {
+  } else if (phase === 'defense' && myIdx === state.defenderIdx && state.gameType === 'transfer' && selectedHandCard) {
     window.gameAPI.sendAction('transfer', { card: selectedHandCard })
     selectedHandCard = null
   }
@@ -427,7 +427,7 @@ if (window.gameAPI && tableId && token) {
       const me = state.players.find(p => p.user_id === myUserId)
       document.getElementById('myName').textContent = me?.game_name || ''
       document.getElementById('myPortrait').innerHTML = me ? renderPortrait(me) : ''
-      document.getElementById('tbTitle').textContent = `Дурак — ${state.type === 'transfer' ? 'Переводной' : 'Подкидной'}`
+      document.getElementById('tbTitle').textContent = `Дурак — ${msg.gameType === 'transfer' ? 'Переводной' : 'Подкидной'}`
       document.getElementById('betInfo').textContent = msg.bet > 0 ? `Банк: ${msg.bet * msg.players.length}` : ''
       renderOpponents(); renderTable(); renderHand(); updateTimer()
     } else if (msg.type === 'attack' || msg.type === 'defend' || msg.type === 'throw_in' || msg.type === 'transfer') {
