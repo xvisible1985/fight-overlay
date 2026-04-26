@@ -176,6 +176,14 @@ let myUserId = null
 let selectedHandCards = []  // array; multi-select in attack phase, single otherwise
 let selectedAttackCard = null
 let timerInterval = null
+let lastActivitySent = 0
+
+function sendDefenderActivity() {
+  const now = Date.now()
+  if (now - lastActivitySent < 4000) return
+  lastActivitySent = now
+  window.gameAPI.sendAction('defender_activity')
+}
 
 const suit = s => ({'♠':'black','♣':'black','♥':'red','♦':'red'}[s] || 'black')
 const RANKS = ['6','7','8','9','10','J','Q','K','A']
@@ -329,6 +337,7 @@ function selectHandCard(i) {
     } else if (!selectedAttackCard) {
       selectedHandCards = isSel ? [] : [card]
     }
+    sendDefenderActivity()
   } else if ((phase === 'defense' && !isDefender) || (phase === 'throw' && !isDefender)) {
     const isSel = selectedHandCards[0]?.rank === card.rank && selectedHandCards[0]?.suit === card.suit
     selectedHandCards = isSel ? [] : [card]
@@ -456,6 +465,7 @@ document.getElementById('pairsArea').addEventListener('click', e => {
   selectedHandCards = []
   document.querySelectorAll('[data-role="attack"]').forEach(c => c.classList.remove('selected'))
   el.classList.add('selected')
+  sendDefenderActivity()
   renderHand()
 })
 
