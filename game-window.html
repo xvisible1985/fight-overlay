@@ -83,11 +83,14 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0f1a; }
 .discard-pile { width: 50px; height: 70px; background: rgba(0,0,0,.3); border: 1px dashed #1a5c35; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #1a5c35; }
 .discard-count { font-size: 10px; color: #334155; }
 
-/* Hand */
-.hand-row { display: flex; align-items: center; padding: 6px 16px 6px; gap: 14px; flex-shrink: 0; }
+/* Hand row */
+.hand-row { display: flex; align-items: flex-start; padding: 6px 16px 10px; gap: 14px; flex-shrink: 0; }
 .my-portrait-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
-.my-name { font-size: 11px; color: #4ade80; font-weight: 700; max-width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.hand-label { font-size: 10px; color: #1a5c35; text-transform: uppercase; letter-spacing: .06em; text-align: center; }
+.my-name { font-size: 11px; color: #4ade80; font-weight: 700; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.status-msg { font-size: 10px; color: #64748b; text-align: center; line-height: 1.3; max-width: 62px; word-break: break-word; }
+.bet-info { font-size: 12px; color: #f59e0b; font-weight: 700; white-space: nowrap; margin-left: auto; }
+.hand-col { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.hand-label { font-size: 10px; color: #1a5c35; text-transform: uppercase; letter-spacing: .06em; }
 .my-hand { display: flex; justify-content: center; align-items: flex-end; flex: 1; }
 .hand-card { width: 56px; height: 78px; border-radius: 6px; border: 1px solid rgba(255,255,255,.15); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; box-shadow: 0 3px 10px rgba(0,0,0,.5); margin-left: -18px; cursor: pointer; transition: transform .12s; position: relative; user-select: none; }
 .hand-card:first-child { margin-left: 0; }
@@ -95,16 +98,14 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0f1a; }
 .hand-card.selected { transform: translateY(-14px); outline: 2px solid #f59e0b; }
 .hand-card.red { background: #fef2f2; color: #dc2626; }
 .hand-card.black { background: #f8fafc; color: #1e293b; }
-.hand-card.dim { opacity: .4; cursor: default; }
+.hand-card.dim { opacity: .4; cursor: default; pointer-events: none; }
 
-/* Action bar */
-.action-bar { background: #071a10; border-top: 1px solid #1a3d20; padding: 10px 16px 12px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+/* Buttons under hand */
+.hand-btns { display: flex; align-items: center; gap: 6px; flex-shrink: 0; flex-wrap: wrap; padding-top: 4px; }
 .btn { background: #1a3d20; border: 1px solid #2d6a35; border-radius: 6px; color: #4ade80; font-size: 13px; font-weight: 700; padding: 7px 16px; cursor: pointer; white-space: nowrap; }
 .btn.primary { background: #14532d; border-color: #22c55e; }
 .btn.danger { background: #450a0a; border-color: #ef4444; color: #f87171; }
 .btn:disabled { opacity: .35; cursor: default; }
-.status-msg { flex: 1; font-size: 12px; color: #64748b; text-align: center; }
-.bet-info { font-size: 12px; color: #f59e0b; font-weight: 700; white-space: nowrap; }
 
 /* End screen */
 #endScreen { display: none; position: absolute; inset: 0; background: rgba(0,0,0,.85); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; }
@@ -136,18 +137,18 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0f1a; }
     <div class="my-portrait-wrap">
       <div class="portrait me" id="myPortrait" style="width:48px;height:66px"></div>
       <div class="my-name" id="myName"></div>
+      <div class="status-msg" id="statusMsg">Подключение…</div>
     </div>
-    <div style="flex:1;display:flex;flex-direction:column;gap:3px">
+    <div class="hand-col">
       <div class="hand-label" id="handLabel">Моя рука</div>
       <div class="my-hand" id="myHand"></div>
+      <div class="hand-btns">
+        <button class="btn primary" id="btnAction" disabled onclick="doAction()"></button>
+        <button class="btn" id="btnSecondary" disabled onclick="doSecondary()"></button>
+        <button class="btn danger" id="btnTake" style="display:none" onclick="doTake()">Взять</button>
+        <div class="bet-info" id="betInfo"></div>
+      </div>
     </div>
-  </div>
-  <div class="action-bar">
-    <button class="btn primary" id="btnAction" disabled onclick="doAction()"></button>
-    <button class="btn" id="btnSecondary" disabled onclick="doSecondary()"></button>
-    <button class="btn danger" id="btnTake" style="display:none" onclick="doTake()">Взять</button>
-    <div class="status-msg" id="statusMsg">Подключение…</div>
-    <div class="bet-info" id="betInfo"></div>
   </div>
   <div id="endScreen">
     <div class="end-box">
@@ -172,7 +173,7 @@ new ResizeObserver(() => {
 
 let state = null
 let myUserId = null
-let selectedHandCard = null
+let selectedHandCards = []  // array; multi-select in attack phase, single otherwise
 let selectedAttackCard = null
 let timerInterval = null
 
@@ -205,6 +206,16 @@ function roleLabel(player) {
   if (idx === aIdx) return '<span class="ps-role atk">Атакует</span>'
   if (idx === dIdx) return '<span class="ps-role def">Защищается</span>'
   return '<span class="ps-role">Ждёт</span>'
+}
+
+function isThrowWindowActive() {
+  return !!(state?.throwWindowEndsAt && state.throwWindowEndsAt > Date.now())
+}
+
+function removeCardFromHand(card) {
+  if (!state?.myHand) return
+  const i = state.myHand.findIndex(c => c.rank === card.rank && c.suit === card.suit)
+  if (i !== -1) state.myHand.splice(i, 1)
 }
 
 function renderOpponents() {
@@ -260,14 +271,23 @@ function renderHand() {
   const myIdx = state.players.findIndex(p => p.user_id === myUserId)
   const isAttacker = myIdx === state.attackerIdx
   const isDefender = myIdx === state.defenderIdx
-  const canPlay = (state.phase === 'attack' && isAttacker) ||
-                  (state.phase === 'defense' && isDefender) ||
-                  (state.phase === 'throw' && !isDefender)
+  const phase = state.phase
+  const throwWindowActive = isThrowWindowActive()
 
+  const canPlay = (phase === 'attack' && isAttacker) ||
+                  (phase === 'defense' && isDefender && !throwWindowActive) ||
+                  (phase === 'defense' && !isDefender) ||
+                  (phase === 'throw' && !isDefender)
+
+  const firstSel = selectedHandCards[0]
   const handEl = document.getElementById('myHand')
   handEl.innerHTML = hand.map((card, i) => {
-    const sel = selectedHandCard && selectedHandCard.rank === card.rank && selectedHandCard.suit === card.suit ? ' selected' : ''
-    const dim = canPlay ? '' : ' dim'
+    const isSel = selectedHandCards.some(c => c.rank === card.rank && c.suit === card.suit)
+    // In attack phase with a selection, dim cards of different rank
+    const rankMismatch = phase === 'attack' && isAttacker && firstSel && card.rank !== firstSel.rank
+    const shouldDim = !canPlay || (rankMismatch && !isSel)
+    const sel = isSel ? ' selected' : ''
+    const dim = shouldDim ? ' dim' : ''
     return `<div class="hand-card ${suit(card.suit)}${sel}${dim}" data-i="${i}" onclick="selectHandCard(${i})">${cardHTML(card)}</div>`
   }).join('')
 
@@ -282,13 +302,21 @@ function selectHandCard(i) {
   const isAttacker = myIdx === state.attackerIdx
   const isDefender = myIdx === state.defenderIdx
   const phase = state.phase
+  const throwWindowActive = isThrowWindowActive()
 
   if (phase === 'attack' && isAttacker) {
-    selectedHandCard = (selectedHandCard?.rank === card.rank && selectedHandCard?.suit === card.suit) ? null : card
-  } else if (phase === 'throw' && !isDefender) {
-    selectedHandCard = (selectedHandCard?.rank === card.rank && selectedHandCard?.suit === card.suit) ? null : card
-  } else if (phase === 'defense' && isDefender) {
-    selectedHandCard = (selectedHandCard?.rank === card.rank && selectedHandCard?.suit === card.suit) ? null : card
+    const idx = selectedHandCards.findIndex(c => c.rank === card.rank && c.suit === card.suit)
+    if (idx !== -1) {
+      selectedHandCards.splice(idx, 1)
+    } else if (selectedHandCards.length === 0 || card.rank === selectedHandCards[0].rank) {
+      selectedHandCards.push(card)
+    }
+  } else if (phase === 'defense' && isDefender && !throwWindowActive) {
+    const isSel = selectedHandCards[0]?.rank === card.rank && selectedHandCards[0]?.suit === card.suit
+    selectedHandCards = isSel ? [] : [card]
+  } else if ((phase === 'defense' && !isDefender) || (phase === 'throw' && !isDefender)) {
+    const isSel = selectedHandCards[0]?.rank === card.rank && selectedHandCards[0]?.suit === card.suit
+    selectedHandCards = isSel ? [] : [card]
   }
   renderHand()
   updateButtons()
@@ -300,6 +328,8 @@ function updateButtons() {
   const isAttacker = myIdx === state.attackerIdx
   const isDefender = myIdx === state.defenderIdx
   const phase = state.phase
+  const throwWindowActive = isThrowWindowActive()
+  const card = selectedHandCards[0]
 
   const btnAction = document.getElementById('btnAction')
   const btnSec    = document.getElementById('btnSecondary')
@@ -309,63 +339,80 @@ function updateButtons() {
   btnTake.style.display = 'none'
 
   if (phase === 'attack' && isAttacker) {
-    btnAction.textContent = selectedHandCard ? `Атаковать ${selectedHandCard.suit}${selectedHandCard.rank}` : 'Атаковать'
-    btnAction.disabled = !selectedHandCard
-    btnSec.textContent = 'Пас'; btnSec.disabled = state.table.length === 0
-    statusEl.textContent = 'Ваш ход — выберите карту для атаки'
+    const n = selectedHandCards.length
+    btnAction.textContent = n > 0 ? `Атаковать (${n})` : 'Атаковать'
+    btnAction.disabled = n === 0
+    btnSec.textContent = ''; btnSec.disabled = true
+    statusEl.textContent = 'Ваш ход'
   } else if (phase === 'defense' && isDefender) {
-    btnAction.textContent = 'Отбить'
-    btnAction.disabled = !(selectedHandCard && selectedAttackCard)
-    btnTake.style.display = 'inline-block'
-    if (state.gameType === 'transfer' && state.table.every(p => !p.defend)) {
-      btnSec.textContent = 'Перевести'; btnSec.disabled = !selectedHandCard
+    if (throwWindowActive) {
+      btnAction.textContent = 'Защита'; btnAction.disabled = true
+      btnSec.textContent = ''; btnSec.disabled = true
+      statusEl.textContent = 'Ждите подкидывания…'
+    } else {
+      btnAction.textContent = 'Отбить'
+      btnAction.disabled = !(card && selectedAttackCard)
+      btnTake.style.display = 'inline-block'
+      if (state.gameType === 'transfer' && state.table.every(pair => !pair.defend)) {
+        btnSec.textContent = 'Перевести'; btnSec.disabled = !card
+      } else {
+        btnSec.textContent = ''; btnSec.disabled = true
+      }
+      statusEl.textContent = 'Защита'
+    }
+  } else if ((phase === 'defense' && !isDefender) || (phase === 'throw' && !isDefender)) {
+    btnAction.textContent = card ? `Подкинуть ${card.suit}${card.rank}` : 'Подкинуть'
+    btnAction.disabled = !card
+    if (phase === 'throw') {
+      btnSec.textContent = 'Пас'; btnSec.disabled = false
     } else {
       btnSec.textContent = ''; btnSec.disabled = true
     }
-    statusEl.textContent = 'Защита — выберите карту на столе, затем карту из руки'
-  } else if (phase === 'throw' && !isDefender) {
-    btnAction.textContent = selectedHandCard ? `Подкинуть ${selectedHandCard.suit}${selectedHandCard.rank}` : 'Подкинуть'
-    btnAction.disabled = !selectedHandCard
-    btnSec.textContent = 'Пас'; btnSec.disabled = false
-    statusEl.textContent = 'Можно подкинуть карту или спасовать'
+    statusEl.textContent = 'Можно подкинуть'
   } else {
     btnAction.textContent = '—'; btnAction.disabled = true
     btnSec.textContent = ''; btnSec.disabled = true
-    const attName = state.players[state.attackerIdx]?.game_name
     const defName = state.players[state.defenderIdx]?.game_name
-    statusEl.textContent = `${attName} атакует · ${defName} защищается`
+    statusEl.textContent = `${defName} защищается`
   }
 }
 
 function doAction() {
-  if (!state || !selectedHandCard) return
+  if (!state) return
   const myIdx = state.players.findIndex(p => p.user_id === myUserId)
   const phase = state.phase
-  if (phase === 'attack' && myIdx === state.attackerIdx) {
-    window.gameAPI.sendAction('attack', { cards: [selectedHandCard] })
-  } else if (phase === 'defense' && myIdx === state.defenderIdx && selectedAttackCard) {
-    window.gameAPI.sendAction('defend', { attack_card: selectedAttackCard, defend_card: selectedHandCard })
-  } else if (phase === 'throw' && myIdx !== state.defenderIdx) {
-    window.gameAPI.sendAction('throw_in', { card: selectedHandCard })
+  const card = selectedHandCards[0]
+
+  if (phase === 'attack' && myIdx === state.attackerIdx && selectedHandCards.length > 0) {
+    window.gameAPI.sendAction('attack', { cards: [...selectedHandCards] })
+  } else if (phase === 'defense' && myIdx === state.defenderIdx && card && selectedAttackCard && !isThrowWindowActive()) {
+    window.gameAPI.sendAction('defend', { attack_card: selectedAttackCard, defend_card: card })
+  } else if ((phase === 'defense' && myIdx !== state.defenderIdx) || (phase === 'throw' && myIdx !== state.defenderIdx)) {
+    if (card) window.gameAPI.sendAction('throw_in', { card })
   }
-  selectedHandCard = null; selectedAttackCard = null
+  selectedHandCards = []; selectedAttackCard = null
+  renderHand()
 }
 
 function doSecondary() {
   if (!state) return
   const myIdx = state.players.findIndex(p => p.user_id === myUserId)
   const phase = state.phase
-  if ((phase === 'attack' || phase === 'throw') && myIdx !== state.defenderIdx) {
+  const card = selectedHandCards[0]
+  if (phase === 'throw' && myIdx !== state.defenderIdx) {
     window.gameAPI.sendAction('pass')
-  } else if (phase === 'defense' && myIdx === state.defenderIdx && state.gameType === 'transfer' && selectedHandCard) {
-    window.gameAPI.sendAction('transfer', { card: selectedHandCard })
-    selectedHandCard = null
+  } else if (phase === 'defense' && myIdx === state.defenderIdx && state.gameType === 'transfer' && card) {
+    window.gameAPI.sendAction('transfer', { card })
+    selectedHandCards = []
+    renderHand()
   }
 }
 
 function doTake() {
+  if (isThrowWindowActive()) return
   window.gameAPI.sendAction('take')
-  selectedHandCard = null; selectedAttackCard = null
+  selectedHandCards = []; selectedAttackCard = null
+  renderHand()
 }
 
 document.getElementById('pairsArea').addEventListener('click', e => {
@@ -373,6 +420,7 @@ document.getElementById('pairsArea').addEventListener('click', e => {
   if (!el) return
   const myIdx = state?.players.findIndex(p => p.user_id === myUserId)
   if (!state || state.phase !== 'defense' || myIdx !== state.defenderIdx) return
+  if (isThrowWindowActive()) return
   const pairIdx = parseInt(el.dataset.pair)
   const pair = state.table[pairIdx]
   if (!pair || pair.defend) return
@@ -385,13 +433,24 @@ document.getElementById('pairsArea').addEventListener('click', e => {
 function updateTimer() {
   if (timerInterval) { clearInterval(timerInterval); timerInterval = null }
   const tbTimer = document.getElementById('tbTimer')
-  if (!state?.timerEndsAt) { tbTimer.classList.remove('active'); return }
+
+  const useThrowWindow = state?.throwWindowEndsAt && state.phase === 'defense'
+  const endsAt = useThrowWindow ? state.throwWindowEndsAt : state?.timerEndsAt
+
+  if (!endsAt) { tbTimer.classList.remove('active'); return }
 
   tbTimer.classList.add('active')
   function tick() {
-    const secs = Math.max(0, Math.ceil((state.timerEndsAt - Date.now()) / 1000))
+    const secs = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000))
     tbTimer.textContent = `${secs}с`
-    if (secs === 0) { clearInterval(timerInterval); timerInterval = null }
+    if (secs === 0) {
+      clearInterval(timerInterval); timerInterval = null
+      tbTimer.classList.remove('active')
+      if (useThrowWindow) {
+        updateButtons()
+        renderHand()
+      }
+    }
   }
   tick()
   timerInterval = setInterval(tick, 500)
@@ -399,7 +458,7 @@ function updateTimer() {
 
 function applyState(s) {
   state = s
-  selectedHandCard = null; selectedAttackCard = null
+  selectedHandCards = []; selectedAttackCard = null
   renderOpponents()
   renderTable()
   renderHand()
@@ -423,12 +482,13 @@ if (window.gameAPI && tableId && token) {
     console.log('[game] event:', msg.type)
     if (msg.type === 'game_state') {
       myUserId = msg.myUserId || myUserId
-      state = msg
+      state = { ...msg, throwWindowEndsAt: msg.throwWindowEndsAt ?? null }
       const me = state.players.find(p => p.user_id === myUserId)
       document.getElementById('myName').textContent = me?.game_name || ''
       document.getElementById('myPortrait').innerHTML = me ? renderPortrait(me) : ''
       document.getElementById('tbTitle').textContent = `Дурак — ${msg.gameType === 'transfer' ? 'Переводной' : 'Подкидной'}`
       document.getElementById('betInfo').textContent = msg.bet > 0 ? `Банк: ${msg.bet * msg.players.length}` : ''
+      selectedHandCards = []; selectedAttackCard = null
       renderOpponents(); renderTable(); renderHand(); updateTimer()
     } else if (msg.type === 'hand_update') {
       state.myHand = msg.myHand
@@ -441,19 +501,39 @@ if (window.gameAPI && tableId && token) {
       if (msg.deckCount !== undefined) state.deckCount = msg.deckCount
       if (msg.discardCount !== undefined) state.discardCount = msg.discardCount
       if (msg.timerEndsAt !== undefined) state.timerEndsAt = msg.timerEndsAt
-      selectedHandCard = null; selectedAttackCard = null
+      if (msg.throwWindowEndsAt !== undefined) state.throwWindowEndsAt = msg.throwWindowEndsAt
+      selectedHandCards = []; selectedAttackCard = null
       renderOpponents(); renderTable(); renderHand(); updateTimer()
     } else if (msg.type === 'attack' || msg.type === 'defend' || msg.type === 'throw_in' || msg.type === 'transfer') {
       if (msg.table) state.table = msg.table
-      renderTable(); updateButtons()
+      if (msg.user_id === myUserId) {
+        if (msg.type === 'attack' && msg.cards) {
+          for (const c of msg.cards) removeCardFromHand(c)
+        } else if (msg.type === 'defend' && msg.defend_card) {
+          removeCardFromHand(msg.defend_card)
+        } else if ((msg.type === 'throw_in' || msg.type === 'transfer') && msg.card) {
+          removeCardFromHand(msg.card)
+        }
+      }
+      renderTable(); renderHand(); updateButtons()
     } else if (msg.type === 'take' || msg.type === 'round_end') {
       state.table = []; renderTable()
+    } else if (msg.type === 'throw_window_start') {
+      state.throwWindowEndsAt = Date.now() + msg.seconds * 1000
+      state.timerEndsAt = null
+      updateTimer(); renderHand(); updateButtons()
     } else if (msg.type === 'timer_start') {
       state.timerEndsAt = Date.now() + msg.seconds * 1000
-      updateTimer()
-    } else if (msg.type === 'player_reconnected' || msg.type === 'player_exit') {
+      state.throwWindowEndsAt = null
+      updateTimer(); renderHand(); updateButtons()
+    } else if (msg.type === 'player_exit') {
+      if (state && !state.exits?.find(e => e.user_id === msg.user_id)) {
+        state.exits = [...(state.exits || []), { user_id: msg.user_id, place: msg.place }]
+      }
+      renderOpponents()
+    } else if (msg.type === 'player_reconnected') {
       const pl = state?.players?.find(pl => pl.user_id === msg.user_id)
-      if (pl) { pl.connected = msg.type === 'player_reconnected'; renderOpponents() }
+      if (pl) { pl.connected = true; renderOpponents() }
     } else if (msg.type === 'game_over') {
       renderEnd(msg.results)
     }
