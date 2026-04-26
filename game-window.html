@@ -416,8 +416,11 @@ function renderEnd(results) {
   document.getElementById('endScreen').classList.add('show')
 }
 
+console.log('[game] tableId:', tableId, 'token:', token?.slice(0,20), 'srv:', srv)
+console.log('[game] gameAPI:', !!window.gameAPI)
 if (window.gameAPI && tableId && token) {
   window.gameAPI.onEvent(msg => {
+    console.log('[game] event:', msg.type)
     if (msg.type === 'game_state') {
       myUserId = msg.myUserId || myUserId
       state = msg

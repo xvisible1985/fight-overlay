@@ -7,7 +7,12 @@ const _listeners = []
 function _connect(tableId, token, srv) {
   if (_ws) { _ws.onclose = null; _ws.close() }
   const wsBase = srv.replace(/^http/, 'ws')
-  _ws = new WebSocket(`${wsBase}/ws/game/${tableId}?token=${token}`)
+  const wsUrl = `${wsBase}/ws/game/${tableId}?token=${token}`
+  console.log('[preload] connecting to:', wsUrl.slice(0, 80))
+  _ws = new WebSocket(wsUrl)
+  _ws.onopen = () => console.log('[preload] WS open')
+  _ws.onclose = (e) => console.log('[preload] WS closed:', e.code, e.reason)
+  _ws.onerror = (e) => console.log('[preload] WS error:', e.message)
   _ws.onmessage = (e) => {
     try {
       const msg = JSON.parse(e.data)
