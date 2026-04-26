@@ -156,6 +156,7 @@ const HELPER_SRC = [
 
 // ── State ─────────────────────────────────────────────────────────────────────
 const gameWindows = new Map()
+const gameWindowHwnds = new Map()  // tableId → HWND
 let ctrlHeld       = false
 let savedGameHwnd  = null
 let lastGameHwnd   = null   // не сбрасывается — для restore-fallback
@@ -298,6 +299,9 @@ function startFollowing() {
     // Даже если HWND есть — проверяем что процесс жив каждые ~5s
     if (followTick % 100 === 0) sendHelper('BYPID ' + GAME_PROCESS)
     followTick++
+
+    // Keep game windows topmost
+    for (const hwnd of gameWindowHwnds.values()) sendHelper('TOP ' + hwnd)
 
     if (chatModeActive || !ourHwnd) {
       if (ourHwnd) sendHelper('TOP ' + ourHwnd)
@@ -537,10 +541,16 @@ ipcMain.on('open-game-window', (_, tableId, authToken, serverUrl) => {
   })
   gameWin.setMenu(null)
   gameWin.setAlwaysOnTop(true, 'screen-saver')
-  gameWin.webContents.openDevTools({ mode: 'detach' })
-  gameWin.on('closed', () => gameWindows.delete(tableId))
+  gameWin.on('closed', () => { gameWindows.delete(tableId); gameWindowHwnds.delete(tableId) })
   gameWindows.set(tableId, gameWin)
-  gameWin.once('ready-to-show', () => { gameWin.showInactive() })
+  gameWin.once('ready-to-show', () => {
+    gameWin.showInactive()
+    try {
+      const buf = gameWin.getNativeWindowHandle()
+      const hwnd = buf.length >= 8 ? Number(buf.readBigUInt64LE()) : buf.readUInt32LE()
+      if (hwnd) gameWindowHwnds.set(tableId, hwnd)
+    } catch {}
+  })
   gameWin.loadFile(path.join(__dirname, 'game-window.html'), {
     query: { tableId, token: authToken, srv: serverUrl }
   })
