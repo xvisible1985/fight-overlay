@@ -392,6 +392,8 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 
 /* ── Warriors widget ── */
 #wWarriors { width: 230px; }
+#whWarriors { padding: 10px 12px; font-size: 13px; }
+#whWarriors .wtoggle { font-size: 19px; }
 .w-search-row { display: flex; padding: 5px 8px 0; flex-shrink: 0; }
 .w-search-inp {
   flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 4px;
@@ -652,8 +654,8 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 <!-- ── Warriors widget ── -->
 <div class="widget" id="wWarriors" style="display:none;">
   <div class="wh" id="whWarriors">
-    <span class="wh-title">👥 Жители</span>
-    <span id="wOnlineCnt" style="font-size:10px;color:#4ade80;font-weight:700;"></span>
+    <span class="wh-title">👥 Жители <span id="wOnlineCnt" style="color:#4ade80;font-weight:700;font-size:.85em;"></span></span>
+    <button class="wtoggle" onclick="toggleFontPanel(event)" title="Настройки шрифта">⚙</button>
     <button class="wtoggle" onclick="nbarToggle('wWarriors')" title="Закрыть">✕</button>
   </div>
   <div class="wbody" id="wbWarriors">
@@ -880,7 +882,11 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
       <div class="games-list" id="gamesList"><div class="no-tables">Загрузка…</div></div>
       <button class="games-create-btn" onclick="openCreateTableForm()">＋ Создать стол</button>
       <button class="gtf-start-btn" id="gStartBtn" style="display:none;" onclick="startGameTable()" disabled>▶ Начать игру</button>
-      <button id="gTestWinBtn" style="display:none;margin:4px 8px 0;padding:4px 10px;background:#1a1a2e;border:1px dashed #334155;border-radius:5px;color:#64748b;font-size:11px;cursor:pointer" onclick="window.electronAPI?.openGameWindow(gMyTableId||'test-id', token, srv)">🧪 тест окна</button>
+      <button id="gRejoinBtn" style="display:none;margin:4px 8px 0;padding:6px 12px;background:#14532d;border:1px solid #22c55e;border-radius:6px;color:#4ade80;font-size:12px;font-weight:700;cursor:pointer;width:calc(100% - 16px)" onclick="rejoinGame()">▶ Вернуться в игру</button>
+      <div id="gTestArea" style="display:none;margin:4px 8px 0;gap:6px;flex-wrap:wrap;">
+        <button style="flex:1;min-width:80px;padding:5px 8px;background:#1a1a2e;border:1px dashed #334155;border-radius:5px;color:#64748b;font-size:11px;cursor:pointer" onclick="openTestGame(4)">🧪 4 игрока</button>
+        <button style="flex:1;min-width:80px;padding:5px 8px;background:#1a1a2e;border:1px dashed #334155;border-radius:5px;color:#64748b;font-size:11px;cursor:pointer" onclick="openTestGame(6)">🧪 6 игроков</button>
+      </div>
       <div class="games-balance-bar">
         💰 Баланс: <span class="games-balance-val" id="gBalance">—</span> монет
         <button onclick="loadGamesData()" style="margin-left:auto;background:none;border:none;color:#334155;cursor:pointer;font-size:11px">↺</button>
@@ -1082,6 +1088,7 @@ let pendingChallenge = null
 let gamesWs = null
 let gAllTables = []
 let gMyTableId = null
+let gameWindowOpen = false
 let gCurrentTab = 'open'
 let gtfType = 'throwing'
 let gtfPlayers = 3
@@ -1198,6 +1205,31 @@ function renderGamesTables() {
   }).join('')
 }
 
+function updateRejoinBtn() {
+  const btn = document.getElementById('gRejoinBtn')
+  if (btn) btn.style.display = (gMyTableId && !gameWindowOpen) ? 'block' : 'none'
+}
+function rejoinGame() {
+  if (!gMyTableId) return
+  gameWindowOpen = true; updateRejoinBtn()
+  window.electronAPI?.openGameWindow(gMyTableId, token, srv)
+}
+async function openTestGame(n) {
+  try {
+    const r = await apiFetch('/api/games/test-start', { method: 'POST', body: JSON.stringify({ total_players: n }) })
+    let body
+    try { body = await r.json() } catch { showToast('Ошибка ответа сервера', 'err'); return }
+    if (!r.ok) { showToast(body.error || 'Ошибка', 'err'); return }
+    const { table_id } = body
+    if (!table_id) { showToast('Нет table_id в ответе', 'err'); return }
+    gMyTableId = table_id
+    gameWindowOpen = true; updateRejoinBtn()
+    window.electronAPI?.openGameWindow(table_id, token, srv)
+  } catch (e) {
+    showToast('Ошибка соединения: ' + (e?.message || e), 'err')
+  }
+}
+
 async function deleteGameTable(tableId) {
   const r = await apiFetch('/api/games/tables/' + tableId + '/leave', { method: 'DELETE' })
   if (!r.ok) { const e = await r.json(); showToast(e.error || 'Ошибка', 'err'); return }
@@ -1294,6 +1326,7 @@ function connectGamesWs() {
       } else if (msg.type === 'game_invite') {
         showGameInvite(msg)
       } else if (msg.type === 'game_started') {
+        gameWindowOpen = true; updateRejoinBtn()
         window.electronAPI?.openGameWindow(msg.table_id, token, srv)
         gAllTables = gAllTables.filter(t => t.id !== msg.table_id)
         renderGamesTables()
@@ -1309,6 +1342,8 @@ function applyAdminVisibility() {
     const btn = document.getElementById(id)
     if (btn) btn.style.display = isAdmin ? '' : 'none'
   }
+  const testArea = document.getElementById('gTestArea')
+  if (testArea) testArea.style.display = isAdmin ? 'flex' : 'none'
   if (!isAdmin) {
     for (const id of ['wFight', 'wCalc']) {
       const w = document.getElementById(id)
@@ -1341,6 +1376,7 @@ async function onAuth({ token: t, srv: s }) {
 }
 
 el?.onAuthToken(data => onAuth(data))
+el?.onGameWindowClosed?.(() => { gameWindowOpen = false; updateRejoinBtn() })
 
 el?.onWidgetToggle(({ widget, visible }) => {
   const map = { chat: 'wChat', fight: 'wFight', warriors: 'wWarriors', calc: 'wCalc' }
@@ -1357,7 +1393,7 @@ function resetState() {
   if (fightWs) { fightWs.onclose = null; fightWs.close(); fightWs = null }
   if (pchatWs) { pchatWs.onclose = null; pchatWs.close(); pchatWs = null }
   if (gamesWs) { gamesWs.onclose = null; gamesWs.close(); gamesWs = null }
-  gAllTables = []; gMyTableId = null
+  gAllTables = []; gMyTableId = null; gameWindowOpen = false; updateRejoinBtn()
   _pendingInviteTableId = null
   document.getElementById('gameInvite').style.display = 'none'
   const gamesList = document.getElementById('gamesList')
@@ -1672,10 +1708,18 @@ function closeFontPanel() {
   document.getElementById('fontPanelOverlay').style.display = 'none'
 }
 
+let _syncingFs = false
+const chatToSml = { sm: 's', md: 'm', lg: 'l' }
+const smlToChat = { s: 'sm', m: 'md', l: 'lg' }
 function setChatFontSize(s) {
   chatFontSize = s
   try { localStorage.setItem('nw-chatfs', s) } catch {}
   applyFontToChat(); applyFontPanelState()
+  if (_syncingFs) return
+  _syncingFs = true
+  const sz = chatToSml[s] || 's'
+  setFightFs(sz); setCalcFs(sz)
+  _syncingFs = false
 }
 
 function setChatFontFamily(v) {
@@ -1847,7 +1891,7 @@ function ctxDo(id) {
   else if (id === 'chat-leave')  { if (cid) leaveChat(cid) }
   else if (id === 'chat-save')   { if (cid) saveChatTranscript(cid) }
   else if (id === 'chat-invite') { if (cid) startAddParticipant(cid) }
-  else if (id === 'warrior-dm')     { if (ctxTarget?.name) openDmWith(ctxTarget.name) }
+  else if (id === 'warrior-dm')     { if (ctxTarget?.name) { hide('wWarriors'); updateNbarButtons(); openDmWith(ctxTarget.name) } }
   else if (id === 'player-profile') { if (ctxTarget?.name) openPlayerProfile(ctxTarget.name) }
   else if (id === 'warrior-game-invite') {
     if (ctxTarget?.name && gMyTableId) {
@@ -2103,6 +2147,10 @@ function setFightFs(sz) {
   document.getElementById('wFight').style.fontSize = fightFsMap[sz] || '13px'
   for (const k of ['s','m','l']) document.getElementById('ff-'+k).classList.toggle('active', k === sz)
   try { localStorage.setItem('fa_fight_fs', sz) } catch {}
+  if (_syncingFs) return
+  _syncingFs = true
+  setChatFontSize(smlToChat[sz] || 'sm'); setCalcFs(sz)
+  _syncingFs = false
 }
 function restoreFightFs() {
   const sz = localStorage.getItem('fa_fight_fs') || 's'
@@ -2526,6 +2574,10 @@ function setCalcFs(sz) {
   document.getElementById('wCalc').style.fontSize = calcFsMap[sz] || '14px'
   for (const k of ['s','m','l']) document.getElementById('cf-'+k).classList.toggle('active', k === sz)
   try { localStorage.setItem('fa_calc_fs', sz) } catch {}
+  if (_syncingFs) return
+  _syncingFs = true
+  setChatFontSize(smlToChat[sz] || 'sm'); setFightFs(sz)
+  _syncingFs = false
 }
 function restoreCalcFs() {
   const sz = localStorage.getItem('fa_calc_fs') || 's'

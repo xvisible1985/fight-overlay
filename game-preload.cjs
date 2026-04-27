@@ -1,5 +1,5 @@
 'use strict'
-const { contextBridge } = require('electron')
+const { contextBridge, ipcRenderer } = require('electron')
 
 let _ws = null
 const _listeners = []
@@ -45,5 +45,8 @@ contextBridge.exposeInMainWorld('gameAPI', {
 
   disconnect() {
     if (_ws) { _ws.onclose = null; _ws.close(); _ws = null }
-  }
+  },
+
+  closeWindow:    () => ipcRenderer.send('game-window-close'),
+  startResizing:  () => ipcRenderer.send('game-window-start-resize'),
 })

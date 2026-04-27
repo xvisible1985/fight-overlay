@@ -19,4 +19,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openExternal:     (url) => ipcRenderer.send('open-external', url),
   openImage:        (url) => ipcRenderer.send('open-image', url),
   openGameWindow: (tableId, token, srv) => ipcRenderer.send('open-game-window', tableId, token, srv),
+  onGameWindowClosed: (cb) => ipcRenderer.on('game-window-closed', (_, tableId) => cb(tableId)),
 })

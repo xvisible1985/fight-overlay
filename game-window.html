@@ -5,7 +5,7 @@
 <title>Дурак</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0f1a; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: transparent; }
 
 /* Scale container */
 #scaleRoot {
@@ -22,11 +22,14 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0f1a; }
 }
 
 /* Title bar */
-.title-bar { background: #071a10; border-bottom: 1px solid #1a3d20; padding: 8px 16px; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #4ade80; font-weight: 600; flex-shrink: 0; }
+.title-bar { background: #071a10; border-bottom: 1px solid #1a3d20; padding: 8px 16px; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #4ade80; font-weight: 600; flex-shrink: 0; -webkit-app-region: drag; }
+.title-bar button, .tb-timer, .tb-info { -webkit-app-region: no-drag; }
 .tb-title { flex: 1; }
 .tb-timer { background: #451a03; border: 1px solid #f59e0b; border-radius: 4px; padding: 3px 10px; font-size: 12px; color: #f59e0b; font-weight: 700; display: none; }
 .tb-timer.active { display: inline-block; }
 .tb-info { color: #475569; font-size: 12px; }
+.tb-close { background: none; border: none; color: #475569; cursor: pointer; font-size: 15px; padding: 2px 6px; border-radius: 4px; line-height: 1; }
+.tb-close:hover { background: #7f1d1d; color: #fca5a5; }
 
 /* Portrait */
 .portrait { width: 42px; height: 58px; border-radius: 5px; overflow: hidden; border: 2px solid rgba(255,255,255,.1); flex-shrink: 0; background: #0f2440; display: flex; align-items: center; justify-content: center; }
@@ -89,9 +92,14 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0f1a; }
 .my-name { font-size: 11px; color: #4ade80; font-weight: 700; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .status-msg { font-size: 10px; color: #64748b; text-align: center; line-height: 1.3; max-width: 62px; word-break: break-word; }
 .bet-info { font-size: 12px; color: #f59e0b; font-weight: 700; white-space: nowrap; position: absolute; right: 0; }
-.hand-col { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.hand-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .hand-label { font-size: 10px; color: #1a5c35; text-transform: uppercase; letter-spacing: .06em; }
-.my-hand { display: flex; justify-content: center; align-items: flex-end; flex: 1; }
+.my-hand-scroll { flex: 1; min-height: 100px; overflow-x: auto; overflow-y: hidden; padding-top: 16px; }
+.my-hand { display: flex; justify-content: safe center; align-items: flex-end; min-width: 100%; }
+
+/* Resize handle */
+.resize-br { position: absolute; bottom: 0; right: 0; width: 16px; height: 16px; cursor: se-resize; background: linear-gradient(135deg, transparent 50%, #1a5c35 50%); opacity: .5; border-radius: 0 0 12px 0; -webkit-app-region: no-drag; }
+.resize-br:hover { opacity: 1; }
 .hand-card { width: 56px; height: 78px; border-radius: 6px; border: 1px solid rgba(255,255,255,.15); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; box-shadow: 0 3px 10px rgba(0,0,0,.5); margin-left: -18px; cursor: pointer; transition: transform .12s; position: relative; user-select: none; }
 .hand-card:first-child { margin-left: 0; }
 .hand-card:hover { transform: translateY(-10px); }
@@ -125,6 +133,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0f1a; }
     <span class="tb-title" id="tbTitle">Дурак</span>
     <span class="tb-timer" id="tbTimer"></span>
     <span class="tb-info" id="tbInfo"></span>
+    <button class="tb-close" onclick="window.gameAPI?.closeWindow()" title="Закрыть">✕</button>
   </div>
   <div class="opponents-area" id="opponentsArea"></div>
   <div class="table-center" id="tableCenter">
@@ -141,7 +150,9 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0f1a; }
     </div>
     <div class="hand-col">
       <div class="hand-label" id="handLabel">Моя рука</div>
-      <div class="my-hand" id="myHand"></div>
+      <div class="my-hand-scroll">
+        <div class="my-hand" id="myHand"></div>
+      </div>
       <div class="hand-btns">
         <button class="btn primary" id="btnAction" disabled onclick="doAction()"></button>
         <button class="btn" id="btnSecondary" disabled onclick="doSecondary()"></button>
@@ -150,6 +161,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0f1a; }
       </div>
     </div>
   </div>
+  <div class="resize-br" onmousedown="window.gameAPI?.startResizing()"></div>
   <div id="endScreen">
     <div class="end-box">
       <div class="end-title">Игра окончена</div>
@@ -372,6 +384,12 @@ function updateButtons() {
     btnAction.textContent = 'Отбить'; btnAction.disabled = !canDefend
     btnTake.style.display = 'inline-block'
     btnTake.disabled = throwWindowActive
+    if (throwWindowActive) {
+      const secs = Math.max(0, Math.ceil((state.throwWindowEndsAt - Date.now()) / 1000))
+      btnTake.textContent = secs > 0 ? `Взять (${secs}с)` : 'Взять'
+    } else {
+      btnTake.textContent = 'Взять'
+    }
     if (state.gameType === 'transfer' && state.table.every(pair => !pair.defend)) {
       btnSec.textContent = 'Перевести'; btnSec.disabled = !card
     } else {
@@ -479,10 +497,12 @@ function updateTimer() {
 
   const myIdx = state.players.findIndex(p => p.user_id === myUserId)
   const isAtk = myIdx === state.attackerIdx
+  const isDef = myIdx === state.defenderIdx
   const hasDefTimer = !!(state.timerEndsAt && state.phase === 'defense')
   const hasThrowWin = !!(state.throwWindowEndsAt && state.throwWindowEndsAt > Date.now() && isAtk && state.phase === 'throw')
+  const hasDefThrowWin = !!(state.throwWindowEndsAt && state.throwWindowEndsAt > Date.now() && isDef && state.phase === 'defense')
 
-  if (!hasDefTimer && !hasThrowWin) { tbTimer.classList.remove('active'); return }
+  if (!hasDefTimer && !hasThrowWin && !hasDefThrowWin) { tbTimer.classList.remove('active'); return }
 
   function tick() {
     if (!state) return
@@ -494,8 +514,20 @@ function updateTimer() {
     } else {
       tbTimer.classList.remove('active')
     }
-    // Бито button: throw window countdown (attacker only)
     const myIdx2 = state.players.findIndex(p => p.user_id === myUserId)
+    // Взять button: throw window countdown (defender, defense phase)
+    if (myIdx2 === state.defenderIdx && state.throwWindowEndsAt && state.phase === 'defense') {
+      const secs = Math.max(0, Math.ceil((state.throwWindowEndsAt - Date.now()) / 1000))
+      const btnTakeEl = document.getElementById('btnTake')
+      if (secs > 0) {
+        btnTakeEl.textContent = `Взять (${secs}с)`
+      } else {
+        state.throwWindowEndsAt = null
+        btnTakeEl.textContent = 'Взять'
+        btnTakeEl.disabled = false
+      }
+    }
+    // Бито button: throw window countdown (attacker only)
     if (myIdx2 === state.attackerIdx && state.throwWindowEndsAt && state.phase === 'throw') {
       const secs = Math.max(0, Math.ceil((state.throwWindowEndsAt - Date.now()) / 1000))
       const btnSec = document.getElementById('btnSecondary')
@@ -586,6 +618,9 @@ if (window.gameAPI && tableId && token) {
         state.exits = [...(state.exits || []), { user_id: msg.user_id, place: msg.place }]
       }
       renderOpponents()
+    } else if (msg.type === 'player_disconnected') {
+      const pl = state?.players?.find(pl => pl.user_id === msg.user_id)
+      if (pl) { pl.connected = false; renderOpponents() }
     } else if (msg.type === 'player_reconnected') {
       const pl = state?.players?.find(pl => pl.user_id === msg.user_id)
       if (pl) { pl.connected = true; renderOpponents() }

@@ -527,10 +527,10 @@ ipcMain.on('open-game-window', (_, tableId, authToken, serverUrl) => {
   const existing = gameWindows.get(tableId)
   if (existing && !existing.isDestroyed()) { existing.showInactive(); return }
   const gameWin = new BrowserWindow({
-    width: 960, height: 720,
-    minWidth: 880, minHeight: 630,
+    width: 960, height: 680,
+    minWidth: 640, minHeight: 480,
     title: 'Дурак',
-    frame: true, transparent: false,
+    frame: false, transparent: true,
     show: false, skipTaskbar: true,
     webPreferences: {
       nodeIntegration: false,
@@ -541,7 +541,12 @@ ipcMain.on('open-game-window', (_, tableId, authToken, serverUrl) => {
   })
   gameWin.setMenu(null)
   gameWin.setAlwaysOnTop(true, 'screen-saver')
-  gameWin.on('closed', () => { gameWindows.delete(tableId); gameWindowHwnds.delete(tableId) })
+  gameWin.on('closed', () => {
+    gameWindows.delete(tableId)
+    gameWindowHwnds.delete(tableId)
+    if (mainWindow && !mainWindow.isDestroyed())
+      mainWindow.webContents.send('game-window-closed', tableId)
+  })
   gameWindows.set(tableId, gameWin)
   gameWin.once('ready-to-show', () => {
     gameWin.showInactive()
@@ -557,6 +562,14 @@ ipcMain.on('open-game-window', (_, tableId, authToken, serverUrl) => {
   gameWin.loadFile(path.join(__dirname, 'game-window.html'), {
     query: { tableId, token: authToken, srv: serverUrl }
   })
+})
+ipcMain.on('game-window-close', (e) => {
+  const win = BrowserWindow.fromWebContents(e.sender)
+  if (win) win.close()
+})
+ipcMain.on('game-window-start-resize', (e) => {
+  const win = BrowserWindow.fromWebContents(e.sender)
+  if (win) win.startResizing('bottom-right')
 })
 ipcMain.on('logout', () => {
   savedLogin.token = ''

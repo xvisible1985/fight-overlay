@@ -25,7 +25,7 @@
           "arch": ["x64"]
         }
       ],
-      "icon": "icon.png"
+      "icon": "icon.ico"
     },
     "directories": {
       "output": "dist"
