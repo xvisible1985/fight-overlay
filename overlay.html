@@ -1244,14 +1244,12 @@ function renderGamesTables() {
     } else {
       actionBtn = `<button class="gtc-join" ${full ? 'disabled' : ''} data-tid="${tid}">${full ? 'Полный' : 'Войти'}</button>`
     }
-    const sortedPlayers = [
-      ...(t.players?.filter(p => p.user_id === t.created_by) || []),
-      ...(t.players?.filter(p => p.user_id !== t.created_by) || [])
-    ]
-    const playersLine = sortedPlayers.map(p => esc(p.game_name)).join(', ')
+    const creatorName = t.players?.find(p => p.user_id === t.created_by)?.game_name || ''
+    const otherPlayers = t.players?.filter(p => p.user_id !== t.created_by) || []
+    const playersLine = otherPlayers.map(p => esc(p.game_name)).join(', ')
     return `<div class="game-table-card">
       <div class="gtc-top">
-        <span class="gtc-title">${esc(t.name)}</span>
+        <span class="gtc-title">${esc(t.name)}${creatorName ? ` <span style="font-weight:400;color:#64748b;font-size:.9em">(${esc(creatorName)})</span>` : ''}</span>
         <span class="gtc-bet">${betStr}</span>
       </div>
       <div class="gtc-meta">
@@ -1259,7 +1257,7 @@ function renderGamesTables() {
         <span class="gtc-players">● ${cnt}/${t.max_players}</span>
         ${actionBtn}
       </div>
-      ${playersLine ? `<div class="gtc-creator">👤 ${playersLine}</div>` : ''}
+      ${playersLine ? `<div class="gtc-creator">+ ${playersLine}</div>` : ''}
     </div>`
   }).join('')
 }
