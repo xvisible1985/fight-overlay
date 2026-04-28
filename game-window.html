@@ -9,7 +9,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: transparen
 
 /* Scale container */
 #scaleRoot {
-  width: 860px; height: 580px;
+  width: 860px; height: 660px;
   background: #0d3320;
   border: 1px solid #1a5c35;
   border-radius: 12px;
@@ -127,6 +127,30 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: transparen
 /* Resize handle */
 .resize-br { position: absolute; bottom: 0; right: 0; width: 16px; height: 16px; cursor: se-resize; background: linear-gradient(135deg, transparent 50%, #1a5c35 50%); opacity: .5; border-radius: 0 0 12px 0; -webkit-app-region: no-drag; }
 .resize-br:hover { opacity: 1; }
+
+/* Game chat */
+.game-chat { flex-shrink: 0; display: flex; flex-direction: column; border-top: 1px solid #1a3d20; background: #071a10; height: 80px; }
+.gc-msgs { flex: 1; overflow-y: auto; padding: 4px 10px; display: flex; flex-direction: column; gap: 1px; }
+.gc-msgs::-webkit-scrollbar { width: 3px; }
+.gc-msgs::-webkit-scrollbar-thumb { background: #1a5c35; border-radius: 2px; }
+.gc-msg { font-size: 11px; color: #94a3b8; line-height: 1.4; word-break: break-word; }
+.gc-msg .gc-ts { color: #334155; font-size: 9px; margin-right: 4px; }
+.gc-msg .gc-name { font-weight: 700; color: #4ade80; }
+.gc-msg .gc-name.me { color: #60a5fa; }
+.gc-msg.rp { color: #c084fc; font-style: italic; }
+.gc-msg.rp .gc-name { color: #a855f7; }
+.gc-msg.do-msg { color: #c084fc; font-style: italic; }
+.gc-msg.try-msg { color: #94a3b8; }
+.gc-msg .gc-success { color: #4ade80; }
+.gc-msg .gc-fail { color: #f87171; }
+.gc-row { display: flex; align-items: center; gap: 5px; padding: 3px 8px 4px; border-top: 1px solid #0d2010; flex-shrink: 0; }
+.gc-input { flex: 1; background: rgba(74,222,128,.06); border: 1px solid #1a3d20; border-radius: 4px; color: #e2e8f0; font-size: 11px; padding: 4px 7px; outline: none; font-family: inherit; resize: none; height: 22px; line-height: 14px; }
+.gc-input:focus { border-color: #2d6a35; }
+.gc-send { background: #1a3d20; border: 1px solid #2d6a35; border-radius: 4px; color: #4ade80; font-size: 13px; font-weight: 700; padding: 2px 9px; cursor: pointer; line-height: 18px; }
+.gc-send:hover { background: #14532d; }
+.gc-cmd-btns { display: flex; gap: 2px; }
+.gc-cmd { background: none; border: 1px solid #1a3d20; border-radius: 3px; color: #475569; font-size: 9px; font-weight: 700; cursor: pointer; padding: 2px 5px; line-height: 1; }
+.gc-cmd:hover, .gc-cmd.active { border-color: #a855f7; color: #c084fc; background: rgba(168,85,247,.1); }
 .hand-card { width: 56px; height: 78px; border-radius: 6px; border: 1px solid rgba(255,255,255,.15); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; box-shadow: 0 3px 10px rgba(0,0,0,.5); margin-left: -18px; cursor: pointer; transition: transform .12s; position: relative; user-select: none; }
 .hand-card:first-child { margin-left: 0; }
 .hand-card:hover { transform: translateY(-10px); }
@@ -193,6 +217,20 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: transparen
       </div>
     </div>
   </div>
+  <!-- Game chat -->
+  <div class="game-chat">
+    <div class="gc-msgs" id="gcMsgs"></div>
+    <div class="gc-row">
+      <div class="gc-cmd-btns">
+        <button class="gc-cmd" id="gcBtnMe" onclick="gcPrependCmd('/me ')" title="/me — действие">/me</button>
+        <button class="gc-cmd" id="gcBtnDo" onclick="gcPrependCmd('/do ')" title="/do — описание">/do</button>
+        <button class="gc-cmd" id="gcBtnTry" onclick="gcPrependCmd('/try ')" title="/try — бросок">/try</button>
+      </div>
+      <input class="gc-input" id="gcInput" placeholder="Написать... (Enter — отправить)"
+        onkeydown="gcKeyDown(event)" oninput="gcUpdateCmdBtns()"/>
+      <button class="gc-send" onclick="gcSend()">→</button>
+    </div>
+  </div>
   <div class="resize-br" onmousedown="window.gameAPI?.startResizing()"></div>
   <div id="endScreen">
     <div class="end-box">
@@ -208,7 +246,7 @@ const tableId = p.get('tableId') || ''
 const token   = p.get('token') || ''
 const srv     = p.get('srv') || 'https://nordheimunion.ru'
 
-const BASE_W = 860, BASE_H = 580
+const BASE_W = 860, BASE_H = 660
 const root = document.getElementById('scaleRoot')
 new ResizeObserver(() => {
   const s = Math.min(document.body.clientWidth / BASE_W, document.body.clientHeight / BASE_H)
@@ -707,11 +745,94 @@ if (window.gameAPI && tableId && token) {
       if (pl) { pl.connected = true; renderOpponents() }
     } else if (msg.type === 'game_over') {
       renderEnd(msg.results)
+    } else if (msg.type === 'chat') {
+      gcAppendMsg(msg)
     }
   })
   window.gameAPI.connect(tableId, token, srv)
 } else {
   document.getElementById('statusMsg').textContent = 'Нет параметров подключения'
+}
+
+// ── Game chat ─────────────────────────────────────────────────────────────────
+function gcEsc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+}
+function gcTime(ts) {
+  if (!ts) return ''
+  const d = new Date(ts)
+  return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0')
+}
+function gcRenderText(text) {
+  return gcEsc(text)
+    .replace(/\*([^*]+)\*/g, '<b>$1</b>')
+    .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" style="color:#60a5fa">$1</a>')
+}
+
+function gcAppendMsg(m) {
+  const box = document.getElementById('gcMsgs')
+  if (!box) return
+  const d = document.createElement('div')
+  const ts = `<span class="gc-ts">${gcTime(m.ts)}</span>`
+  const isMe = m.user_id === myUserId
+  const nameCls = 'gc-name' + (isMe ? ' me' : '')
+  const nameSpan = `<span class="${nameCls}">${gcEsc(m.game_name)}</span>`
+  const text = m.content || ''
+
+  if (text.startsWith('/me ')) {
+    d.className = 'gc-msg rp'
+    d.innerHTML = `${ts}${nameSpan} ${gcRenderText(text.slice(4))}`
+  } else if (text.startsWith('/do ')) {
+    d.className = 'gc-msg do-msg'
+    d.innerHTML = `${ts}${gcRenderText(text.slice(4))} — [${gcEsc(m.game_name)}]`
+  } else if (text.startsWith('/try ')) {
+    d.className = 'gc-msg try-msg'
+    const roll = Math.floor(Math.random() * 100) + 1
+    const ok = roll >= 50
+    const res = ok
+      ? `(<span class="gc-success">Успешно, ${roll}/100</span>)`
+      : `(<span class="gc-fail">Неуспешно, ${roll}/100</span>)`
+    d.innerHTML = `${ts}${nameSpan} ${gcRenderText(text.slice(5))} ${res}`
+  } else {
+    d.className = 'gc-msg'
+    d.innerHTML = `${ts}${nameSpan}: ${gcRenderText(text)}`
+  }
+  box.appendChild(d)
+  box.scrollTop = box.scrollHeight
+}
+
+function gcSend() {
+  const inp = document.getElementById('gcInput')
+  const txt = inp.value.trim()
+  if (!txt) return
+  window.gameAPI?.sendAction('chat', { content: txt })
+  inp.value = ''
+  gcUpdateCmdBtns()
+}
+
+function gcKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); gcSend() }
+}
+
+function gcUpdateCmdBtns() {
+  const v = document.getElementById('gcInput').value
+  document.getElementById('gcBtnMe').classList.toggle('active', v.startsWith('/me '))
+  document.getElementById('gcBtnDo').classList.toggle('active', v.startsWith('/do '))
+  document.getElementById('gcBtnTry').classList.toggle('active', v.startsWith('/try '))
+}
+
+function gcPrependCmd(cmd) {
+  const inp = document.getElementById('gcInput')
+  const cmds = ['/me ', '/do ', '/try ']
+  if (inp.value.startsWith(cmd)) {
+    inp.value = inp.value.slice(cmd.length)
+  } else {
+    const other = cmds.find(c => c !== cmd && inp.value.startsWith(c))
+    inp.value = cmd + (other ? inp.value.slice(other.length) : inp.value)
+  }
+  gcUpdateCmdBtns()
+  inp.focus()
+  inp.selectionStart = inp.selectionEnd = inp.value.length
 }
 </script>
 </body>
