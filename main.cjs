@@ -526,7 +526,7 @@ ipcMain.on('open-game-window', (_, tableId, authToken, serverUrl) => {
   if (!tableId || !authToken || !serverUrl) return
   const existing = gameWindows.get(tableId)
   if (existing && !existing.isDestroyed()) { existing.showInactive(); return }
-  const GW = 860, GH = 660  // base content dimensions (660 = 580 + 80 chat row)
+  const GW = 860, GH = 740  // base content dimensions (740 = 580 game + 160 chat)
   const gameWin = new BrowserWindow({
     width: 960, height: Math.round(960 * GH / GW),
     minWidth: 480, minHeight: Math.round(480 * GH / GW),
