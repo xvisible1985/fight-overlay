@@ -48,13 +48,13 @@ body {
 .msg .mn { font-weight: 600; }
 .msg.sys { color: #475569; font-style: italic; }
 .msg.me  { color: #a78bfa; font-style: italic; }
-.msg.do  { color: #818cf8; font-style: italic; }
+.msg.do  { color: #a78bfa; font-style: italic; }
 .date-sep {
   display: flex; align-items: center; gap: 6px;
-  font-size: 9px; color: #334155; margin: 4px 0; white-space: nowrap;
+  font-size: .75em; color: #4ade80; margin: 4px 0; white-space: nowrap; opacity: .6;
 }
 .date-sep::before, .date-sep::after {
-  content: ''; flex: 1; height: 1px; background: #1e293b;
+  content: ''; flex: 1; height: 1px; background: #4ade8033;
 }
 
 /* ── PChat new-chat inline ── */
@@ -74,7 +74,8 @@ body {
 /* ── PChat tabs ── */
 .pchat-tabs {
   display: flex; flex-wrap: wrap; gap: 3px; padding: 5px 8px;
-  border-bottom: 1px solid #0f172a; flex-shrink: 0; overflow-y: auto; max-height: 72px;
+  border-bottom: 1px solid #0f172a; flex-shrink: 0;
+  background: rgba(20, 50, 30, 0.55);
 }
 .pchat-tab {
   display: flex; align-items: center; gap: 3px;
@@ -176,7 +177,8 @@ body {
 }
 .ep-btn { width: 28px; height: 28px; background: none; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; padding: 0; line-height: 1; }
 .ep-btn:hover { background: #334155; }
-.emoji-open-btn { font-size: 14px; padding: 4px 6px; line-height: 1; }
+.emoji-open-btn { font-size: 14px; padding: 3px 6px; line-height: 1; background: #0f172a; border: 1px solid #334155; border-radius: 4px; cursor: pointer; color: inherit; }
+.emoji-open-btn:hover { background: #334155; }
 .fp-colorval { font-size: 11px; color: #475569; letter-spacing: .04em; flex: 1; }
 .fp-reset {
   width: 100%; margin-top: 8px;
@@ -248,8 +250,10 @@ body {
 .gtc-title { font-size: 12px; font-weight: 700; color: #e2e8f0; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .gtc-bet { font-size: 11px; color: #f59e0b; font-weight: 700; flex-shrink: 0; }
 .gtc-meta { display: flex; align-items: center; gap: 6px; font-size: 10px; }
+.gtc-meta .gtc-delete { margin-left: auto; }
 .gtc-type { background: #1e293b; border: 1px solid #334155; border-radius: 3px; padding: 1px 5px; font-size: 9px; color: #64748b; flex-shrink: 0; }
 .gtc-players { color: #4ade80; font-weight: 600; }
+.gtc-creator { font-size: 11px; color: #94a3b8; margin-top: 3px; }
 .gtc-join { background: #1e1b4b; border: 1px solid #7c3aed; border-radius: 4px; color: #a78bfa; font-size: 9px; font-weight: 700; padding: 2px 8px; cursor: pointer; flex-shrink: 0; margin-left: auto; }
 .gtc-join:disabled { opacity: .35; cursor: default; }
 .games-create-btn {
@@ -293,6 +297,11 @@ body {
   color: #f87171; font-size: 10px; font-weight: 600; padding: 3px 8px; cursor: pointer; flex-shrink: 0;
 }
 .gtc-delete:hover { background: #7f1d1d; }
+.gtc-leave {
+  background: #1e293b; border: 1px solid #475569; border-radius: 4px;
+  color: #94a3b8; font-size: 10px; font-weight: 600; padding: 3px 8px; cursor: pointer; flex-shrink: 0;
+}
+.gtc-leave:hover { border-color: #f87171; color: #f87171; }
 #gameInvite {
   position: fixed; inset: 0; z-index: 11000;
   background: rgba(0,0,0,0.65); display: none;
@@ -391,15 +400,21 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 .warrior-item.added { opacity: 0.7; }
 
 /* ── Warriors widget ── */
-#wWarriors { width: 230px; }
-#whWarriors { padding: 10px 12px; font-size: 13px; }
+#wWarriors { width: 280px; font-size: 11px; }
 #whWarriors .wtoggle { font-size: 19px; }
 .w-search-row { display: flex; padding: 5px 8px 0; flex-shrink: 0; }
+.w-search-wrap { position: relative; flex: 1; }
 .w-search-inp {
-  flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 4px;
-  color: #e2e8f0; font-size: 11px; padding: 3px 7px; outline: none;
+  width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 4px;
+  color: #e2e8f0; font-size: 11px; padding: 3px 7px; outline: none; box-sizing: border-box;
 }
 .w-search-inp:focus { border-color: #3b82f6; }
+.w-search-inp.chat-active { color: transparent !important; caret-color: transparent; }
+.w-search-mirror {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+  font-size: 11px; font-family: inherit; padding: 3px 7px; box-sizing: border-box;
+  color: #e2e8f0; white-space: nowrap; display: flex; align-items: center;
+}
 .wfilter { display: flex; gap: 3px; padding: 4px 8px; flex-shrink: 0; }
 .wfbtn {
   flex: 1; background: #0f172a; border: 1px solid #1e293b; border-radius: 4px;
@@ -423,6 +438,11 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 .w-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .w-dot.on { background: #22c55e; } .w-dot.off { background: #334155; }
 .w-empty { font-size: 11px; color: #475569; padding: 10px 8px; text-align: center; }
+/* Warriors font scale — inherits from #wWarriors inline font-size set by setWarriorsFs() */
+#wWarriors .warrior-name { font-size: 1em; }
+#wWarriors .warrior-sub  { font-size: .82em; }
+#wWarriors .warrior-avatar { width: 2.2em; height: 2.2em; font-size: .8em; }
+#wWarriors .w-empty { font-size: 1em; }
 
 /* ── Fight widget updates ── */
 .fight-tabs { display: flex; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
@@ -475,9 +495,21 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 #wCalc { width: 460px; font-size: 14px; }
 #wCalc.fsz-md { width: 560px; font-size: 17px; }
 #wCalc.fsz-lg { width: 660px; font-size: 21px; }
-.cw-upper { display: flex; flex-direction: row; border-bottom: 1px solid #1e293b; }
-.cw-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .28em; padding: .55em .6em; }
-.cw-col-div { width: 1px; background: #1e293b; flex-shrink: 0; }
+.cw-upper { display: flex; flex-direction: row; border-bottom: 1px solid #1e293b; gap: .4em; padding: .4em; }
+.cw-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .28em; padding: .55em .6em; border: 1px solid transparent; border-radius: 6px; transition: border-color .2s, background .2s; }
+.cw-col.active { border-color: rgba(59,130,246,.4); background: rgba(59,130,246,.04); }
+.cw-col-div { display: none; }
+.cw-turn-row { display: flex; justify-content: center; margin-bottom: .1em; }
+.cw-turn-badge { font-size: .62em; font-weight: 700; padding: .1em .55em; border-radius: 10px; }
+.cw-turn-badge.on  { color: #3b82f6; background: rgba(59,130,246,.12); border: 1px solid rgba(59,130,246,.3); }
+.cw-turn-badge.off { color: rgba(100,116,139,.4); background: transparent; border: 1px solid transparent; }
+.cw-ctrl-bar { display: flex; align-items: center; gap: .3em; padding: .3em .5em; border-bottom: 1px solid #1e293b; flex-shrink: 0; }
+.cw-ctrl-lbl { font-size: .6em; color: #475569; white-space: nowrap; }
+.cw-turn-pick { background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #475569; font-size: .62em; font-weight: 700; padding: .15em .55em; cursor: pointer; transition: all .15s; }
+.cw-turn-pick:hover { border-color: #3b82f6; color: #93c5fd; }
+.cw-turn-pick.active { background: rgba(59,130,246,.15); border-color: #3b82f6; color: #60a5fa; }
+.cw-reset-btn { background: none; border: 1px solid #334155; border-radius: 4px; color: #475569; font-size: .6em; padding: .15em .5em; cursor: pointer; transition: all .15s; margin-left: auto; }
+.cw-reset-btn:hover { border-color: #ef4444; color: #f87171; background: rgba(239,68,68,.07); }
 .cw-name-row { display: flex; align-items: center; gap: .25em; }
 .cw-inp {
   width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 5px;
@@ -515,13 +547,15 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 .cw-radio-lbl { display: flex; align-items: center; gap: .3em; font-size: .66em; color: #64748b; cursor: pointer; }
 .cw-radio-lbl:hover { color: #94a3b8; }
 .cw-radio-lbl input[type=radio] { accent-color: #3b82f6; width: .9em; height: .9em; cursor: pointer; flex-shrink: 0; }
+.cw-radio-lbl:has(input:disabled) { opacity: .3; cursor: not-allowed; pointer-events: none; }
 .cw-pending { font-size: .63em; color: rgba(220,170,60,.85); background: rgba(220,170,60,.07); border: 1px solid rgba(220,170,60,.2); border-radius: 5px; padding: .2em .4em; }
 .cw-apply-btn {
   background: #1e3a5f; border: 1px solid #3b82f6; border-radius: 6px;
   color: #93c5fd; font-family: inherit; font-size: .65em; font-weight: 700;
   padding: .3em .5em; cursor: pointer; width: 100%; margin-top: auto; transition: all .15s;
 }
-.cw-apply-btn:hover { background: #1d4ed8; border-color: #60a5fa; color: #dbeafe; }
+.cw-apply-btn:hover:not(:disabled) { background: #1d4ed8; border-color: #60a5fa; color: #dbeafe; }
+.cw-apply-btn:disabled { background: rgba(255,255,255,.03); border-color: rgba(59,130,246,.15); color: rgba(147,197,253,.2); cursor: not-allowed; }
 .cw-lower { display: flex; flex-direction: column; gap: .3em; padding: .5em .6em; }
 .cw-lower-hdr { display: flex; align-items: center; gap: .25em; flex-wrap: wrap; }
 .cw-lower-title { font-size: .58em; font-weight: 700; color: #475569; letter-spacing: .06em; text-transform: uppercase; flex: 1; }
@@ -637,7 +671,6 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
     <div class="chat-foot">
       <div class="pchat-members" id="pchatMembers" style="display:none;"></div>
       <div class="chat-toolbar">
-        <button class="lang-btn" id="lbChat" onmousedown="event.preventDefault()" onclick="toggleLang()">EN</button>
         <button id="cBtnMe"  class="cmd-btn" onmousedown="event.preventDefault()" onclick="prependChatCmd('/me ')">/me</button>
         <button id="cBtnTry" class="cmd-btn" onmousedown="event.preventDefault()" onclick="prependChatCmd('/try ')">/try</button>
         <button id="cBtnDo"  class="cmd-btn" onmousedown="event.preventDefault()" onclick="prependChatCmd('/do ')">/do</button>
@@ -660,7 +693,10 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
   </div>
   <div class="wbody" id="wbWarriors">
     <div class="w-search-row">
-      <input class="w-search-inp" id="wsearch" type="text" placeholder="🔍 Поиск..." oninput="filterWarriors()">
+      <div class="w-search-wrap">
+        <input class="w-search-inp" id="wsearch" type="text" placeholder="🔍 Поиск..." oninput="filterWarriors()" onmousedown="activateInput(this)" onblur="deactivateInput()">
+        <div class="w-search-mirror" id="wsearchMirror"></div>
+      </div>
     </div>
     <div class="wfilter">
       <button class="wfbtn active" id="wf-all"     onclick="setWarriorFilter('all')">Все</button>
@@ -738,18 +774,25 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
     <button class="wtoggle" onclick="nbarToggle('wCalc')" title="Закрыть">✕</button>
   </div>
   <div class="wbody" id="wbCalc">
+    <div class="cw-ctrl-bar">
+      <span class="cw-ctrl-lbl">Ход:</span>
+      <button class="cw-turn-pick active" id="cw-first-0" onclick="calcSetTurn(0)">П1</button>
+      <button class="cw-turn-pick"        id="cw-first-1" onclick="calcSetTurn(1)">П2</button>
+      <button class="cw-reset-btn" onclick="calcReset()">🗑 Сбросить бой</button>
+    </div>
     <div class="cw-upper">
       <!-- Col 1 -->
-      <div class="cw-col">
+      <div class="cw-col active" id="c1col">
+        <div class="cw-turn-row"><span class="cw-turn-badge on" id="c1badge">⚔ ХОД</span></div>
         <div class="cw-name-row">
-          <input class="cw-inp cw-name-inp" id="c1name" placeholder="Игрок 1" oninput="renderStatus()">
-          <button class="cw-color-sw" id="c1colorBtn" style="background:#c8bfb0" onclick="openColorPicker(this,'c1color',renderStatus)"></button><input type="hidden" id="c1color" value="#c8bfb0">
+          <input class="cw-inp cw-name-inp" id="c1name" placeholder="Игрок 1" oninput="renderStatus(); updateNameColor(0)">
+          <button class="cw-color-sw" id="c1colorBtn" style="background:#c8bfb0" onclick="openColorPicker(this,'c1color',()=>{renderStatus();updateNameColor(0)})"></button><input type="hidden" id="c1color" value="#c8bfb0">
         </div>
         <div class="cw-stats-row">
           <label class="cw-stat-lbl">❤</label>
-          <input class="cw-inp cw-stat-inp" id="c1hp" type="number" min="0" value="100" oninput="renderStatus()">
+          <input class="cw-inp cw-stat-inp" id="c1hp" type="text" inputmode="numeric" value="100" oninput="renderStatus()" onfocus="this.select()" onclick="this.select()">
           <label class="cw-stat-lbl">🛡</label>
-          <input class="cw-inp cw-stat-inp" id="c1sh" type="number" min="0" value="200" oninput="renderStatus()">
+          <input class="cw-inp cw-stat-inp" id="c1sh" type="text" inputmode="numeric" value="200" oninput="renderStatus()" onfocus="this.select()" onclick="this.select()">
         </div>
         <div class="cw-cnt-row">
           <span class="cw-cnt-lbl red">🩸 Порезы</span>
@@ -767,12 +810,12 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
           <div class="cw-cnt-row"><span class="cw-cnt-lbl">💨 Уворот</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(1,'tDodge',-1)">−</button><span class="cw-cnt-val" id="c1tDodge">0</span><button class="cw-cnt-btn" onclick="incC(1,'tDodge',1)">+</button></div></div>
           <div class="cw-cnt-row"><span class="cw-cnt-lbl">🛡 Парир.</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(1,'tParry',-1)">−</button><span class="cw-cnt-val" id="c1tParry">0</span><button class="cw-cnt-btn" onclick="incC(1,'tParry',1)">+</button></div></div>
         </div>
-        <div class="cw-field-row"><label class="cw-lbl">Бросок</label><input class="cw-inp cw-num-inp" id="c1brosok" type="number" min="0" value="0"></div>
+        <div class="cw-field-row"><label class="cw-lbl">Бросок</label><input class="cw-inp cw-num-inp" id="c1brosok" type="text" inputmode="numeric" value="0" onfocus="this.select()" onclick="this.select()"></div>
         <div class="cw-radio-row">
           <div class="cw-radio-grp">
-            <label class="cw-radio-lbl"><input type="radio" name="c1def" value="hit"   checked onchange="c[1].defense=$('.checked').value"> Удар</label>
-            <label class="cw-radio-lbl"><input type="radio" name="c1def" value="dodge"         onchange=""> Уворот</label>
-            <label class="cw-radio-lbl"><input type="radio" name="c1def" value="parry"         onchange=""> Парирование</label>
+            <label class="cw-radio-lbl"><input type="radio" name="c1def" value="hit"   checked> Удар</label>
+            <label class="cw-radio-lbl"><input type="radio" name="c1def" value="dodge" id="c1dodge"> Уворот</label>
+            <label class="cw-radio-lbl"><input type="radio" name="c1def" value="parry" id="c1parry"> Парирование</label>
           </div>
           <div class="cw-radio-grp cw-radio-grp-sm">
             <label class="cw-radio-lbl"><input type="radio" name="c1ct" value="weapon" checked> Оружие</label>
@@ -780,20 +823,21 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
           </div>
         </div>
         <div id="c1pending" class="cw-pending" style="display:none"></div>
-        <button class="cw-apply-btn" onclick="calcApply(0)">Применить П1</button>
+        <button class="cw-apply-btn" id="c1apply" onclick="calcApply(0)">Применить П1</button>
       </div>
       <div class="cw-col-div"></div>
       <!-- Col 2 -->
-      <div class="cw-col">
+      <div class="cw-col" id="c2col">
+        <div class="cw-turn-row"><span class="cw-turn-badge off" id="c2badge">ожидание</span></div>
         <div class="cw-name-row">
-          <input class="cw-inp cw-name-inp" id="c2name" placeholder="Игрок 2" oninput="renderStatus()">
-          <button class="cw-color-sw" id="c2colorBtn" style="background:#c8bfb0" onclick="openColorPicker(this,'c2color',renderStatus)"></button><input type="hidden" id="c2color" value="#c8bfb0">
+          <input class="cw-inp cw-name-inp" id="c2name" placeholder="Игрок 2" oninput="renderStatus(); updateNameColor(1)">
+          <button class="cw-color-sw" id="c2colorBtn" style="background:#c8bfb0" onclick="openColorPicker(this,'c2color',()=>{renderStatus();updateNameColor(1)})"></button><input type="hidden" id="c2color" value="#c8bfb0">
         </div>
         <div class="cw-stats-row">
           <label class="cw-stat-lbl">❤</label>
-          <input class="cw-inp cw-stat-inp" id="c2hp" type="number" min="0" value="100" oninput="renderStatus()">
+          <input class="cw-inp cw-stat-inp" id="c2hp" type="text" inputmode="numeric" value="100" oninput="renderStatus()" onfocus="this.select()" onclick="this.select()">
           <label class="cw-stat-lbl">🛡</label>
-          <input class="cw-inp cw-stat-inp" id="c2sh" type="number" min="0" value="200" oninput="renderStatus()">
+          <input class="cw-inp cw-stat-inp" id="c2sh" type="text" inputmode="numeric" value="200" oninput="renderStatus()" onfocus="this.select()" onclick="this.select()">
         </div>
         <div class="cw-cnt-row">
           <span class="cw-cnt-lbl red">🩸 Порезы</span>
@@ -811,12 +855,12 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
           <div class="cw-cnt-row"><span class="cw-cnt-lbl">💨 Уворот</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(2,'tDodge',-1)">−</button><span class="cw-cnt-val" id="c2tDodge">0</span><button class="cw-cnt-btn" onclick="incC(2,'tDodge',1)">+</button></div></div>
           <div class="cw-cnt-row"><span class="cw-cnt-lbl">🛡 Парир.</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(2,'tParry',-1)">−</button><span class="cw-cnt-val" id="c2tParry">0</span><button class="cw-cnt-btn" onclick="incC(2,'tParry',1)">+</button></div></div>
         </div>
-        <div class="cw-field-row"><label class="cw-lbl">Бросок</label><input class="cw-inp cw-num-inp" id="c2brosok" type="number" min="0" value="0"></div>
+        <div class="cw-field-row"><label class="cw-lbl">Бросок</label><input class="cw-inp cw-num-inp" id="c2brosok" type="text" inputmode="numeric" value="0" onfocus="this.select()" onclick="this.select()"></div>
         <div class="cw-radio-row">
           <div class="cw-radio-grp">
             <label class="cw-radio-lbl"><input type="radio" name="c2def" value="hit"   checked> Удар</label>
-            <label class="cw-radio-lbl"><input type="radio" name="c2def" value="dodge"> Уворот</label>
-            <label class="cw-radio-lbl"><input type="radio" name="c2def" value="parry"> Парирование</label>
+            <label class="cw-radio-lbl"><input type="radio" name="c2def" value="dodge" id="c2dodge"> Уворот</label>
+            <label class="cw-radio-lbl"><input type="radio" name="c2def" value="parry" id="c2parry"> Парирование</label>
           </div>
           <div class="cw-radio-grp cw-radio-grp-sm">
             <label class="cw-radio-lbl"><input type="radio" name="c2ct" value="weapon" checked> Оружие</label>
@@ -824,13 +868,14 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
           </div>
         </div>
         <div id="c2pending" class="cw-pending" style="display:none"></div>
-        <button class="cw-apply-btn" onclick="calcApply(1)">Применить П2</button>
+        <button class="cw-apply-btn" id="c2apply" onclick="calcApply(1)">Применить П2</button>
       </div>
     </div>
     <!-- Log + status -->
     <div class="cw-lower">
       <div class="cw-lower-hdr">
         <span class="cw-lower-title">Лог</span>
+        <button class="cw-act-btn" onclick="calcUndo()" id="cw-undo-btn" disabled style="color:#e0a050">↩ Отменить</button>
         <button class="cw-act-btn" onclick="calcResult='';renderLog()" id="cw-clear-btn" disabled>Очистить</button>
         <button class="cw-act-btn" onclick="calcCopy()" id="cw-copy-btn" disabled>📋 Скопировать</button>
       </div>
@@ -880,7 +925,7 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
         <button class="games-tab"        id="gt-mine"  onclick="switchGamesTab('mine')">Мои игры</button>
       </div>
       <div class="games-list" id="gamesList"><div class="no-tables">Загрузка…</div></div>
-      <button class="games-create-btn" onclick="openCreateTableForm()">＋ Создать стол</button>
+      <button class="games-create-btn" id="gCreateBtn" onclick="openCreateTableForm()">＋ Создать стол</button>
       <button class="gtf-start-btn" id="gStartBtn" style="display:none;" onclick="startGameTable()" disabled>▶ Начать игру</button>
       <button id="gRejoinBtn" style="display:none;margin:4px 8px 0;padding:6px 12px;background:#14532d;border:1px solid #22c55e;border-radius:6px;color:#4ade80;font-size:12px;font-weight:700;cursor:pointer;width:calc(100% - 16px)" onclick="rejoinGame()">▶ Вернуться в игру</button>
       <div id="gTestArea" style="display:none;margin:4px 8px 0;gap:6px;flex-wrap:wrap;">
@@ -916,16 +961,16 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
         </div>
         <div>
           <div class="gtf-label">Ставка (0 — без ставки)</div>
-          <div class="gtf-inp-wrap"><input class="gtf-inp" id="gtfBet" type="number" min="0" value="0" placeholder="0" onmousedown="activateInput(this)" onblur="deactivateInput()"><div class="gtf-mirror" id="gtfBetMirror"></div></div>
+          <div class="gtf-inp-wrap"><input class="gtf-inp" id="gtfBet" type="text" inputmode="numeric" value="0" placeholder="0" onmousedown="activateInput(this)" onblur="deactivateInput()" onfocus="this.select()" onclick="this.select()"><div class="gtf-mirror" id="gtfBetMirror"></div></div>
         </div>
         <div>
           <div class="gtf-label">Таймаут хода</div>
-          <input type="number" id="gtfTurnTimeout" class="gtf-inp" min="10" max="120" value="30" style="width:60px">
+          <input type="text" inputmode="numeric" id="gtfTurnTimeout" class="gtf-inp" value="30" style="width:60px" onfocus="this.select()" onclick="this.select()">
           <span style="font-size:10px;color:#475569">сек</span>
         </div>
         <div>
           <div class="gtf-label">Таймаут подкидывания</div>
-          <input type="number" id="gtfThrowTimeout" class="gtf-inp" min="5" max="60" value="10" style="width:60px">
+          <input type="text" inputmode="numeric" id="gtfThrowTimeout" class="gtf-inp" value="10" style="width:60px" onfocus="this.select()" onclick="this.select()">
           <span style="font-size:10px;color:#475569">сек</span>
         </div>
         <div>
@@ -1171,11 +1216,13 @@ function renderGamesTables() {
   const myTable = gAllTables.find(t => t.created_by === currentUser?.id && t.status === 'waiting')
   gMyTableId = myTable?.id ?? null
   const testBtn = document.getElementById('gTestWinBtn')
+  const createBtn = document.getElementById('gCreateBtn')
   if (startBtn) {
     startBtn.style.display = myTable ? '' : 'none'
     startBtn.disabled = !myTable || (myTable.players?.length ?? 0) < 1 // TEST
   }
   if (testBtn) testBtn.style.display = myTable ? '' : 'none'
+  if (createBtn) createBtn.style.display = myTable ? 'none' : ''
 
   if (!tables.length) {
     list.innerHTML = `<div class="no-tables">${gCurrentTab === 'mine' ? 'Вы не за одним столом' : 'Нет открытых столов'}</div>`
@@ -1188,9 +1235,20 @@ function renderGamesTables() {
     const alreadyIn = t.players?.some(p => p.user_id === currentUser?.id)
     const isCreator = t.created_by === currentUser?.id
     const full = cnt >= t.max_players
-    const joinDisabled = alreadyIn || full ? 'disabled' : ''
-    const joinLabel = alreadyIn ? '✓ За столом' : full ? 'Полный' : 'Войти'
-    const deleteBtn = isCreator ? `<button class="gtc-delete" onclick="deleteGameTable('${esc(String(t.id))}')">✕ Удалить</button>` : ''
+    const tid = esc(String(t.id))
+    let actionBtn
+    if (isCreator) {
+      actionBtn = `<button class="gtc-delete" onclick="deleteGameTable('${tid}')">✕ Удалить</button>`
+    } else if (alreadyIn) {
+      actionBtn = `<button class="gtc-leave" onclick="leaveGameTable('${tid}')">← Выйти</button>`
+    } else {
+      actionBtn = `<button class="gtc-join" ${full ? 'disabled' : ''} data-tid="${tid}">${full ? 'Полный' : 'Войти'}</button>`
+    }
+    const sortedPlayers = [
+      ...(t.players?.filter(p => p.user_id === t.created_by) || []),
+      ...(t.players?.filter(p => p.user_id !== t.created_by) || [])
+    ]
+    const playersLine = sortedPlayers.map(p => esc(p.game_name)).join(', ')
     return `<div class="game-table-card">
       <div class="gtc-top">
         <span class="gtc-title">${esc(t.name)}</span>
@@ -1199,8 +1257,9 @@ function renderGamesTables() {
       <div class="gtc-meta">
         <span class="gtc-type">${type}</span>
         <span class="gtc-players">● ${cnt}/${t.max_players}</span>
-        ${deleteBtn || `<button class="gtc-join" ${joinDisabled} data-tid="${esc(String(t.id))}">${joinLabel}</button>`}
+        ${actionBtn}
       </div>
+      ${playersLine ? `<div class="gtc-creator">👤 ${playersLine}</div>` : ''}
     </div>`
   }).join('')
 }
@@ -1235,6 +1294,14 @@ async function deleteGameTable(tableId) {
   if (!r.ok) { const e = await r.json(); showToast(e.error || 'Ошибка', 'err'); return }
   gAllTables = gAllTables.filter(t => t.id !== tableId)
   if (gMyTableId === tableId) gMyTableId = null
+  renderGamesTables()
+}
+
+async function leaveGameTable(tableId) {
+  const r = await apiFetch('/api/games/tables/' + tableId + '/leave', { method: 'DELETE' })
+  if (!r.ok) { const e = await r.json(); showToast(e.error || 'Ошибка', 'err'); return }
+  const updated = gAllTables.find(t => t.id === tableId)
+  if (updated) updated.players = updated.players?.filter(p => p.user_id !== currentUser?.id)
   renderGamesTables()
 }
 
@@ -1376,7 +1443,7 @@ async function onAuth({ token: t, srv: s }) {
 }
 
 el?.onAuthToken(data => onAuth(data))
-el?.onGameWindowClosed?.(() => { gameWindowOpen = false; updateRejoinBtn() })
+el?.onGameWindowClosed?.(() => { gameWindowOpen = false; gMyTableId = null; updateRejoinBtn() })
 
 el?.onWidgetToggle(({ widget, visible }) => {
   const map = { chat: 'wChat', fight: 'wFight', warriors: 'wWarriors', calc: 'wCalc' }
@@ -1496,6 +1563,7 @@ function connectPChatWs() {
     if (m.type === 'history') {
       clearMsgs('Chat')
       ;(m.data || []).forEach(msg => appendPChatMsg(msg))
+      setTimeout(() => { const b = document.getElementById('mChat'); if (b) b.scrollTop = b.scrollHeight }, 50)
     } else if (m.type === 'message') {
       const msg = m.data
       if (msg && msg.chat_id === activePChatId) {
@@ -1555,6 +1623,8 @@ function openPChat(id) {
   delete pchatUnread[id]
   currentChatMembers = []
   clearMsgs('Chat')
+  const inp = document.getElementById('iChat')
+  if (inp) { inp.value = ''; resetTA(inp); updateChatCmdBtns(inp) }
   renderChatMembers()
   renderPChatTabs()
   if (pchatWs?.readyState === 1) {
@@ -1563,6 +1633,7 @@ function openPChat(id) {
   } else {
     connectPChatWs()
   }
+  setTimeout(() => { const b = document.getElementById('mChat'); if (b) b.scrollTop = b.scrollHeight }, 120)
 }
 
 function sendPChatMsg() {
@@ -1603,13 +1674,18 @@ function appendPChatMsg(m) {
     d.innerHTML = `<span class="msg-ts">${ts}</span>${fracHtml}${nameSpan}: ${imgHtml(text)}`
   } else if (text.startsWith('/me ')) {
     d.className += ' me'
-    d.innerHTML = `<span class="msg-ts">${ts}</span>${fracHtml}* ${nameSpan} ${renderMsgText(text.slice(4))}`
+    d.innerHTML = `<span class="msg-ts">${ts}</span>${esc(name)} ${renderMsgText(text.slice(4))}`
   } else if (text.startsWith('/try ')) {
     d.className += ' do'
-    d.innerHTML = `<span class="msg-ts">${ts}</span>${fracHtml}⚡ ${nameSpan} пытается ${renderMsgText(text.slice(5))}`
+    const roll = Math.floor(Math.random() * 100) + 1
+    const success = roll >= 50
+    const resultHtml = success
+      ? `(<span style="color:#4ade80">Успешно, ${roll}/100</span>)`
+      : `(<span style="color:#f87171">Неуспешно, ${roll}/100</span>)`
+    d.innerHTML = `<span class="msg-ts">${ts}</span>${esc(name)} ${renderMsgText(text.slice(5))} ${resultHtml}`
   } else if (text.startsWith('/do ')) {
     d.className += ' do'
-    d.innerHTML = `<span class="msg-ts">${ts}</span>${fracHtml}➤ ${nameSpan}: ${renderMsgText(text.slice(4))}`
+    d.innerHTML = `<span class="msg-ts">${ts}</span>${renderMsgText(text.slice(4))} — [${esc(name)}]`
   } else {
     d.innerHTML = `<span class="msg-ts">${ts}</span>${fracHtml}${nameSpan}: ${renderMsgText(text)}`
   }
@@ -1885,26 +1961,28 @@ document.addEventListener('contextmenu', e => { if (!e.target.closest('#ctxMenu'
 document.addEventListener('keydown',     e => { if (e.key === 'Escape') hideCtx() })
 
 function ctxDo(id) {
-  const cid = ctxTarget?.chatId
+  const cid  = ctxTarget?.chatId
+  const name = ctxTarget?.name
+  const text = ctxTarget?.text
   hideCtx()
   if      (id === 'chat-hide')   { if (cid) hideChat(cid) }
   else if (id === 'chat-leave')  { if (cid) leaveChat(cid) }
   else if (id === 'chat-save')   { if (cid) saveChatTranscript(cid) }
   else if (id === 'chat-invite') { if (cid) startAddParticipant(cid) }
-  else if (id === 'warrior-dm')     { if (ctxTarget?.name) { hide('wWarriors'); updateNbarButtons(); openDmWith(ctxTarget.name) } }
-  else if (id === 'player-profile') { if (ctxTarget?.name) openPlayerProfile(ctxTarget.name) }
+  else if (id === 'warrior-dm')     { if (name) { hide('wWarriors'); show('wChat'); updateNbarButtons(); openDmWith(name) } }
+  else if (id === 'player-profile') { if (name) openPlayerProfile(name) }
   else if (id === 'warrior-game-invite') {
-    if (ctxTarget?.name && gMyTableId) {
+    if (name && gMyTableId) {
       apiFetch('/api/games/tables/' + gMyTableId + '/invite', {
         method: 'POST',
-        body: JSON.stringify({ game_name: ctxTarget.name })
+        body: JSON.stringify({ game_name: name })
       }).then(r => { if (!r.ok) r.json().then(e => showToast(e.error || 'Ошибка', 'err')) })
     } else {
       showToast('Вы не за столом', 'err')
     }
   }
-  else if (id === 'msg-copy')       { if (ctxTarget?.text) el?.writeClipboard(ctxTarget.text) }
-  else if (id === 'msg-quote')      { if (ctxTarget?.text) quoteMsg(ctxTarget.name || '?', ctxTarget.text) }
+  else if (id === 'msg-copy')  { if (text) el?.writeClipboard(text) }
+  else if (id === 'msg-quote') { if (text) quoteMsg(name || '?', text) }
 }
 
 function openPlayerProfile(name) {
@@ -2147,6 +2225,7 @@ function setFightFs(sz) {
   document.getElementById('wFight').style.fontSize = fightFsMap[sz] || '13px'
   for (const k of ['s','m','l']) document.getElementById('ff-'+k).classList.toggle('active', k === sz)
   try { localStorage.setItem('fa_fight_fs', sz) } catch {}
+  setWarriorsFs(sz)
   if (_syncingFs) return
   _syncingFs = true
   setChatFontSize(smlToChat[sz] || 'sm'); setCalcFs(sz)
@@ -2331,6 +2410,8 @@ const cols = [
   { name:'', hp:100, shield:200, brosok:0, defense:'hit', combatType:'weapon', pendingBrosok:null, cuts:0, tDmg:0, tAcc:0, tDodge:0, tParry:0 },
 ]
 let calcResult = ''
+let currentTurn = 0  // 0 = col1, 1 = col2
+const undoStack = []
 let bleedSpaces    = 8
 let bleedRefDigits = 6
 try { bleedSpaces    = parseInt(localStorage.getItem('fa_calc_bleed') || '8') } catch {}
@@ -2362,7 +2443,85 @@ function setCalcInputs(i) {
   const pend = document.getElementById(p + 'pending')
   pend.style.display = col.pendingBrosok !== null ? '' : 'none'
   pend.textContent   = col.pendingBrosok !== null ? `⏳ урон ${col.pendingBrosok} — ждёт ответа` : ''
+  // Sync radio back
+  const defVal = col.defense || 'hit'
+  const defEl = document.querySelector(`input[name="${p}def"][value="${defVal}"]`)
+  if (defEl) defEl.checked = true
+  // Auto-reset dodge/parry to hit if pending cleared
+  updateCalcRadios()
   renderStatus()
+}
+
+function updateCalcRadios() {
+  // Disable dodge/parry for col i when other col has no pending
+  const pairs = [[0, cols[1]], [1, cols[0]]]
+  for (const [i, other] of pairs) {
+    const p = i === 0 ? 'c1' : 'c2'
+    const hasPending = other.pendingBrosok !== null
+    const dEl = document.getElementById(p + 'dodge')
+    const pEl = document.getElementById(p + 'parry')
+    if (dEl) dEl.disabled = !hasPending
+    if (pEl) pEl.disabled = !hasPending
+    // If disabled and currently selected, switch to hit
+    if (!hasPending) {
+      const checked = document.querySelector(`input[name="${p}def"]:checked`)
+      if (checked && (checked.value === 'dodge' || checked.value === 'parry')) {
+        const hitEl = document.querySelector(`input[name="${p}def"][value="hit"]`)
+        if (hitEl) hitEl.checked = true
+        cols[i].defense = 'hit'
+      }
+    }
+  }
+}
+
+function updateNameColor(i) {
+  const p = i === 0 ? 'c1' : 'c2'
+  const color = document.getElementById(p + 'color').value || '#c8bfb0'
+  const inp = document.getElementById(p + 'name')
+  if (inp) inp.style.color = color
+}
+
+function renderCalcTurn() {
+  for (let i = 0; i < 2; i++) {
+    const p = i === 0 ? 'c1' : 'c2'
+    const isActive = i === currentTurn
+    document.getElementById(p + 'col').classList.toggle('active', isActive)
+    const badge = document.getElementById(p + 'badge')
+    badge.textContent = isActive ? '⚔ ХОД' : 'ожидание'
+    badge.className = 'cw-turn-badge ' + (isActive ? 'on' : 'off')
+    const applyBtn = document.getElementById(p + 'apply')
+    if (applyBtn) applyBtn.disabled = !isActive
+    const brosok = document.getElementById(p + 'brosok')
+    if (brosok) brosok.disabled = !isActive
+    const pickBtn = document.getElementById('cw-first-' + i)
+    if (pickBtn) pickBtn.classList.toggle('active', isActive)
+  }
+  updateCalcRadios()
+}
+
+function calcSetTurn(idx) {
+  currentTurn = idx
+  renderCalcTurn()
+}
+
+function calcReset() {
+  cols.forEach(c => {
+    c.hp = 100; c.shield = 200; c.brosok = 0
+    c.defense = 'hit'; c.combatType = 'weapon'
+    c.pendingBrosok = null
+    c.cuts = 0; c.tDmg = 0; c.tAcc = 0; c.tDodge = 0; c.tParry = 0
+  })
+  calcResult = ''
+  undoStack.length = 0
+  currentTurn = 0
+  setCalcInputs(0); setCalcInputs(1)
+  // Reset radio buttons
+  document.querySelector('input[name="c1def"][value="hit"]').checked = true
+  document.querySelector('input[name="c2def"][value="hit"]').checked = true
+  document.querySelector('input[name="c1ct"][value="weapon"]').checked = true
+  document.querySelector('input[name="c2ct"][value="weapon"]').checked = true
+  renderLog()
+  renderCalcTurn()
 }
 
 function incC(idx, key, delta) {
@@ -2465,11 +2624,31 @@ function calcApplyLogic(col, other) {
   }
 }
 
-function calcApply(idx) {
-  getCalcInputs(0); getCalcInputs(1)
-  calcApplyLogic(cols[idx], cols[idx === 0 ? 1 : 0])
+function calcSnapshot() {
+  if (undoStack.length >= 20) undoStack.shift()
+  undoStack.push({ cols: cols.map(c => ({ ...c })), result: calcResult, turn: currentTurn })
+}
+
+function calcUndo() {
+  const snap = undoStack.pop()
+  if (!snap) return
+  snap.cols.forEach((s, i) => Object.assign(cols[i], s))
+  calcResult = snap.result
+  currentTurn = snap.turn
   setCalcInputs(0); setCalcInputs(1)
   renderLog()
+  renderCalcTurn()
+}
+
+function calcApply(idx) {
+  if (idx !== currentTurn) return
+  getCalcInputs(0); getCalcInputs(1)
+  calcSnapshot()
+  calcApplyLogic(cols[idx], cols[idx === 0 ? 1 : 0])
+  currentTurn = idx === 0 ? 1 : 0
+  setCalcInputs(0); setCalcInputs(1)
+  renderLog()
+  renderCalcTurn()
 }
 
 function renderLog() {
@@ -2477,6 +2656,8 @@ function renderLog() {
   const has = !!calcResult
   document.getElementById('cw-clear-btn').disabled = !has
   document.getElementById('cw-copy-btn').disabled  = !has
+  const undoBtn = document.getElementById('cw-undo-btn')
+  if (undoBtn) undoBtn.disabled = undoStack.length === 0
 }
 
 function renderStatus() {
@@ -2584,6 +2765,14 @@ function restoreCalcFs() {
   setCalcFs(sz)
 }
 
+// ── Warriors font size ────────────────────────────────────────────────────────
+const warriorsFsMap = { s: '11px', m: '13px', l: '16px' }
+function setWarriorsFs(sz) {
+  document.getElementById('wWarriors').style.fontSize = warriorsFsMap[sz] || '11px'
+  for (const k of ['s','m','l']) document.getElementById('wf-'+k).classList.toggle('active', k === sz)
+  try { localStorage.setItem('fa_warriors_fs', sz) } catch {}
+}
+
 // ── Send ──────────────────────────────────────────────────────────────────────
 function sendMsg(w) {
   if (w === 'Chat') { sendPChatMsg(); return }
@@ -2617,6 +2806,8 @@ function prependChatCmd(cmd) {
     inp.value = cmd + (other ? inp.value.slice(other.length) : inp.value)
   }
   updateChatCmdBtns(inp)
+  activateInput(inp)
+  inp.selectionStart = inp.selectionEnd = inp.value.length
   syncMirror(inp)
 }
 
@@ -2630,6 +2821,8 @@ function prependCmd(cmd) {
     inp.value = cmd + (other ? inp.value.slice(other.length) : inp.value)
   }
   updateFightCmdBtns(inp)
+  activateInput(inp)
+  inp.selectionStart = inp.selectionEnd = inp.value.length
   syncMirror(inp)
 }
 
@@ -2745,6 +2938,7 @@ el?.onKeyInput(payload => {
       syncMirror(ta)
     }
   }
+  if (ta.id === 'wsearch') filterWarriors()
 })
 function hk(e, w) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(w); return }
@@ -3013,7 +3207,10 @@ el?.onPasteImage(async b64 => {
 
 // Init calc status
 renderStatus()
+renderCalcTurn()
 document.getElementById('bleedVal').textContent = bleedSpaces
+// Init name colors
+updateNameColor(0); updateNameColor(1)
 </script>
 </body>
 </html>
