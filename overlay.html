@@ -254,6 +254,9 @@ body {
 .gtc-type { background: #1e293b; border: 1px solid #334155; border-radius: 3px; padding: 1px 5px; font-size: 9px; color: #64748b; flex-shrink: 0; }
 .gtc-players { color: #4ade80; font-weight: 600; }
 .gtc-creator { font-size: 11px; color: #94a3b8; margin-top: 3px; }
+.gtc-timer { font-size: 9px; color: #475569; font-variant-numeric: tabular-nums; margin-left: auto; flex-shrink: 0; }
+.gtc-timer.warn { color: #f59e0b; }
+.gtc-timer.crit { color: #ef4444; }
 .gtc-join { background: #1e1b4b; border: 1px solid #7c3aed; border-radius: 4px; color: #a78bfa; font-size: 9px; font-weight: 700; padding: 2px 8px; cursor: pointer; flex-shrink: 0; margin-left: auto; }
 .gtc-join:disabled { opacity: .35; cursor: default; }
 .games-create-btn {
@@ -1255,11 +1258,32 @@ function renderGamesTables() {
       <div class="gtc-meta">
         <span class="gtc-type">${type}</span>
         <span class="gtc-players">● ${cnt}/${t.max_players}</span>
+        <span class="gtc-timer" data-expires="${esc(t.expires_at || '')}">--:--</span>
         ${actionBtn}
       </div>
       ${playersLine ? `<div class="gtc-creator">+ ${playersLine}</div>` : ''}
     </div>`
   }).join('')
+  startTableTimers()
+}
+
+let _tableTimerInterval = null
+function startTableTimers() {
+  if (_tableTimerInterval) clearInterval(_tableTimerInterval)
+  _tableTimerInterval = setInterval(() => {
+    const now = Date.now()
+    document.querySelectorAll('.gtc-timer[data-expires]').forEach(el => {
+      const raw = el.dataset.expires
+      if (!raw) return
+      const expires = new Date(raw.includes('T') ? raw : raw.replace(' ', 'T') + 'Z')
+      const rem = expires - now
+      if (rem <= 0) { el.textContent = 'истёк'; el.className = 'gtc-timer crit'; return }
+      const mins = Math.floor(rem / 60000)
+      const secs = Math.floor((rem % 60000) / 1000)
+      el.textContent = `⏱ ${mins}:${secs.toString().padStart(2, '0')}`
+      el.className = 'gtc-timer' + (mins < 5 ? ' crit' : mins < 15 ? ' warn' : '')
+    })
+  }, 1000)
 }
 
 function updateRejoinBtn() {

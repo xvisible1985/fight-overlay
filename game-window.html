@@ -30,6 +30,9 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: transparen
 .tb-info { color: #475569; font-size: 12px; }
 .tb-close { background: none; border: none; color: #475569; cursor: pointer; font-size: 15px; padding: 2px 6px; border-radius: 4px; line-height: 1; }
 .tb-close:hover { background: #7f1d1d; color: #fca5a5; }
+.tb-leave { background: none; border: 1px solid #7f1d1d; color: #f87171; cursor: pointer; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; line-height: 1; -webkit-app-region: no-drag; }
+.tb-leave:hover { background: #7f1d1d; color: #fca5a5; }
+.tb-leave:disabled { opacity: .4; cursor: default; }
 
 /* Portrait */
 .portrait { width: 42px; height: 58px; border-radius: 5px; overflow: hidden; border: 2px solid rgba(255,255,255,.1); flex-shrink: 0; background: #0f2440; display: flex; align-items: center; justify-content: center; }
@@ -41,20 +44,31 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: transparen
 
 /* Opponents */
 .opponents-area { display: flex; justify-content: space-around; gap: 10px; padding: 12px 16px 8px; flex-shrink: 0; }
-.player-slot { display: flex; flex-direction: row; align-items: center; gap: 10px; background: rgba(0,0,0,.25); border: 1px solid rgba(255,255,255,.07); border-radius: 9px; padding: 8px 14px; flex: 1; position: relative; transition: border-color .2s; }
+.player-slot { display: flex; flex-direction: row; align-items: center; gap: 10px; background: rgba(0,0,0,.25); border: 1px solid rgba(255,255,255,.07); border-radius: 9px; padding: 8px 14px; flex: 1; position: relative; transition: border-color .2s; min-width: 0; }
 .player-slot.attacker { border-color: #ef4444; background: rgba(239,68,68,.08); }
 .player-slot.defender { border-color: #3b82f6; background: rgba(59,130,246,.08); }
 .player-slot.exited { opacity: .35; }
 .player-slot.disconnected { opacity: .5; }
-.ps-info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-.ps-name { font-size: 13px; font-weight: 700; color: #94a3b8; }
+.ps-info { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.ps-name { font-size: 13px; font-weight: 700; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ps-role { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: .06em; }
 .ps-role.atk { color: #f87171; }
 .ps-role.def { color: #60a5fa; }
-.ps-cards { display: flex; }
-.card-back { width: 22px; height: 32px; background: linear-gradient(135deg,#1e3a5f,#0f2440); border: 1px solid #334155; border-radius: 3px; margin-left: -6px; }
+.ps-cards { display: flex; overflow: hidden; }
+.card-back { width: 22px; height: 32px; background: linear-gradient(135deg,#1e3a5f,#0f2440); border: 1px solid #334155; border-radius: 3px; margin-left: -6px; flex-shrink: 0; }
 .card-back:first-child { margin-left: 0; }
 .ps-timer { position: absolute; top: 6px; right: 10px; font-size: 12px; font-weight: 700; color: #f59e0b; }
+.ps-cardcount { font-size: 12px; color: #64748b; font-weight: 700; }
+
+/* Compact mode: 4-5 opponents */
+.opponents-area.compact { gap: 6px; padding: 8px 10px 6px; }
+.opponents-area.compact .player-slot { padding: 5px 10px; gap: 7px; }
+.opponents-area.compact .portrait { width: 30px !important; height: 42px !important; }
+.opponents-area.compact .sil { width: 18px; height: 24px; }
+.opponents-area.compact .ps-name { font-size: 11px; }
+.opponents-area.compact .ps-role { font-size: 9px; letter-spacing: 0; }
+.opponents-area.compact .ps-timer { font-size: 10px; top: 4px; right: 6px; }
+.opponents-area.compact .ps-cards { display: none; }
 
 /* Table */
 .table-center { background: #0a2d18; border: 1px solid #1a5c35; border-radius: 12px; flex: 1; margin: 4px 16px; display: flex; align-items: center; padding: 14px 18px; gap: 18px; position: relative; min-height: 120px; }
@@ -90,6 +104,10 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: transparen
 .hand-row { display: flex; align-items: flex-start; padding: 6px 16px 10px; gap: 14px; flex-shrink: 0; }
 .my-portrait-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
 .my-name { font-size: 11px; color: #4ade80; font-weight: 700; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.my-role-badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; text-align: center; }
+.my-role-badge.atk { color: #f87171; }
+.my-role-badge.def { color: #60a5fa; }
+.my-role-badge.wait { color: #475569; }
 .status-msg { font-size: 10px; color: #64748b; text-align: center; line-height: 1.3; max-width: 62px; word-break: break-word; }
 .bet-info { font-size: 12px; color: #f59e0b; font-weight: 700; white-space: nowrap; position: absolute; right: 0; }
 .hand-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
@@ -133,7 +151,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: transparen
     <span class="tb-title" id="tbTitle">Дурак</span>
     <span class="tb-timer" id="tbTimer"></span>
     <span class="tb-info" id="tbInfo"></span>
-    <button class="tb-close" onclick="window.gameAPI?.closeWindow()" title="Закрыть">✕</button>
+    <button class="tb-leave" id="btnLeave" onclick="leaveTable()" title="Покинуть стол и закрыть">Покинуть</button>
+    <button class="tb-close" onclick="window.gameAPI?.closeWindow()" title="Закрыть (без выхода со стола)">✕</button>
   </div>
   <div class="opponents-area" id="opponentsArea"></div>
   <div class="table-center" id="tableCenter">
@@ -146,6 +165,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: transparen
     <div class="my-portrait-wrap">
       <div class="portrait me" id="myPortrait" style="width:48px;height:66px"></div>
       <div class="my-name" id="myName"></div>
+      <div class="my-role-badge" id="myRoleBadge"></div>
       <div class="status-msg" id="statusMsg">Подключение…</div>
     </div>
     <div class="hand-col">
@@ -189,6 +209,22 @@ let selectedHandCards = []  // array; multi-select in attack phase, single other
 let selectedAttackCard = null
 let timerInterval = null
 let lastActivitySent = 0
+let _leaving = false
+
+async function leaveTable() {
+  if (_leaving) return
+  _leaving = true
+  const btn = document.getElementById('btnLeave')
+  if (btn) { btn.disabled = true; btn.textContent = '…' }
+  try {
+    await fetch(`${srv}/api/games/tables/${tableId}/leave`, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    })
+  } catch {}
+  window.gameAPI?.disconnect()
+  window.gameAPI?.closeWindow()
+}
 
 function sendDefenderActivity() {
   const now = Date.now()
@@ -222,6 +258,23 @@ function sil(gender) {
   return `<svg viewBox="0 0 24 32" fill="#94a3b8" style="width:26px;height:34px;opacity:.3"><ellipse cx="12" cy="8" rx="5" ry="6"/><path d="M3 28 Q4 18 12 18 Q20 18 21 28Z"/></svg>`
 }
 
+function updateMyRole() {
+  if (!state) return
+  const myIdx = state.players.findIndex(p => p.user_id === myUserId)
+  const isAtk = myIdx === state.attackerIdx
+  const isDef = myIdx === state.defenderIdx
+  const badge = document.getElementById('myRoleBadge')
+  const portrait = document.getElementById('myPortrait')
+  if (badge) {
+    if (isAtk) { badge.textContent = 'Атакует'; badge.className = 'my-role-badge atk' }
+    else if (isDef) { badge.textContent = 'Защищается'; badge.className = 'my-role-badge def' }
+    else { badge.textContent = 'Ждёт'; badge.className = 'my-role-badge wait' }
+  }
+  if (portrait) {
+    portrait.className = 'portrait me' + (isAtk ? ' attacker' : isDef ? ' defender' : '')
+  }
+}
+
 function roleLabel(player) {
   if (!state) return ''
   const aIdx = state.attackerIdx, dIdx = state.defenderIdx
@@ -247,6 +300,8 @@ function renderOpponents() {
   if (!state) return
   const area = document.getElementById('opponentsArea')
   const others = state.players.filter(p => p.user_id !== myUserId)
+  const compact = others.length >= 4
+  area.className = 'opponents-area' + (compact ? ' compact' : '')
   area.innerHTML = others.map(player => {
     const aIdx = state.attackerIdx, dIdx = state.defenderIdx
     const idx = state.players.findIndex(p => p.user_id === player.user_id)
@@ -255,10 +310,12 @@ function renderOpponents() {
     const disc = !player.connected
     const cls = `player-slot${isAtk?' attacker':isDef?' defender':''}${exited?' exited':''}${disc?' disconnected':''}`
     const pCls = `portrait${isAtk?' attacker':isDef?' defender':''}`
-    const cards = Array.from({length: player.cardCount}, () => '<div class="card-back"></div>').join('')
+    const cardsEl = compact
+      ? `<div class="ps-cardcount">🂠 ${player.cardCount}</div>`
+      : `<div class="ps-cards">${Array.from({length: player.cardCount}, () => '<div class="card-back"></div>').join('')}</div>`
     const timer = state.timerEndsAt && (isDef && state.phase === 'defense')
       ? `<span class="ps-timer" data-uid="${player.user_id}"></span>` : ''
-    return `<div class="${cls}">${timer}<div class="${pCls}">${renderPortrait(player)}</div><div class="ps-info"><div class="ps-name">${player.game_name}</div>${roleLabel(player)}<div class="ps-cards">${cards}</div></div></div>`
+    return `<div class="${cls}">${timer}<div class="${pCls}">${renderPortrait(player)}</div><div class="ps-info"><div class="ps-name">${player.game_name}</div>${roleLabel(player)}${cardsEl}</div></div>`
   }).join('')
 }
 
@@ -565,6 +622,8 @@ function renderEnd(results) {
       <span class="end-payout">${r.payout > 0 ? '+' + r.payout : r.place === results.length ? 'Дурак' : '0'}</span>
     </div>`).join('')
   document.getElementById('endScreen').classList.add('show')
+  const leaveBtn = document.getElementById('btnLeave')
+  if (leaveBtn) leaveBtn.style.display = 'none'
 }
 
 if (window.gameAPI && tableId && token) {
@@ -578,7 +637,7 @@ if (window.gameAPI && tableId && token) {
       document.getElementById('tbTitle').textContent = `Дурак — ${msg.gameType === 'transfer' ? 'Переводной' : 'Подкидной'}`
       document.getElementById('betInfo').textContent = msg.bet > 0 ? `Банк: ${msg.bet * msg.players.length}` : ''
       selectedHandCards = []; selectedAttackCard = null
-      renderOpponents(); renderTable(); renderHand(); updateTimer()
+      renderOpponents(); renderTable(); renderHand(); updateTimer(); updateMyRole()
     } else if (msg.type === 'hand_update') {
       state.myHand = msg.myHand
       if (msg.players) state.players = msg.players
@@ -592,7 +651,7 @@ if (window.gameAPI && tableId && token) {
       if (msg.timerEndsAt !== undefined) state.timerEndsAt = msg.timerEndsAt
       if (msg.throwWindowEndsAt !== undefined) state.throwWindowEndsAt = msg.throwWindowEndsAt
       selectedHandCards = []; selectedAttackCard = null
-      renderOpponents(); renderTable(); renderHand(); updateTimer()
+      renderOpponents(); renderTable(); renderHand(); updateTimer(); updateMyRole()
     } else if (msg.type === 'attack' || msg.type === 'defend' || msg.type === 'throw_in' || msg.type === 'transfer') {
       if (msg.table) state.table = msg.table
       if (msg.user_id === myUserId) {
