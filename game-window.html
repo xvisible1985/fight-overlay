@@ -64,7 +64,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: transparen
 .ps-role.atk { color: #f87171; }
 .ps-role.def { color: #60a5fa; }
 .ps-cards { display: flex; overflow: hidden; }
-.card-back { width: 22px; height: 32px; background: linear-gradient(135deg,#1e3a5f,#0f2440); border: 1px solid #334155; border-radius: 3px; margin-left: -6px; flex-shrink: 0; }
+.card-back { width: 28px; height: 40px; background: linear-gradient(135deg,#1e3a5f,#0f2440); border: 1px solid #334155; border-radius: 4px; margin-left: -8px; flex-shrink: 0; }
 .card-back:first-child { margin-left: 0; }
 .ps-timer { position: absolute; top: 6px; right: 10px; font-size: 12px; font-weight: 700; color: #f59e0b; }
 .ps-cardcount { font-size: 12px; color: #64748b; font-weight: 700; }
@@ -83,27 +83,27 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: transparen
 .table-center { background: #0a2d18; border: 1px solid #1a5c35; border-radius: 12px; flex: 1; margin: 4px 16px; display: flex; align-items: center; padding: 14px 18px; gap: 18px; position: relative; min-height: 120px; }
 .table-label { position: absolute; top: 7px; left: 12px; font-size: 10px; color: #1a5c35; text-transform: uppercase; letter-spacing: .08em; }
 .pairs-area { display: flex; gap: 14px; flex: 1; align-items: center; justify-content: center; flex-wrap: wrap; }
-.attack-pair { position: relative; width: 62px; height: 90px; flex-shrink: 0; }
+.attack-pair { position: relative; width: 80px; height: 118px; flex-shrink: 0; }
 
 /* Cards */
-.card { position: absolute; width: 56px; height: 78px; border-radius: 6px; border: 1px solid rgba(255,255,255,.15); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; box-shadow: 0 3px 10px rgba(0,0,0,.5); cursor: default; user-select: none; }
+.card { position: absolute; width: 72px; height: 100px; border-radius: 7px; border: 1px solid rgba(255,255,255,.15); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; box-shadow: 0 3px 10px rgba(0,0,0,.5); cursor: default; user-select: none; }
 .card.red { background: #fef2f2; color: #dc2626; }
 .card.black { background: #f8fafc; color: #1e293b; }
 .card.clickable { cursor: pointer; transition: transform .12s; }
 .card.clickable:hover { transform: translateY(-8px); }
 .card.selected { outline: 2px solid #f59e0b !important; transform: translateY(-10px); }
-.card-rank { position: absolute; top: 4px; left: 5px; font-size: 11px; font-weight: 800; line-height: 1; }
-.card-suit { font-size: 18px; line-height: 1; }
-.card-rank-br { position: absolute; bottom: 4px; right: 5px; font-size: 11px; font-weight: 800; line-height: 1; transform: rotate(180deg); }
+.card-rank { position: absolute; top: 5px; left: 6px; font-size: 14px; font-weight: 800; line-height: 1; }
+.card-suit { font-size: 23px; line-height: 1; }
+.card-rank-br { position: absolute; bottom: 5px; right: 6px; font-size: 14px; font-weight: 800; line-height: 1; transform: rotate(180deg); }
 .attack-card-pos { top: 0; left: 0; }
-.defend-card-pos { top: 12px; left: 8px; transform: rotate(12deg); }
-.defend-card-pos.selected { transform: rotate(12deg) translateY(-8px); }
+.defend-card-pos { top: 15px; left: 10px; transform: rotate(12deg); }
+.defend-card-pos.selected { transform: rotate(12deg) translateY(-10px); }
 
 /* Trump + deck */
 .trump-area { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-left: auto; }
-.trump-card-wrap { position: relative; width: 50px; height: 70px; }
-.trump-card { position: absolute; width: 50px; height: 70px; border-radius: 5px; border: 1px solid rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; flex-direction: column; box-shadow: 0 2px 10px rgba(0,0,0,.5); }
-.deck-stack { position: absolute; top: -4px; left: -4px; width: 50px; height: 70px; background: linear-gradient(135deg,#1e3a5f,#0f2440); border: 1px solid #334155; border-radius: 5px; }
+.trump-card-wrap { position: relative; width: 64px; height: 90px; }
+.trump-card { position: absolute; width: 64px; height: 90px; border-radius: 6px; border: 1px solid rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; flex-direction: column; box-shadow: 0 2px 10px rgba(0,0,0,.5); }
+.deck-stack { position: absolute; top: -4px; left: -4px; width: 64px; height: 90px; background: linear-gradient(135deg,#1e3a5f,#0f2440); border: 1px solid #334155; border-radius: 6px; }
 .trump-label { font-size: 9px; color: #4ade80; text-transform: uppercase; letter-spacing: .06em; }
 .deck-count { font-size: 11px; color: #475569; }
 .discard-pile { width: 50px; height: 70px; background: rgba(0,0,0,.3); border: 1px dashed #1a5c35; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #1a5c35; }
@@ -121,7 +121,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: transparen
 .bet-info { font-size: 12px; color: #f59e0b; font-weight: 700; white-space: nowrap; position: absolute; right: 0; }
 .hand-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .hand-label { font-size: 10px; color: #1a5c35; text-transform: uppercase; letter-spacing: .06em; }
-.my-hand-scroll { flex: 1; min-height: 100px; overflow-x: auto; overflow-y: hidden; padding-top: 16px; }
+.my-hand-scroll { flex: 1; min-height: 120px; overflow-x: auto; overflow-y: hidden; padding-top: 20px; }
 .my-hand { display: flex; justify-content: safe center; align-items: flex-end; min-width: 100%; }
 
 /* Resize handle */
@@ -159,7 +159,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: transparen
 .gc-cmd-btns { display: flex; gap: 2px; }
 .gc-cmd { background: none; border: 1px solid #1a3d20; border-radius: 3px; color: #475569; font-size: 9px; font-weight: 700; cursor: pointer; padding: 2px 5px; line-height: 1; }
 .gc-cmd:hover, .gc-cmd.active { border-color: #a855f7; color: #c084fc; background: rgba(168,85,247,.1); }
-.hand-card { width: 56px; height: 78px; border-radius: 6px; border: 1px solid rgba(255,255,255,.15); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; box-shadow: 0 3px 10px rgba(0,0,0,.5); margin-left: -18px; cursor: pointer; transition: transform .12s; position: relative; user-select: none; }
+.hand-card { width: 72px; height: 100px; border-radius: 7px; border: 1px solid rgba(255,255,255,.15); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; box-shadow: 0 3px 10px rgba(0,0,0,.5); margin-left: -22px; cursor: pointer; transition: transform .12s; position: relative; user-select: none; }
 .hand-card:first-child { margin-left: 0; }
 .hand-card:hover { transform: translateY(-10px); }
 .hand-card.selected { transform: translateY(-14px); outline: 2px solid #f59e0b; z-index: 10; }
