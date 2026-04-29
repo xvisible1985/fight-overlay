@@ -489,6 +489,15 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 .tb-act:disabled, .tb-ct:disabled { opacity: .4; cursor: default; pointer-events: none; }
 .tb-restart-btn { background: #1e293b; border: 1px solid #334155; border-radius: 5px; color: #94a3b8; cursor: pointer; font-size: .85em; font-weight: 700; margin: 4px 8px 6px; padding: 6px; }
 .tb-restart-btn:hover { border-color: #475569; color: #e2e8f0; }
+.tb-opp-card { display:flex; gap:6px; padding:5px 6px; border-radius:5px; border:1px solid #1e293b; background:#0f172a; cursor:pointer; align-items:flex-start; transition:border-color .15s; }
+.tb-opp-card:hover { border-color:#334155; }
+.tb-opp-sel { border-color:#3b82f6 !important; background:#0f2040; }
+.tb-opp-av { width:38px; height:48px; border-radius:4px; background:#1e293b; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.tb-opp-body { flex:1; min-width:0; }
+.tb-opp-name { font-size:.8em; font-weight:700; color:#e2e8f0; }
+.tb-opp-stars { font-size:.55em; color:#c9a06a; letter-spacing:-.5px; line-height:1; margin:1px 0; }
+.tb-opp-info { font-size:.68em; color:#64748b; }
+.tb-opp-desc { font-size:.65em; color:#475569; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
 .fight-filters { display: flex; gap: 3px; padding: 4px 8px; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
 .fight-filter-btn {
@@ -815,11 +824,12 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
     <!-- Train tab -->
     <div id="fightTrainTab" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
       <!-- Start screen -->
-      <div id="tbStartScreen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:12px;padding:20px;text-align:center;">
-        <div style="font-size:28px">⚔</div>
-        <div style="font-size:13px;font-weight:700;color:#e2e8f0;letter-spacing:.04em">УЧЕБНЫЙ БОЙ</div>
-        <div style="font-size:10px;color:#64748b;line-height:1.5">Сражайтесь против ИИ-противника.<br>Механика боя — как в калькуляторе.</div>
-        <button class="tb-start-btn" onclick="tbStart()">▶ Начать</button>
+      <div id="tbStartScreen" style="display:flex;flex-direction:column;flex:1;overflow:hidden;padding:8px;gap:6px;">
+        <div style="font-size:.85em;font-weight:700;color:#e2e8f0;letter-spacing:.04em;text-align:center;flex-shrink:0">⚔ ВЫБЕРИ ПРОТИВНИКА</div>
+        <div id="tbOppList" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:5px;">
+          <div style="color:#475569;font-size:.75em;text-align:center">Загрузка…</div>
+        </div>
+        <button class="tb-start-btn" id="tbStartBtn" onclick="tbStart()" disabled style="flex-shrink:0">▶ Начать бой</button>
       </div>
       <!-- Battle screen -->
       <div id="tbBattleScreen" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
@@ -2402,6 +2412,7 @@ function switchFightTab(tab) {
   } else if (tab === 'train') {
     if (train) { train.style.display = 'flex'; if (ftt) ftt.classList.add('active') }
     dot('Fight', !!currentUser)
+    tbFetchOpponents()
   }
 }
 
@@ -3148,6 +3159,9 @@ function tbAIFlavor(ai, action, part) {
   return ai.name + ' действует'
 }
 
+let tbOpponents = []
+let tbSelectedOpponent = null
+
 const tb = {
   cols: null, entries: [],
   pendingTraumaFor: null, pendingTraumaWeapon: false,
@@ -3155,6 +3169,7 @@ const tb = {
   finished: false, traumaCallback: null,
   playerTargetPart: null, aiTargetPart: null,
   deferredRollVal: null, deferredActionText: null,
+  playerGender: 'male', aiGender: 'male', aiLevel: 5,
 }
 
 function tbColNew(name, combatType = 'weapon') {
@@ -3177,13 +3192,61 @@ function tbRunInContext(fn) {
   }
 }
 
+async function tbFetchOpponents() {
+  const listEl = document.getElementById('tbOppList')
+  if (!listEl) return
+  listEl.innerHTML = '<div style="color:#475569;font-size:.75em;text-align:center">Загрузка…</div>'
+  try {
+    const res = await fetch(srv + '/api/landing/arena/training-opponents')
+    tbOpponents = await res.json()
+  } catch { tbOpponents = [] }
+  tbRenderOppList()
+}
+
+function tbRenderOppList() {
+  const listEl = document.getElementById('tbOppList')
+  const startBtn = document.getElementById('tbStartBtn')
+  if (!listEl) return
+  if (!tbOpponents.length) {
+    listEl.innerHTML = '<div style="color:#475569;font-size:.75em;text-align:center;padding:8px">Учебных противников пока нет.<br>Добавьте их в админке Арены.</div>'
+    if (startBtn) startBtn.disabled = true
+    return
+  }
+  listEl.innerHTML = tbOpponents.map(o => {
+    const sel = tbSelectedOpponent?.id === o.id
+    const lvlStars = '★'.repeat(o.level) + '☆'.repeat(10 - o.level)
+    const locName = ''  // not loaded in overlay
+    return `<div class="tb-opp-card ${sel ? 'tb-opp-sel' : ''}" onclick="tbSelectOpponent('${o.id}')">
+      <div class="tb-opp-av">
+        ${o.avatar_url ? `<img src="${srv}${o.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:4px">` : '<span style="color:#475569;font-size:1.1em">⚔</span>'}
+      </div>
+      <div class="tb-opp-body">
+        <div class="tb-opp-name">${o.name}</div>
+        <div class="tb-opp-stars" title="Уровень ${o.level}">${lvlStars.slice(0,10)}</div>
+        <div class="tb-opp-info">HP ${o.hp} · Бр ${o.armor}${o.weapon ? ' · ' + o.weapon : ''}</div>
+        ${o.description ? `<div class="tb-opp-desc">${o.description}</div>` : ''}
+      </div>
+    </div>`
+  }).join('')
+  if (startBtn) startBtn.disabled = !tbSelectedOpponent
+}
+
+function tbSelectOpponent(id) {
+  tbSelectedOpponent = tbOpponents.find(o => o.id === id) || null
+  tbRenderOppList()
+}
+
 function tbStart() {
   const playerName = currentUser?.game_name || 'Воин'
   const playerColor = (currentUser?.fraction && factionColors[currentUser.fraction])
     ? factionColors[currentUser.fraction] : '#c8bfb0'
-  const aiName = 'Ульф'
+  const opp = tbSelectedOpponent
+  const aiName = opp ? opp.name : 'Противник'
+  const aiCt   = (opp && opp.weapon) ? 'weapon' : 'melee'
 
-  tb.cols = [tbColNew(playerName), tbColNew(aiName)]
+  tb.cols = [tbColNew(playerName), tbColNew(aiName, aiCt)]
+  tb.cols[1].hp     = opp ? opp.hp    : 100
+  tb.cols[1].shield = opp ? opp.armor : 200
   tb.entries = []; tb.pendingTraumaFor = null; tb.pendingTraumaWeapon = false
   tb.playerColor = playerColor; tb.action = 'hit'; tb.ct = 'weapon'
   tb.finished = false; tb.traumaCallback = null
@@ -3191,6 +3254,7 @@ function tbStart() {
   tb.deferredRollVal = null; tb.deferredActionText = null
   tb.playerGender = currentUser?.gender || 'male'
   tb.aiGender = 'male'
+  tb.aiLevel  = opp ? opp.level : 5
 
   document.getElementById('tbStartScreen').style.display = 'none'
   document.getElementById('tbBattleScreen').style.display = 'flex'
@@ -3199,6 +3263,7 @@ function tbStart() {
   pnEl.textContent = playerName; pnEl.style.color = playerColor
   document.getElementById('tbAINameEl').textContent = aiName
   document.getElementById('tbTraumaRow').style.display = 'none'
+  document.getElementById('tbTargetRow').style.display = 'none'
   document.getElementById('tbRestartBtn').style.display = 'none'
   const taEl = document.getElementById('tbActionInp')
   if (taEl) { taEl.value = ''; taEl.style.height = 'auto'; syncMirror(taEl) }
@@ -3210,9 +3275,17 @@ function tbStart() {
   }
   const aiAvEl = document.getElementById('tbAIAvatar')
   const aiSilEl = document.getElementById('tbAISilhouette')
-  if (aiAvEl) { aiAvEl.src = 'ai-ulf.jpg'; aiAvEl.style.display = ''; if (aiSilEl) aiSilEl.style.display = 'none' }
+  if (aiAvEl) {
+    if (opp?.avatar_url) {
+      aiAvEl.src = srv + opp.avatar_url; aiAvEl.style.display = ''
+      if (aiSilEl) aiSilEl.style.display = 'none'
+    } else {
+      aiAvEl.src = ''; aiAvEl.style.display = 'none'
+      if (aiSilEl) aiSilEl.style.display = ''
+    }
+  }
 
-  tbSetAction('hit'); tbSetCt('weapon')
+  tbSetAction('hit'); tbSetCt(aiCt)
   tbEnableControls(true)
   tbRender(); tbRenderLog()
 }
@@ -3323,7 +3396,10 @@ function tbRenderLog() {
 function tbAIRoll(ai, player) {
   const base = Math.floor(Math.random() * 100) + 1
   const aiHpPct = cN(ai.hp) / 100, playerHpPct = cN(player.hp) / 100
-  const cheatChance = aiHpPct < 0.3 ? 0.55 : playerHpPct < 0.25 ? 0.4 : 0.12
+  const lvlBase = (tb.aiLevel - 1) / 9 * 0.32  // 0% at lvl1, 32% at lvl10
+  const cheatChance = aiHpPct < 0.3 ? Math.min(0.7, lvlBase + 0.35)
+    : playerHpPct < 0.25 ? Math.min(0.55, lvlBase + 0.22)
+    : lvlBase
   if (Math.random() < cheatChance) return Math.max(base, Math.floor(Math.random() * 100) + 1)
   return base
 }
