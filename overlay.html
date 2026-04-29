@@ -459,15 +459,15 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 .tb-start-btn { background: #1e3a5f; border: 1px solid #3b82f6; border-radius: 6px; color: #60a5fa; cursor: pointer; font-size: 1em; font-weight: 700; padding: 8px 24px; }
 .tb-start-btn:hover { background: #1d4ed8; color: #fff; }
 .tb-fighters { display: flex; align-items: stretch; gap: 6px; padding: 6px 8px; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
-.tb-fighter { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.tb-f-name { font-size: .85em; font-weight: 700; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tb-ai-name { text-align: right; }
-.tb-bar-wrap { height: 5px; background: #0f172a; border-radius: 3px; overflow: hidden; }
+.tb-fighter { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; align-items: center; }
+.tb-bar-wrap { height: 5px; background: #0f172a; border-radius: 3px; overflow: hidden; width: 100%; }
+.tb-f-name { font-size: .85em; font-weight: 700; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; width: 100%; }
+.tb-ai-name { text-align: center; }
+.tb-f-stats { font-size: .8em; color: #94a3b8; width: 100%; text-align: center; }
 .tb-hp-bar  { height: 100%; background: #22c55e; border-radius: 3px; transition: width .4s; }
 .tb-hp-bar-ai { background: #ef4444; }
 .tb-sh-bar  { height: 100%; background: #3b82f6; border-radius: 3px; transition: width .4s; }
 .tb-sh-bar-ai { background: #818cf8; }
-.tb-f-stats { font-size: .8em; color: #94a3b8; }
 .tb-vs { color: #475569; font-size: .9em; font-weight: 700; padding: 0 4px; flex-shrink: 0; align-self: center; }
 .tb-turn-banner { font-size: .8em; font-weight: 700; text-align: center; padding: 3px 8px; background: #0f172a; color: #60a5fa; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
 .tb-log { flex: 1; overflow-y: auto; padding: 4px 8px; font-size: .8em; display: flex; flex-direction: column; gap: 2px; }
@@ -477,7 +477,7 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 .tb-log-line.pend { color: #fbbf24; }
 .tb-log-line.end  { color: #a78bfa; font-weight: 700; }
 .tb-log-line.try  { color: #7dd3fc; font-style: italic; }
-.tb-avatar { width: 66px; height: 84px; border-radius: 4px; overflow: hidden; background: #0f172a; border: 1px solid #334155; flex-shrink: 0; display: flex; align-items: center; justify-content: center; align-self: center; }
+.tb-avatar { width: 76px; height: 96px; border-radius: 4px; overflow: hidden; background: #0f172a; border: 1px solid #334155; flex-shrink: 0; display: flex; align-items: center; justify-content: center; align-self: center; }
 .tb-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .tb-avatar-ai { color: #475569; }
 .tb-controls { border-top: 1px solid #0f172a; padding: 5px 8px; display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
@@ -832,12 +832,15 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
             <div class="tb-f-stats" id="tbPStats">HP: 100 | Щит: 200</div>
           </div>
           <div class="tb-vs">VS</div>
-          <div class="tb-fighter" style="align-items:flex-end;">
-            <div class="tb-avatar tb-avatar-ai"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M12 14c-6 0-8 2.8-8 4v1h16v-1c0-1.2-2-4-8-4z"/></svg></div>
+          <div class="tb-fighter">
+            <div class="tb-avatar">
+              <img id="tbAIAvatar" src="" style="display:none;width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';document.getElementById('tbAISilhouette').style.display='block'">
+              <svg id="tbAISilhouette" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="color:#475569"><circle cx="12" cy="7" r="4"/><path d="M12 14c-6 0-8 2.8-8 4v1h16v-1c0-1.2-2-4-8-4z"/></svg>
+            </div>
             <div class="tb-f-name tb-ai-name" id="tbAINameEl">ИИ</div>
-            <div class="tb-bar-wrap" style="width:100%"><div class="tb-sh-bar tb-sh-bar-ai" id="tbAIShBar" style="width:100%"></div></div>
-            <div class="tb-bar-wrap" style="width:100%"><div class="tb-hp-bar tb-hp-bar-ai" id="tbAIHpBar" style="width:100%"></div></div>
-            <div class="tb-f-stats" id="tbAIStats" style="text-align:right">HP: 100 | Щит: 200</div>
+            <div class="tb-bar-wrap"><div class="tb-sh-bar tb-sh-bar-ai" id="tbAIShBar" style="width:100%"></div></div>
+            <div class="tb-bar-wrap"><div class="tb-hp-bar tb-hp-bar-ai" id="tbAIHpBar" style="width:100%"></div></div>
+            <div class="tb-f-stats" id="tbAIStats">HP: 100 | Щит: 200</div>
           </div>
         </div>
         <div class="tb-turn-banner" id="tbTurnBanner">Ваш ход</div>
@@ -882,7 +885,7 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
         </div>
         <div class="irow">
           <div class="ta-wrap"><textarea id="tbActionInp" rows="1" placeholder="Опишите действие…" onmousedown="activateInput(this)" onblur="deactivateInput()" oninput="syncMirror(this)" onkeydown="tbHk(event)"></textarea><div class="ta-mirror" id="tbActionInpMirror"></div></div>
-          <button class="send-btn" id="tbApplyBtn" onclick="tbApply()" style="align-self:center">→</button>
+          <button class="send-btn" id="tbApplyBtn" onclick="tbApply()" style="align-self:center;height:28px;line-height:1">→</button>
         </div>
         <button class="tb-restart-btn" id="tbRestartBtn" style="display:none" onclick="tbRestart()">↺ Новый бой</button>
       </div>
@@ -3177,7 +3180,7 @@ function tbStart() {
   const playerName = currentUser?.game_name || 'Воин'
   const playerColor = (currentUser?.fraction && factionColors[currentUser.fraction])
     ? factionColors[currentUser.fraction] : '#c8bfb0'
-  const aiName = TB_AI_NAMES[Math.floor(Math.random() * TB_AI_NAMES.length)]
+  const aiName = 'Ульф'
 
   tb.cols = [tbColNew(playerName), tbColNew(aiName)]
   tb.entries = []; tb.pendingTraumaFor = null; tb.pendingTraumaWeapon = false
@@ -3185,6 +3188,8 @@ function tbStart() {
   tb.finished = false; tb.traumaCallback = null
   tb.playerTargetPart = null; tb.aiTargetPart = null
   tb.deferredRollVal = null; tb.deferredActionText = null
+  tb.playerGender = currentUser?.gender || 'male'
+  tb.aiGender = 'male'
 
   document.getElementById('tbStartScreen').style.display = 'none'
   document.getElementById('tbBattleScreen').style.display = 'flex'
@@ -3202,6 +3207,10 @@ function tbStart() {
     if (currentUser?.avatar_url) { avatarEl.src = srv + currentUser.avatar_url; avatarEl.style.display = '' }
     else { avatarEl.style.display = 'none' }
   }
+  const aiAvEl = document.getElementById('tbAIAvatar')
+  const aiSilEl = document.getElementById('tbAISilhouette')
+  if (aiAvEl) { aiAvEl.src = 'ai-ulf.jpg'; aiAvEl.style.display = ''; if (aiSilEl) aiSilEl.style.display = 'none' }
+
   tbSetAction('hit'); tbSetCt('weapon')
   tbEnableControls(true)
   tbRender(); tbRenderLog()
@@ -3338,6 +3347,7 @@ function tbConfirmTarget() {
   sel.value = ''
   document.getElementById('tbTargetRow').style.display = 'none'
   tb.playerTargetPart = part
+  if (tb.entries.length) tb.entries[tb.entries.length - 1].text += ` [→ ${PART_ACC[part] || part}]`
   tbExecuteAction(tb.deferredRollVal, tb.deferredActionText)
   tb.deferredRollVal = null; tb.deferredActionText = null
 }
@@ -3384,7 +3394,8 @@ function tbApply() {
 
   const player = tb.cols[0]
   if (player.stunned) {
-    tbRunInContext(() => { player.stunned = false; addLine(`${player.name}: 😵 Оглушён — пропускает ход`, '') })
+    const stunWord = tb.playerGender === 'female' ? 'Оглушена' : 'Оглушён'
+    tbRunInContext(() => { player.stunned = false; addLine(`${player.name}: 😵 ${stunWord} — пропускает ход`, '') })
     tbRender(); tbRenderLog()
     setTimeout(tbAITurn, 1000); return
   }
@@ -3397,6 +3408,7 @@ function tbApply() {
     const parsed = parseBodyPart(actionText)
     if (parsed) {
       tb.playerTargetPart = parsed
+      tb.entries[tb.entries.length - 1].text += ` [→ ${PART_ACC[parsed] || parsed}]`
       tbExecuteAction(rollVal, actionText)
     } else {
       tb.deferredRollVal = rollVal; tb.deferredActionText = actionText
@@ -3413,7 +3425,8 @@ function tbAITurn() {
   const [player, ai] = tb.cols
 
   if (ai.stunned) {
-    tbRunInContext(() => { ai.stunned = false; addLine(`${ai.name}: 😵 Оглушён — пропускает ход`, '') })
+    const stunWord = tb.aiGender === 'female' ? 'Оглушена' : 'Оглушён'
+    tbRunInContext(() => { ai.stunned = false; addLine(`${ai.name}: 😵 ${stunWord} — пропускает ход`, '') })
     tbRender(); tbRenderLog()
     tbEnableControls(true); tbRender(); return
   }
