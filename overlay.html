@@ -489,9 +489,8 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 .tb-act:disabled, .tb-ct:disabled { opacity: .4; cursor: default; pointer-events: none; }
 .tb-restart-btn { background: #1e293b; border: 1px solid #334155; border-radius: 5px; color: #94a3b8; cursor: pointer; font-size: .85em; font-weight: 700; margin: 4px 0 6px 8px; padding: 6px 10px; }
 .tb-restart-btn:hover { border-color: #475569; color: #e2e8f0; }
-.tb-surr-btn:hover { border-color: #7f1d1d; color: #f87171; }
-.tb-exit-btn { color: #64748b; }
-.tb-exit-btn:hover { border-color: #475569; color: #94a3b8; }
+.wh-surr-btn { font-size: 10px; color: #64748b; cursor: pointer; background: none; border: none; padding: 1px 4px; border-radius: 3px; white-space: nowrap; }
+.wh-surr-btn:hover { color: #f87171; background: rgba(239,68,68,.08); }
 .tb-opp-card { display:flex; gap:10px; padding:8px 10px; border-radius:6px; border:1px solid #1e293b; background:#0f172a; cursor:pointer; align-items:flex-start; transition:border-color .15s; }
 .tb-opp-card:hover { border-color:#334155; }
 .tb-opp-sel { border-color:#3b82f6 !important; background:#0f2040; }
@@ -790,6 +789,7 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
     <button class="fsz-btn active" id="ff-s" onclick="setFightFs('s')">S</button>
     <button class="fsz-btn"        id="ff-m" onclick="setFightFs('m')">M</button>
     <button class="fsz-btn"        id="ff-l" onclick="setFightFs('l')">L</button>
+    <button class="wh-surr-btn" id="tbWHSurrBtn" style="display:none" onclick="tbSurrender()" title="Сдаться — засчитывается поражение">🚩 Сдаться</button>
     <button class="wtoggle" onclick="nbarToggle('wFight')" title="Закрыть">✕</button>
   </div>
   <div class="wbody" id="wbFight">
@@ -911,11 +911,9 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
           <div class="ta-wrap"><textarea id="tbActionInp" rows="1" placeholder="Опишите действие…" onmousedown="activateInput(this)" onblur="deactivateInput()" oninput="syncMirror(this)" onkeydown="tbHk(event)"></textarea><div class="ta-mirror" id="tbActionInpMirror"></div></div>
           <button class="send-btn" id="tbApplyBtn" onclick="tbApply()" style="align-self:center;height:28px;line-height:1">→</button>
         </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <div style="display:flex;gap:6px;">
           <button class="tb-restart-btn" id="tbRestartBtn" style="display:none" onclick="tbRestart()">↺ Новый бой</button>
           <button class="tb-restart-btn" id="tbSaveBtn" style="display:none" onclick="tbSaveFight()">💾 Сохранить бой</button>
-          <button class="tb-restart-btn tb-surr-btn" id="tbSurrBtn" onclick="tbSurrender()">🚩 Сдаться</button>
-          <button class="tb-restart-btn tb-exit-btn" onclick="tbExit()">✕ Выйти</button>
         </div>
       </div>
     </div>
@@ -3315,7 +3313,7 @@ function tbStart() {
   document.getElementById('tbTargetRow').style.display = 'none'
   document.getElementById('tbRestartBtn').style.display = 'none'
   document.getElementById('tbSaveBtn').style.display = 'none'
-  document.getElementById('tbSurrBtn').style.display = ''
+  document.getElementById('tbWHSurrBtn').style.display = ''
   const taEl = document.getElementById('tbActionInp')
   if (taEl) { taEl.value = ''; taEl.style.height = 'auto'; syncMirror(taEl) }
 
@@ -3378,7 +3376,7 @@ function tbFinish() {
   tbEnableControls(false)
   document.getElementById('tbRestartBtn').style.display = ''
   document.getElementById('tbSaveBtn').style.display = ''
-  document.getElementById('tbSurrBtn').style.display = 'none'
+  document.getElementById('tbWHSurrBtn').style.display = 'none'
   tbRender(); tbRenderLog()
   if (token && tb.cols) {
     const playerDead = (tb.cols[0].hp ?? 0) <= 0
@@ -3418,12 +3416,6 @@ async function tbSurrender() {
     }).catch(() => {})
   }
   tbRestart()
-}
-
-function tbExit() {
-  tbRestart()
-  document.getElementById('tbBattleScreen').style.display = 'none'
-  document.getElementById('tbStartScreen').style.display = 'flex'
 }
 
 function tbRender() {
