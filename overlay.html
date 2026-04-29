@@ -544,7 +544,7 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 .cw-trauma-add-btn { font-size: .85em; background: rgba(200,140,60,.12); border: 1px solid rgba(200,140,60,.28); color: rgba(200,140,60,.85); border-radius: 3px; padding: .08em .32em; cursor: pointer; line-height: 1.5; letter-spacing: 0; text-transform: none; font-weight: 600; }
 .cw-trauma-add-btn:hover { background: rgba(200,140,60,.28); }
 .cw-trauma-list { font-size: .56em; color: rgba(200,140,60,.65); min-height: .7em; word-break: break-word; }
-.trauma-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+.trauma-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 35000; display: flex; align-items: center; justify-content: center; }
 .trauma-modal { background: #1a2535; border: 1px solid #334155; border-radius: 8px; padding: .9em 1em; min-width: 200px; }
 .trauma-modal-title { font-size: .72em; color: #94a3b8; text-align: center; font-weight: 700; margin-bottom: .55em; }
 .trauma-modal-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .28em; }
@@ -2735,9 +2735,21 @@ let traumaTargetIdx = null
 function showTraumaModal(playerIdx) {
   traumaTargetIdx = playerIdx
   document.getElementById('traumaModalTitle').textContent = `Травма — ${calcName(playerIdx)}`
-  document.getElementById('traumaModalGrid').innerHTML = TRAUMA_PARTS.map(p =>
-    `<button class="trauma-part-btn" onclick="applyTrauma('${p.key}')">${p.label}</button>`
-  ).join('') + `<button class="trauma-part-btn" style="grid-column:1/-1;color:#64748b;border-color:#1e2d3d" onclick="closeTraumaModal()">✓ Обошлось без травмы</button>`
+  const grid = document.getElementById('traumaModalGrid')
+  grid.innerHTML = ''
+  TRAUMA_PARTS.forEach(p => {
+    const btn = document.createElement('button')
+    btn.className = 'trauma-part-btn'
+    btn.textContent = p.label
+    btn.addEventListener('click', () => applyTrauma(p.key))
+    grid.appendChild(btn)
+  })
+  const noBtn = document.createElement('button')
+  noBtn.className = 'trauma-part-btn'
+  noBtn.style.cssText = 'grid-column:1/-1;color:#64748b;border-color:#1e2d3d'
+  noBtn.textContent = '✓ Обошлось без травмы'
+  noBtn.addEventListener('click', closeTraumaModal)
+  grid.appendChild(noBtn)
   document.getElementById('traumaModal').style.display = 'flex'
 }
 
@@ -3385,13 +3397,16 @@ renderCalcTurn()
 document.getElementById('bleedVal').textContent = bleedSpaces
 // Init name colors
 updateNameColor(0); updateNameColor(1)
+// Trauma modal listeners
+document.getElementById('traumaModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeTraumaModal() })
+document.getElementById('traumaModalCancel').addEventListener('click', closeTraumaModal)
 </script>
 
-<div id="traumaModal" class="trauma-overlay" style="display:none" onclick="if(event.target===this)closeTraumaModal()">
-  <div class="trauma-modal">
+<div id="traumaModal" class="trauma-overlay" style="display:none">
+  <div class="trauma-modal" id="traumaModalInner">
     <div class="trauma-modal-title" id="traumaModalTitle">Травма</div>
     <div class="trauma-modal-grid" id="traumaModalGrid"></div>
-    <button class="trauma-modal-cancel" onclick="closeTraumaModal()">Отмена</button>
+    <button class="trauma-modal-cancel" id="traumaModalCancel">Отмена</button>
   </div>
 </div>
 </body>
