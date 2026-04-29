@@ -2609,12 +2609,10 @@ let pendingTraumaWeapon = false
 
 function applyDmg(col, dmg, attacker) {
   const isWeapon = !attacker || attacker.combatType === 'weapon'
+  if (isWeapon) col.cuts += 1
   if (dmg >= 90) {
     pendingTraumaFor = cols.indexOf(col)
     pendingTraumaWeapon = isWeapon
-    // standard cut skipped — trauma will add 3 instead
-  } else if (isWeapon) {
-    col.cuts += 1
   }
   const sh = cN(col.shield), hp = cN(col.hp)
   const parts = []
@@ -2664,7 +2662,7 @@ function calcApplyLogic(col, other) {
       addLine(`${name}: Попытка удара${wpn} (Провал, ${b}${col.tAcc ? `, порог ${thr}` : ''}) — неудача!`, 'fail')
     } else if (b === 100) {
       const eff = Math.max(0, b - col.tDmg)
-      // no standard cut on crit — trauma adds 3
+      if (col.combatType === 'weapon') other.cuts += 1
       const shStripped = cN(other.shield); other.shield = 0
       const hp = cN(other.hp), hpA = Math.max(0, hp - eff); other.hp = hpA
       other.pendingBrosok = null
@@ -2788,7 +2786,7 @@ function applyTrauma(playerIdx, partKey, withWeapon = false) {
   if (part.tAcc)   debuffs.push(`−${part.tAcc} точн.`)
   if (part.tDodge) debuffs.push(`−${part.tDodge} увор.`)
   if (part.tParry) debuffs.push(`−${part.tParry} парир.`)
-  if (withWeapon) { col.cuts += 3; debuffs.push(`+3 пореза`) }
+  if (withWeapon) { col.cuts += 2; debuffs.push(`+2 пореза`) }
   addLine(`${name}: 🩹 Травма — ${part.key} (${debuffs.join(', ')})`, 'fail')
   setCalcInputs(playerIdx)
   renderTraumaList(playerIdx)
