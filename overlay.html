@@ -783,7 +783,7 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 </div>
 
 <!-- ── Fight widget ── -->
-<div class="widget" id="wFight" style="display:none; width:346px;">
+<div class="widget" id="wFight" style="display:none; width:346px; height:560px;">
   <div class="wh" id="whFight">
     <span class="wh-title">⚔ Бой</span>
     <span class="wdot err" id="dFight">●</span>
@@ -4053,10 +4053,10 @@ function makeResizable(wid, hid, minW = 200, minH = 160) {
   const widget = document.getElementById(wid)
   const handle = document.getElementById(hid)
   if (!widget || !handle) return
-  // Restore saved size
+  // Restore saved size (ignore if below minimum)
   try {
     const saved = localStorage.getItem('wsz-' + wid)
-    if (saved) { const {w, h} = JSON.parse(saved); widget.style.width = w + 'px'; widget.style.height = h + 'px' }
+    if (saved) { const {w, h} = JSON.parse(saved); if (w >= minW && h >= minH) { widget.style.width = w + 'px'; widget.style.height = h + 'px' } }
   } catch {}
   let resizing = false, sx = 0, sy = 0, sw = 0, sh = 0
   handle.addEventListener('mousedown', e => {
@@ -4081,7 +4081,7 @@ function makeResizable(wid, hid, minW = 200, minH = 160) {
 }
 
 makeResizable('wChat', 'rChat', 260, 200)
-makeResizable('wFight', 'rFight', 260, 280)
+makeResizable('wFight', 'rFight', 320, 380)
 makeResizable('wGames', 'rGames', 260, 360)
 document.getElementById('gamesList')?.addEventListener('click', e => {
   const btn = e.target.closest('.gtc-join')
