@@ -456,6 +456,40 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 }
 .fight-tab:hover { color: #94a3b8; }
 .fight-tab.active { color: #60a5fa; border-bottom-color: #3b82f6; }
+.tb-start-btn { background: #1e3a5f; border: 1px solid #3b82f6; border-radius: 6px; color: #60a5fa; cursor: pointer; font-size: 12px; font-weight: 700; padding: 8px 24px; }
+.tb-start-btn:hover { background: #1d4ed8; color: #fff; }
+.tb-fighters { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
+.tb-fighter { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tb-f-name { font-size: 10px; font-weight: 700; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tb-ai-name { text-align: right; }
+.tb-hp-wrap { height: 6px; background: #0f172a; border-radius: 3px; overflow: hidden; }
+.tb-hp-bar { height: 100%; background: #22c55e; border-radius: 3px; transition: width .4s; }
+.tb-hp-bar-ai { background: #ef4444; }
+.tb-f-stats { font-size: 8px; color: #64748b; }
+.tb-vs { color: #475569; font-size: 11px; font-weight: 700; padding: 0 4px; flex-shrink: 0; }
+.tb-turn-banner { font-size: 9px; font-weight: 700; text-align: center; padding: 3px 8px; background: #0f172a; color: #60a5fa; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
+.tb-log { flex: 1; overflow-y: auto; padding: 4px 8px; font-size: 9px; display: flex; flex-direction: column; gap: 2px; }
+.tb-log-line { padding: 1px 0; line-height: 1.4; }
+.tb-log-line.ok   { color: #4ade80; }
+.tb-log-line.fail { color: #f87171; }
+.tb-log-line.pend { color: #fbbf24; }
+.tb-log-line.end  { color: #a78bfa; font-weight: 700; }
+.tb-controls { border-top: 1px solid #0f172a; padding: 5px 8px; display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
+.tb-actions, .tb-ct-row { display: flex; gap: 3px; }
+.tb-act, .tb-ct { flex: 1; background: #0f172a; border: 1px solid #1e293b; border-radius: 4px; color: #475569; cursor: pointer; font-size: 8px; font-weight: 600; padding: 3px 2px; }
+.tb-act:hover, .tb-ct:hover { border-color: #334155; color: #94a3b8; }
+.tb-act.active { background: #1e293b; border-color: #3b82f6; color: #60a5fa; }
+.tb-ct.active { background: #1e293b; border-color: #475569; color: #94a3b8; }
+.tb-act:disabled, .tb-ct:disabled { opacity: .4; cursor: default; pointer-events: none; }
+.tb-roll-row { display: flex; gap: 4px; align-items: center; }
+.tb-roll-inp { flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #e2e8f0; font-size: 9px; padding: 3px 6px; }
+.tb-roll-inp:focus { outline: none; border-color: #3b82f6; }
+.tb-roll-inp:disabled { opacity: .4; }
+.tb-apply-btn { background: #1e3a5f; border: 1px solid #3b82f6; border-radius: 4px; color: #60a5fa; cursor: pointer; font-size: 9px; font-weight: 700; padding: 4px 10px; white-space: nowrap; }
+.tb-apply-btn:hover { background: #1d4ed8; color: #fff; }
+.tb-apply-btn:disabled { opacity: .4; cursor: default; pointer-events: none; }
+.tb-restart-btn { background: #1e293b; border: 1px solid #334155; border-radius: 5px; color: #94a3b8; cursor: pointer; font-size: 10px; font-weight: 700; margin: 4px 8px 6px; padding: 6px; }
+.tb-restart-btn:hover { border-color: #475569; color: #e2e8f0; }
 
 .fight-filters { display: flex; gap: 3px; padding: 4px 8px; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
 .fight-filter-btn {
@@ -747,6 +781,7 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
     <div class="fight-tabs" id="fightTabsRow">
       <button class="fight-tab active" id="ft-lobby" onclick="switchFightTab('lobby')">Лобби</button>
       <button class="fight-tab"        id="ft-fight" onclick="switchFightTab('fight')">Бой</button>
+      <button class="fight-tab"        id="ft-train" onclick="switchFightTab('train')">⚔ Учебный</button>
     </div>
     <!-- Lobby tab -->
     <div id="fightLobbyTab" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
@@ -776,6 +811,64 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
           <div class="ta-wrap"><textarea id="iFight" rows="1" placeholder="Написать..." onmousedown="activateInput(this)" onblur="deactivateInput()" onkeydown="hk(event,'Fight')" oninput="updateFightCmdBtns(this);syncMirror(this)"></textarea><div class="ta-mirror" id="iFightMirror"></div></div>
           <button class="send-btn" id="sbFight" onclick="sendMsg('Fight')" disabled>→</button>
         </div>
+      </div>
+    </div>
+    <!-- Train tab -->
+    <div id="fightTrainTab" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+      <!-- Start screen -->
+      <div id="tbStartScreen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:12px;padding:20px;text-align:center;">
+        <div style="font-size:28px">⚔</div>
+        <div style="font-size:13px;font-weight:700;color:#e2e8f0;letter-spacing:.04em">УЧЕБНЫЙ БОЙ</div>
+        <div style="font-size:10px;color:#64748b;line-height:1.5">Сражайтесь против ИИ-противника.<br>Механика боя — как в калькуляторе.</div>
+        <button class="tb-start-btn" onclick="tbStart()">▶ Начать</button>
+      </div>
+      <!-- Battle screen -->
+      <div id="tbBattleScreen" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+        <div class="tb-fighters">
+          <div class="tb-fighter">
+            <div class="tb-f-name" id="tbPName">Игрок</div>
+            <div class="tb-hp-wrap"><div class="tb-hp-bar" id="tbPHpBar" style="width:100%"></div></div>
+            <div class="tb-f-stats" id="tbPStats">HP: 100 | Щит: 200</div>
+          </div>
+          <div class="tb-vs">VS</div>
+          <div class="tb-fighter" style="align-items:flex-end;">
+            <div class="tb-f-name tb-ai-name" id="tbAINameEl">ИИ</div>
+            <div class="tb-hp-wrap" style="width:100%"><div class="tb-hp-bar tb-hp-bar-ai" id="tbAIHpBar" style="width:100%"></div></div>
+            <div class="tb-f-stats" id="tbAIStats" style="text-align:right">HP: 100 | Щит: 200</div>
+          </div>
+        </div>
+        <div class="tb-turn-banner" id="tbTurnBanner">Ваш ход</div>
+        <div class="tb-log" id="tbLog"><div style="color:#475569;font-size:8px">Лог боя появится здесь…</div></div>
+        <div class="tb-controls" id="tbControls">
+          <div class="tb-actions">
+            <button class="tb-act active" id="tbActHit"    onclick="tbSetAction('hit')">⚔ Удар</button>
+            <button class="tb-act"        id="tbActDisarm" onclick="tbSetAction('disarm')">🔄 Выбив</button>
+            <button class="tb-act"        id="tbActDodge"  onclick="tbSetAction('dodge')">💨 Уворот</button>
+            <button class="tb-act"        id="tbActParry"  onclick="tbSetAction('parry')">🛡 Парир</button>
+          </div>
+          <div class="tb-ct-row">
+            <button class="tb-ct active" id="tbCtWeapon" onclick="tbSetCt('weapon')">⚔ Оружие</button>
+            <button class="tb-ct"        id="tbCtMelee"  onclick="tbSetCt('melee')">👊 Руки</button>
+          </div>
+          <div class="tb-roll-row">
+            <input class="tb-roll-inp" id="tbRollInp" type="text" inputmode="numeric" placeholder="Бросок (1–100)" onfocus="this.select()" onclick="this.select()">
+            <button class="tb-apply-btn" id="tbApplyBtn" onclick="tbApply()">Ход ▶</button>
+          </div>
+          <div class="cw-trauma-pick" id="tbTraumaRow" style="display:none">
+            <span style="color:#e0a050;font-size:.85em;white-space:nowrap">🩹 Травма:</span>
+            <select class="cw-trauma-sel trauma-needed" id="tbTraumaSel">
+              <option value="">— часть тела —</option>
+              <option value="рука">💪 Рука</option>
+              <option value="нога">🦵 Нога</option>
+              <option value="живот">💢 Живот</option>
+              <option value="грудь">🫁 Грудь</option>
+              <option value="шея">🫙 Шея</option>
+              <option value="голова">🧠 Голова</option>
+            </select>
+            <button class="cw-cnt-btn cw-trauma-go" onclick="tbAddTrauma()">+</button>
+          </div>
+        </div>
+        <button class="tb-restart-btn" id="tbRestartBtn" style="display:none" onclick="tbRestart()">↺ Новый бой</button>
       </div>
     </div>
   </div>
@@ -2274,14 +2367,18 @@ function leaveFight() {
 function switchFightTab(tab) {
   const lobby = document.getElementById('fightLobbyTab')
   const fight = document.getElementById('fightFightTab')
+  const train = document.getElementById('fightTrainTab')
   const ftl   = document.getElementById('ft-lobby')
   const ftf   = document.getElementById('ft-fight')
+  const ftt   = document.getElementById('ft-train')
+  lobby.style.display = 'none'; fight.style.display = 'none'; if (train) train.style.display = 'none'
+  ftl.classList.remove('active'); ftf.classList.remove('active'); if (ftt) ftt.classList.remove('active')
   if (tab === 'lobby') {
-    lobby.style.display = 'flex'; fight.style.display = 'none'
-    ftl.classList.add('active'); ftf.classList.remove('active')
-  } else {
-    lobby.style.display = 'none'; fight.style.display = 'flex'
-    ftf.classList.add('active'); ftl.classList.remove('active')
+    lobby.style.display = 'flex'; ftl.classList.add('active')
+  } else if (tab === 'fight') {
+    fight.style.display = 'flex'; ftf.classList.add('active')
+  } else if (tab === 'train') {
+    if (train) { train.style.display = 'flex'; if (ftt) ftt.classList.add('active') }
   }
 }
 
@@ -2471,7 +2568,7 @@ async function acceptChallenge() {
 }
 
 // ── Calc state ────────────────────────────────────────────────────────────────
-const cols = [
+let cols = [
   { name:'', hp:100, shield:200, brosok:0, defense:'hit', combatType:'weapon', pendingBrosok:null, pendingIsDisarm:false, cuts:0, tDmg:0, tAcc:0, tDodge:0, tParry:0, traumas:[], stunned:false },
   { name:'', hp:100, shield:200, brosok:0, defense:'hit', combatType:'weapon', pendingBrosok:null, pendingIsDisarm:false, cuts:0, tDmg:0, tAcc:0, tDodge:0, tParry:0, traumas:[], stunned:false },
 ]
@@ -2608,6 +2705,7 @@ function calcName(i) { return cols[i].name.trim() || (i === 0 ? 'Игрок 1' :
 
 let pendingTraumaFor = null
 let pendingTraumaWeapon = false
+let inTbContext = false
 
 function applyDmg(col, dmg, attacker) {
   const isWeapon = !attacker || attacker.combatType === 'weapon'
@@ -2729,9 +2827,13 @@ function calcApplyLogic(col, other) {
 
 function disarmPlayer(playerIdx) {
   cols[playerIdx].combatType = 'melee'
-  const p = playerIdx === 0 ? 'c1' : 'c2'
-  const r = document.querySelector(`input[name="${p}ct"][value="melee"]`)
-  if (r) r.checked = true
+  if (inTbContext) {
+    if (playerIdx === 0) { tb.ct = 'melee'; tbSetCt('melee') }
+  } else {
+    const p = playerIdx === 0 ? 'c1' : 'c2'
+    const r = document.querySelector(`input[name="${p}ct"][value="melee"]`)
+    if (r) r.checked = true
+  }
 }
 
 function calcSnapshot() {
@@ -2812,9 +2914,11 @@ function applyTrauma(playerIdx, partKey, withWeapon = false) {
   if (part.tParry) debuffs.push(`−${part.tParry} парир.`)
   if (withWeapon) { col.cuts += 2; debuffs.push(`+2 пореза`) }
   addLine(`${name}: 🩹 Травма — ${part.key} (${debuffs.join(', ')})`, 'fail')
-  setCalcInputs(playerIdx)
-  renderTraumaList(playerIdx)
-  renderLog()
+  if (!inTbContext) {
+    setCalcInputs(playerIdx)
+    renderTraumaList(playerIdx)
+    renderLog()
+  }
 }
 
 function renderTraumaList(playerIdx) {
@@ -2984,6 +3088,249 @@ function setCalcFs(sz) {
 function restoreCalcFs() {
   const sz = localStorage.getItem('fa_calc_fs') || 's'
   setCalcFs(sz)
+}
+
+// ── Training fight ────────────────────────────────────────────────────────────
+const TB_AI_NAMES = ['Торвальд','Хёльги','Бьёрн','Сигурд','Рагнар','Эйрик','Гуннар','Лейф','Снорри','Хальвдан','Ульф','Ингвар']
+
+const tb = {
+  cols: null, entries: [],
+  pendingTraumaFor: null, pendingTraumaWeapon: false,
+  playerColor: '#c8bfb0', action: 'hit', ct: 'weapon',
+  finished: false, traumaCallback: null,
+}
+
+function tbColNew(name, combatType = 'weapon') {
+  return { name, hp: 100, shield: 200, brosok: 0, defense: 'hit', combatType,
+    pendingBrosok: null, pendingIsDisarm: false,
+    cuts: 0, tDmg: 0, tAcc: 0, tDodge: 0, tParry: 0, traumas: [], stunned: false }
+}
+
+function tbRunInContext(fn) {
+  inTbContext = true
+  const saveCols = cols, saveEntries = calcEntries
+  const savePtf = pendingTraumaFor, savePtw = pendingTraumaWeapon
+  cols = tb.cols; calcEntries = tb.entries
+  pendingTraumaFor = tb.pendingTraumaFor; pendingTraumaWeapon = tb.pendingTraumaWeapon
+  try { fn() } finally {
+    tb.pendingTraumaFor = pendingTraumaFor; tb.pendingTraumaWeapon = pendingTraumaWeapon
+    cols = saveCols; calcEntries = saveEntries
+    pendingTraumaFor = savePtf; pendingTraumaWeapon = savePtw
+    inTbContext = false
+  }
+}
+
+function tbStart() {
+  const playerName = currentUser?.game_name || 'Воин'
+  const playerColor = (currentUser?.fraction && factionColors[currentUser.fraction])
+    ? factionColors[currentUser.fraction] : '#c8bfb0'
+  const aiName = TB_AI_NAMES[Math.floor(Math.random() * TB_AI_NAMES.length)]
+
+  tb.cols = [tbColNew(playerName), tbColNew(aiName)]
+  tb.entries = []; tb.pendingTraumaFor = null; tb.pendingTraumaWeapon = false
+  tb.playerColor = playerColor; tb.action = 'hit'; tb.ct = 'weapon'
+  tb.finished = false; tb.traumaCallback = null
+
+  document.getElementById('tbStartScreen').style.display = 'none'
+  document.getElementById('tbBattleScreen').style.display = 'flex'
+
+  const pnEl = document.getElementById('tbPName')
+  pnEl.textContent = playerName; pnEl.style.color = playerColor
+  document.getElementById('tbAINameEl').textContent = aiName
+  document.getElementById('tbTraumaRow').style.display = 'none'
+  document.getElementById('tbRestartBtn').style.display = 'none'
+  document.getElementById('tbRollInp').value = ''
+  tbSetAction('hit'); tbSetCt('weapon')
+  tbEnableControls(true)
+  tbRender(); tbRenderLog()
+}
+
+function tbRestart() {
+  document.getElementById('tbRestartBtn').style.display = 'none'
+  document.getElementById('tbBattleScreen').style.display = 'none'
+  document.getElementById('tbStartScreen').style.display = 'flex'
+}
+
+function tbSetAction(a) {
+  tb.action = a
+  for (const [id, val] of [['tbActHit','hit'],['tbActDisarm','disarm'],['tbActDodge','dodge'],['tbActParry','parry']]) {
+    document.getElementById(id)?.classList.toggle('active', val === a)
+  }
+}
+
+function tbSetCt(ct) {
+  tb.ct = ct
+  document.getElementById('tbCtWeapon')?.classList.toggle('active', ct === 'weapon')
+  document.getElementById('tbCtMelee')?.classList.toggle('active', ct === 'melee')
+}
+
+function tbEnableControls(on) {
+  for (const id of ['tbApplyBtn','tbActHit','tbActDisarm','tbActDodge','tbActParry','tbCtWeapon','tbCtMelee','tbRollInp']) {
+    const el = document.getElementById(id); if (el) el.disabled = !on
+  }
+}
+
+function tbCheckFinished() {
+  if (!tb.cols) return false
+  return cN(tb.cols[0].hp) <= 0 || cN(tb.cols[1].hp) <= 0
+}
+
+function tbFinish() {
+  tb.finished = true
+  tbEnableControls(false)
+  document.getElementById('tbRestartBtn').style.display = ''
+  tbRender(); tbRenderLog()
+}
+
+function tbRender() {
+  if (!tb.cols) return
+  const [p, ai] = tb.cols
+  const pPct  = Math.max(0, Math.min(100, cN(p.hp)))
+  const aiPct = Math.max(0, Math.min(100, cN(ai.hp)))
+  document.getElementById('tbPHpBar').style.width  = pPct + '%'
+  document.getElementById('tbAIHpBar').style.width = aiPct + '%'
+
+  const statStr = col => {
+    let s = `HP: ${cN(col.hp)} | Щит: ${cN(col.shield)} | Порезы: ${col.cuts}`
+    const t = []
+    if (col.tDmg)   t.push(`-${col.tDmg}урн`)
+    if (col.tAcc)   t.push(`-${col.tAcc}точн`)
+    if (col.tDodge) t.push(`-${col.tDodge}ув`)
+    if (col.tParry) t.push(`-${col.tParry}пар`)
+    if (t.length) s += ` [${t.join(',')}]`
+    if (col.combatType === 'melee') s += ' [без оружия]'
+    return s
+  }
+  document.getElementById('tbPStats').textContent  = statStr(p)
+  document.getElementById('tbAIStats').textContent = statStr(ai)
+
+  const banner = document.getElementById('tbTurnBanner')
+  if (tb.finished) {
+    banner.textContent = '— Бой завершён —'; banner.style.color = '#a78bfa'
+  } else if (ai.pendingBrosok !== null) {
+    banner.textContent = `Ответ на атаку ${ai.name || 'ИИ'}`; banner.style.color = '#fbbf24'
+  } else {
+    banner.textContent = 'Ваш ход'; banner.style.color = '#60a5fa'
+  }
+
+  const hasPending = ai.pendingBrosok !== null
+  const dodgeBtn = document.getElementById('tbActDodge'); if (dodgeBtn) dodgeBtn.disabled = !hasPending
+  const parryBtn = document.getElementById('tbActParry'); if (parryBtn) parryBtn.disabled = !hasPending
+  if (!hasPending && (tb.action === 'dodge' || tb.action === 'parry')) tbSetAction('hit')
+}
+
+function tbRenderLog() {
+  const div = document.getElementById('tbLog')
+  if (!tb.entries.length) {
+    div.innerHTML = '<div style="color:#475569;font-size:8px">Лог боя появится здесь…</div>'; return
+  }
+  div.innerHTML = tb.entries.map(e => {
+    let html = ''; tbRunInContext(() => { html = entryToHtml(e) })
+    return `<div class="tb-log-line ${e.type}">${html}</div>`
+  }).join('')
+  div.scrollTop = div.scrollHeight
+}
+
+function tbAIRoll(ai, player) {
+  const base = Math.floor(Math.random() * 100) + 1
+  const aiHpPct = cN(ai.hp) / 100, playerHpPct = cN(player.hp) / 100
+  const cheatChance = aiHpPct < 0.3 ? 0.55 : playerHpPct < 0.25 ? 0.4 : 0.12
+  if (Math.random() < cheatChance) return Math.max(base, Math.floor(Math.random() * 100) + 1)
+  return base
+}
+
+function tbAddTrauma() {
+  const sel = document.getElementById('tbTraumaSel')
+  const partKey = sel?.value; if (!partKey) return
+  const withWeapon = tb.pendingTraumaWeapon
+  tbRunInContext(() => { applyTrauma(0, partKey, withWeapon) })
+  sel.value = ''
+  document.getElementById('tbTraumaRow').style.display = 'none'
+  tb.pendingTraumaFor = null
+  tbRender(); tbRenderLog()
+  if (tbCheckFinished()) { tbFinish(); return }
+  if (tb.traumaCallback) { const cb = tb.traumaCallback; tb.traumaCallback = null; cb() }
+}
+
+function tbAIPickTrauma(callback) {
+  const randomPart = TRAUMA_PARTS[Math.floor(Math.random() * TRAUMA_PARTS.length)]
+  setTimeout(() => {
+    tbRunInContext(() => { applyTrauma(1, randomPart.key, tb.pendingTraumaWeapon) })
+    tb.pendingTraumaFor = null
+    tbRender(); tbRenderLog()
+    if (callback) callback()
+  }, 500)
+}
+
+function tbApply() {
+  if (!tb.cols || tb.finished) return
+  const rollVal = parseInt(document.getElementById('tbRollInp').value) || 0
+  if (rollVal < 1 || rollVal > 100) {
+    const inp = document.getElementById('tbRollInp')
+    inp.style.borderColor = '#ef4444'; setTimeout(() => { inp.style.borderColor = '' }, 900)
+    return
+  }
+  document.getElementById('tbRollInp').value = ''
+  tbEnableControls(false)
+
+  const player = tb.cols[0]
+  if (player.stunned) {
+    tbRunInContext(() => { player.stunned = false; addLine(`${player.name}: 😵 Оглушён — пропускает ход`, '') })
+    tbRender(); tbRenderLog()
+    setTimeout(tbAITurn, 1000); return
+  }
+
+  player.brosok = rollVal; player.defense = tb.action; player.combatType = tb.ct
+  tb.pendingTraumaFor = null
+  tbRunInContext(() => { pendingTraumaFor = null; calcApplyLogic(cols[0], cols[1]) })
+  tbRender(); tbRenderLog()
+  if (tbCheckFinished()) { tbFinish(); return }
+
+  if (tb.pendingTraumaFor === 0) {
+    document.getElementById('tbTraumaRow').style.display = 'flex'
+    tb.traumaCallback = () => { if (!tbCheckFinished()) setTimeout(tbAITurn, 1000) }
+    return
+  }
+  if (tb.pendingTraumaFor === 1) {
+    tbAIPickTrauma(() => { if (!tbCheckFinished()) setTimeout(tbAITurn, 1200) }); return
+  }
+  setTimeout(tbAITurn, 1200)
+}
+
+function tbAITurn() {
+  if (!tb.cols || tb.finished) return
+  const [player, ai] = tb.cols
+
+  if (ai.stunned) {
+    tbRunInContext(() => { ai.stunned = false; addLine(`${ai.name}: 😵 Оглушён — пропускает ход`, '') })
+    tbRender(); tbRenderLog()
+    tbEnableControls(true); tbRender(); return
+  }
+
+  const hasPending = player.pendingBrosok !== null
+  let action, ct = ai.combatType
+  if (hasPending) {
+    action = (ai.combatType === 'melee' || Math.random() < 0.5) ? 'dodge' : 'parry'
+  } else {
+    action = (player.combatType === 'weapon' && Math.random() < 0.15) ? 'disarm' : 'hit'
+  }
+
+  const roll = tbAIRoll(ai, player)
+  ai.brosok = roll; ai.defense = action; ai.combatType = ct
+  tb.pendingTraumaFor = null
+  tbRunInContext(() => { pendingTraumaFor = null; calcApplyLogic(cols[1], cols[0]) })
+  tbRender(); tbRenderLog()
+  if (tbCheckFinished()) { tbFinish(); return }
+
+  if (tb.pendingTraumaFor === 1) {
+    tbAIPickTrauma(() => { if (!tbCheckFinished()) { tbEnableControls(true); tbRender() } }); return
+  }
+  if (tb.pendingTraumaFor === 0) {
+    document.getElementById('tbTraumaRow').style.display = 'flex'
+    tb.traumaCallback = () => { if (!tbCheckFinished()) { tbEnableControls(true); tbRender() } }
+    return
+  }
+  tbEnableControls(true); tbRender()
 }
 
 // ── Warriors font size ────────────────────────────────────────────────────────
