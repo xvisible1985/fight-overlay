@@ -889,7 +889,8 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
         <span class="cw-lower-title">Лог</span>
         <button class="cw-act-btn" onclick="calcUndo()" id="cw-undo-btn" disabled style="color:#e0a050">↩ Отменить</button>
         <button class="cw-act-btn" onclick="calcEntries=[];renderLog()" id="cw-clear-btn" disabled>Очистить</button>
-        <button class="cw-act-btn" onclick="calcCopy()" id="cw-copy-btn" disabled>📋 Скопировать</button>
+        <button class="cw-act-btn" onclick="calcCopyLast(this)" id="cw-copy-last-btn" disabled>📋 Ход</button>
+        <button class="cw-act-btn" onclick="calcCopy(this)" id="cw-copy-btn" disabled>📋 Лог</button>
       </div>
       <div class="cw-result" id="calcLog"><div class="cw-log-empty">Результат появится здесь…</div></div>
       <div class="cw-lower-hdr">
@@ -2695,8 +2696,9 @@ function renderLog() {
     div.scrollTop = div.scrollHeight
   }
   const has = calcEntries.length > 0
-  document.getElementById('cw-clear-btn').disabled = !has
-  document.getElementById('cw-copy-btn').disabled  = !has
+  document.getElementById('cw-clear-btn').disabled    = !has
+  document.getElementById('cw-copy-btn').disabled     = !has
+  document.getElementById('cw-copy-last-btn').disabled = !has
   const undoBtn = document.getElementById('cw-undo-btn')
   if (undoBtn) undoBtn.disabled = undoStack.length === 0
 }
@@ -2723,10 +2725,25 @@ function renderStatus() {
   box.innerHTML = lines.join('')
 }
 
-async function calcCopy() {
-  const text = calcEntries.map(e => e.text).join('\n')
-  if (window.electronAPI?.writeClipboard) { window.electronAPI.writeClipboard(text); return }
-  try { await navigator.clipboard.writeText(text) } catch {}
+const LOG_COLORS = { ok: '#4ade80', fail: '#f87171', pend: '#fbbf24', end: '#a78bfa' }
+function entryToUnion(e) {
+  const col = LOG_COLORS[e.type]
+  return col ? `<color=${col}>${e.text}</color>` : e.text
+}
+
+async function calcCopyLast(btn) {
+  if (!calcEntries.length) return
+  const text = entryToUnion(calcEntries[calcEntries.length - 1])
+  if (window.electronAPI?.writeClipboard) { window.electronAPI.writeClipboard(text) }
+  else { try { await navigator.clipboard.writeText(text) } catch {} }
+  if (btn) { const prev = btn.textContent; btn.textContent = '✓'; setTimeout(() => { btn.textContent = prev }, 1200) }
+}
+
+async function calcCopy(btn) {
+  const text = calcEntries.map(entryToUnion).join('\n')
+  if (window.electronAPI?.writeClipboard) { window.electronAPI.writeClipboard(text) }
+  else { try { await navigator.clipboard.writeText(text) } catch {} }
+  if (btn) { const prev = btn.textContent; btn.textContent = '✓ Скопировано'; setTimeout(() => { btn.textContent = prev }, 1500) }
 }
 
 async function copyStatus(btn) {
