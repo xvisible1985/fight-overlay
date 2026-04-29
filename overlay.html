@@ -796,6 +796,12 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
       <button class="fight-tab"        id="ft-fight" onclick="switchFightTab('fight')">Бой</button>
       <button class="fight-tab"        id="ft-train" onclick="switchFightTab('train')">⚔ Учебный</button>
     </div>
+    <!-- Stub for non-admins -->
+    <div id="fightStub" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px;text-align:center;">
+      <div style="font-size:1.4em;opacity:.3">🛡</div>
+      <div style="font-size:.75em;font-weight:700;color:#475569;letter-spacing:.05em">В РАЗРАБОТКЕ</div>
+      <div style="font-size:.65em;color:#334155;line-height:1.4">Этот раздел скоро появится.<br>Учебные бои уже доступны.</div>
+    </div>
     <!-- Lobby tab -->
     <div id="fightLobbyTab" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
       <div class="fight-filters">
@@ -1613,6 +1619,8 @@ function applyAdminVisibility() {
     const w = document.getElementById('wCalc')
     if (w) w.style.display = 'none'
   }
+  // For non-admins lobby/fight tabs are stubs
+  if (!isAdmin) switchFightTab('train')
 }
 
 async function onAuth({ token: t, srv: s }) {
@@ -2434,14 +2442,17 @@ function switchFightTab(tab) {
   const ftl   = document.getElementById('ft-lobby')
   const ftf   = document.getElementById('ft-fight')
   const ftt   = document.getElementById('ft-train')
-  lobby.style.display = 'none'; fight.style.display = 'none'; if (train) train.style.display = 'none'
+  const stub = document.getElementById('fightStub')
+  lobby.style.display = 'none'; fight.style.display = 'none'
+  if (train) train.style.display = 'none'; if (stub) stub.style.display = 'none'
   ftl.classList.remove('active'); ftf.classList.remove('active'); if (ftt) ftt.classList.remove('active')
+  const isAdmin = currentUser?.is_admin
   if (tab === 'lobby') {
-    lobby.style.display = 'flex'; ftl.classList.add('active')
-    dot('Fight', !!(fightWs && fightWs.readyState === 1))
+    if (isAdmin) { lobby.style.display = 'flex'; ftl.classList.add('active'); dot('Fight', !!(fightWs && fightWs.readyState === 1)) }
+    else { if (stub) stub.style.display = 'flex'; ftl.classList.add('active') }
   } else if (tab === 'fight') {
-    fight.style.display = 'flex'; ftf.classList.add('active')
-    dot('Fight', !!(fightWs && fightWs.readyState === 1))
+    if (isAdmin) { fight.style.display = 'flex'; ftf.classList.add('active'); dot('Fight', !!(fightWs && fightWs.readyState === 1)) }
+    else { if (stub) stub.style.display = 'flex'; ftf.classList.add('active') }
   } else if (tab === 'train') {
     if (train) { train.style.display = 'flex'; if (ftt) ftt.classList.add('active') }
     dot('Fight', !!currentUser)
