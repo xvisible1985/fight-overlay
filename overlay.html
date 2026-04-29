@@ -2689,11 +2689,7 @@ function renderLog() {
   if (!calcEntries.length) {
     div.innerHTML = '<div class="cw-log-empty">Результат появится здесь…</div>'
   } else {
-    div.innerHTML = calcEntries.map(e => {
-      const cls = e.type ? ` cw-log-${e.type}` : ''
-      const safe = e.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      return `<div class="cw-log-line${cls}">${safe}</div>`
-    }).join('')
+    div.innerHTML = calcEntries.map(e => `<div class="cw-log-line">${entryToHtml(e)}</div>`).join('')
     div.scrollTop = div.scrollHeight
   }
   const has = calcEntries.length > 0
@@ -2726,27 +2722,35 @@ function renderStatus() {
   box.innerHTML = lines.join('')
 }
 
-function entryToUnion(e) {
+function _applyLogColors(raw, spanFn, numberFn) {
   const c1 = document.getElementById('c1color')?.value || '#c8bfb0'
   const c2 = document.getElementById('c2color')?.value || '#c8bfb0'
   const n1 = calcName(0), n2 = calcName(1)
-  const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-
-  let t = e.text
-  // 1. Ники → плейсхолдеры, чтобы не захватить части имени в других заменах
-  if (n1) t = t.replace(new RegExp(esc(n1), 'g'), '\x01n1\x01')
-  if (n2) t = t.replace(new RegExp(esc(n2), 'g'), '\x01n2\x01')
-  // 2. Ключевые слова результата
-  t = t.replace(/Успешно/g, '<color=#4ade80>Успешно</color>')
-  t = t.replace(/Провал/g,  '<color=#f87171>Провал</color>')
-  // 3. Числа внутри скобок (броски)
+  const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  let t = raw
+  if (n1) t = t.replace(new RegExp(reEsc(n1), 'g'), '\x01n1\x01')
+  if (n2) t = t.replace(new RegExp(reEsc(n2), 'g'), '\x01n2\x01')
+  t = t.replace(/Успешно/g, spanFn('#4ade80', 'Успешно'))
+  t = t.replace(/Провал/g,  spanFn('#f87171', 'Провал'))
   t = t.replace(/\(([^)]+)\)/g, (_, inner) =>
-    '(' + inner.replace(/(\d+)/g, '<color=#fbbf24>$1</color>') + ')'
+    '(' + inner.replace(/(\d+)/g, (m) => numberFn('#fbbf24', m)) + ')'
   )
-  // 4. Восстанавливаем ники с цветами
-  t = t.replace(/\x01n1\x01/g, `<color=${c1}>${n1}</color>`)
-  t = t.replace(/\x01n2\x01/g, `<color=${c2}>${n2}</color>`)
+  t = t.replace(/\x01n1\x01/g, spanFn(c1, n1, true))
+  t = t.replace(/\x01n2\x01/g, spanFn(c2, n2, true))
   return t
+}
+
+function entryToHtml(e) {
+  const h = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const spanFn = (col, txt, bold) => `<span style="color:${col}${bold?';font-weight:700':''}">${h(txt)}</span>`
+  const numFn  = (col, txt) => `<span style="color:${col}">${txt}</span>`
+  return _applyLogColors(h(e.text), spanFn, numFn)
+}
+
+function entryToUnion(e) {
+  const spanFn = (col, txt) => `<color=${col}>${txt}</color>`
+  const numFn  = (col, txt) => `<color=${col}>${txt}</color>`
+  return _applyLogColors(e.text, spanFn, numFn)
 }
 
 async function calcCopyLast(btn) {
