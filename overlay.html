@@ -477,15 +477,15 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 .tb-log-line.pend { color: #fbbf24; }
 .tb-log-line.end  { color: #a78bfa; font-weight: 700; }
 .tb-log-line.try  { color: #7dd3fc; font-style: italic; }
-.tb-avatar { width: 54px; height: 70px; border-radius: 4px; overflow: hidden; background: #0f172a; border: 1px solid #334155; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.tb-avatar { width: 66px; height: 84px; border-radius: 4px; overflow: hidden; background: #0f172a; border: 1px solid #334155; flex-shrink: 0; display: flex; align-items: center; justify-content: center; align-self: center; }
 .tb-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .tb-avatar-ai { color: #475569; }
 .tb-controls { border-top: 1px solid #0f172a; padding: 5px 8px; display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
 .tb-actions, .tb-ct-row { display: flex; gap: 3px; }
-.tb-act, .tb-ct { flex: 1; background: #0f172a; border: 1px solid #1e293b; border-radius: 4px; color: #475569; cursor: pointer; font-size: .7em; font-weight: 600; padding: 3px 2px; }
+.tb-act, .tb-ct { flex: 1; background: #0f172a; border: 1px solid #1e293b; border-radius: 4px; color: #64748b; cursor: pointer; font-size: .7em; font-weight: 600; padding: 3px 2px; }
 .tb-act:hover, .tb-ct:hover { border-color: #334155; color: #94a3b8; }
-.tb-act.active { background: #1e293b; border-color: #3b82f6; color: #60a5fa; }
-.tb-ct.active { background: #1e293b; border-color: #475569; color: #94a3b8; }
+.tb-act.active { background: #1e293b; border-color: #3b82f6; color: #93c5fd; }
+.tb-ct.active { background: #1e293b; border-color: #475569; color: #cbd5e1; }
 .tb-act:disabled, .tb-ct:disabled { opacity: .4; cursor: default; pointer-events: none; }
 .tb-restart-btn { background: #1e293b; border: 1px solid #334155; border-radius: 5px; color: #94a3b8; cursor: pointer; font-size: .85em; font-weight: 700; margin: 4px 8px 6px; padding: 6px; }
 .tb-restart-btn:hover { border-color: #475569; color: #e2e8f0; }
@@ -882,7 +882,7 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
         </div>
         <div class="irow">
           <div class="ta-wrap"><textarea id="tbActionInp" rows="1" placeholder="Опишите действие…" onmousedown="activateInput(this)" onblur="deactivateInput()" oninput="syncMirror(this)" onkeydown="tbHk(event)"></textarea><div class="ta-mirror" id="tbActionInpMirror"></div></div>
-          <button class="send-btn" id="tbApplyBtn" onclick="tbApply()">→</button>
+          <button class="send-btn" id="tbApplyBtn" onclick="tbApply()" style="align-self:center">→</button>
         </div>
         <button class="tb-restart-btn" id="tbRestartBtn" style="display:none" onclick="tbRestart()">↺ Новый бой</button>
       </div>
