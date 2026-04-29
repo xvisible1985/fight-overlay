@@ -534,7 +534,10 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 .fight-chat-title { flex: 1; font-size: 11px; color: #f59e0b; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fight-leave { font-size: 10px; color: #64748b; cursor: pointer; background: none; border: none; padding: 0 2px; }
 .fight-leave:hover { color: #ef4444; }
-#mFight { height: calc(14 * 1em * 1.4); flex: none; }
+.fight-hdr-btn { font-size: 12px; color: #64748b; cursor: pointer; background: none; border: none; padding: 0 2px; }
+.fight-hdr-btn:hover { color: #e2e8f0; }
+.fight-hdr-btn.surr-btn:hover { color: #ef4444; }
+#mFight { height: calc(15 * 1em * 1.4); flex: none; }
 
 /* ── Calc widget ── */
 #wCalc { width: 460px; font-size: 14px; }
@@ -808,6 +811,8 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
       <div id="fightChat" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
         <div class="fight-chat-hdr">
           <span class="fight-chat-title" id="fightChatTitle"></span>
+          <button class="fight-hdr-btn" onclick="saveFight()" title="Сохранить лог боя">💾</button>
+          <button class="fight-hdr-btn surr-btn" onclick="surrenderFight()" title="Сдаться (поражение)">🚩</button>
           <button class="fight-leave" onclick="leaveFight()" title="Покинуть">✕</button>
         </div>
         <div class="members-bar" id="membersBar"></div>
@@ -897,7 +902,10 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
           <div class="ta-wrap"><textarea id="tbActionInp" rows="1" placeholder="Опишите действие…" onmousedown="activateInput(this)" onblur="deactivateInput()" oninput="syncMirror(this)" onkeydown="tbHk(event)"></textarea><div class="ta-mirror" id="tbActionInpMirror"></div></div>
           <button class="send-btn" id="tbApplyBtn" onclick="tbApply()" style="align-self:center;height:28px;line-height:1">→</button>
         </div>
-        <button class="tb-restart-btn" id="tbRestartBtn" style="display:none" onclick="tbRestart()">↺ Новый бой</button>
+        <div style="display:flex;gap:6px;">
+          <button class="tb-restart-btn" id="tbRestartBtn" style="display:none" onclick="tbRestart()">↺ Новый бой</button>
+          <button class="tb-restart-btn" id="tbSaveBtn" style="display:none" onclick="tbSaveFight()">💾 Сохранить бой</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1261,6 +1269,7 @@ function deactivateInput() {
 let inputLang     = 'EN'
 let chatWs = null, fightWs = null, pchatWs = null
 let currentFightId = null, currentFightTitle = ''
+let fightLog = []
 let pollTimer = null
 
 // PChat
@@ -2362,6 +2371,7 @@ function warriorCtx(e, name) {
 function connectFightWs(fightId, fightTitle) {
   if (fightWs) { fightWs.onclose = null; fightWs.close(); fightWs = null }
   currentFightId = fightId; currentFightTitle = fightTitle
+  fightLog = []
   document.getElementById('fightChatTitle').textContent = fightTitle
   clearMsgs('Fight')
   loadFightHistory(fightId)
@@ -2391,6 +2401,31 @@ function leaveFight() {
   document.getElementById('membersBar').innerHTML = ''
   switchFightTab('lobby')
   loadFightsList()
+}
+
+async function saveFight() {
+  if (!token) return
+  const name = currentFightTitle || ('Бой ' + new Date().toLocaleDateString('ru'))
+  const messages_json = JSON.stringify(fightLog)
+  const r = await fetch(srv + '/api/saved-transcripts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+    body: JSON.stringify({ name, messages_json, chat_id: 'fight' })
+  })
+  if (r.ok) {
+    const btn = document.querySelector('.fight-hdr-btn')
+    if (btn) { const old = btn.textContent; btn.textContent = '✓'; setTimeout(() => btn.textContent = old, 1500) }
+  }
+}
+
+async function surrenderFight() {
+  if (!token || !currentFightId) return
+  await fetch(srv + '/api/saved-transcripts/fight-result', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+    body: JSON.stringify({ type: 'real', result: 'loss', fight_id: currentFightId })
+  })
+  leaveFight()
 }
 
 // ── Fight tabs ────────────────────────────────────────────────────────────────
@@ -3169,7 +3204,7 @@ const tb = {
   finished: false, traumaCallback: null,
   playerTargetPart: null, aiTargetPart: null,
   deferredRollVal: null, deferredActionText: null,
-  playerGender: 'male', aiGender: 'male', aiLevel: 5,
+  playerGender: 'male', aiGender: 'male', aiLevel: 5, aiStyle: 'universal',
 }
 
 function tbColNew(name, combatType = 'weapon') {
@@ -3255,6 +3290,7 @@ function tbStart() {
   tb.playerGender = currentUser?.gender || 'male'
   tb.aiGender = 'male'
   tb.aiLevel  = opp ? opp.level : 5
+  tb.aiStyle  = opp?.combat_style || 'universal'
 
   document.getElementById('tbStartScreen').style.display = 'none'
   document.getElementById('tbBattleScreen').style.display = 'flex'
@@ -3265,6 +3301,7 @@ function tbStart() {
   document.getElementById('tbTraumaRow').style.display = 'none'
   document.getElementById('tbTargetRow').style.display = 'none'
   document.getElementById('tbRestartBtn').style.display = 'none'
+  document.getElementById('tbSaveBtn').style.display = 'none'
   const taEl = document.getElementById('tbActionInp')
   if (taEl) { taEl.value = ''; taEl.style.height = 'auto'; syncMirror(taEl) }
 
@@ -3292,6 +3329,7 @@ function tbStart() {
 
 function tbRestart() {
   document.getElementById('tbRestartBtn').style.display = 'none'
+  document.getElementById('tbSaveBtn').style.display = 'none'
   document.getElementById('tbBattleScreen').style.display = 'none'
   document.getElementById('tbStartScreen').style.display = 'flex'
 }
@@ -3325,7 +3363,34 @@ function tbFinish() {
   tb.finished = true
   tbEnableControls(false)
   document.getElementById('tbRestartBtn').style.display = ''
+  document.getElementById('tbSaveBtn').style.display = ''
   tbRender(); tbRenderLog()
+  if (token && tb.cols) {
+    const playerDead = (tb.cols[0].hp ?? 0) <= 0
+    const result = playerDead ? 'loss' : 'win'
+    const opp = tb.cols[1]
+    fetch(srv + '/api/saved-transcripts/fight-result', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ type: 'training', result, opponent_name: opp.name || 'Противник', opponent_level: tb.aiLevel ?? 1 })
+    }).catch(() => {})
+  }
+}
+
+async function tbSaveFight() {
+  if (!token || !tb.entries) return
+  const opp = tb.cols?.[1]
+  const name = `Учебный бой — ${opp?.name || 'противник'} (${new Date().toLocaleDateString('ru')})`
+  const messages_json = JSON.stringify(tb.entries.map(e => ({ name: e.who || '', text: e.text || e, is_system: false, ts: '' })))
+  const r = await fetch(srv + '/api/saved-transcripts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+    body: JSON.stringify({ name, messages_json, chat_id: 'training' })
+  })
+  if (r.ok) {
+    const btn = document.getElementById('tbSaveBtn')
+    if (btn) { const old = btn.textContent; btn.textContent = '✓ Сохранено'; setTimeout(() => btn.textContent = old, 1500) }
+  }
 }
 
 function tbRender() {
@@ -3518,10 +3583,33 @@ function tbAITurn() {
 
   const hasPending = player.pendingBrosok !== null
   let action, ct = ai.disarmed ? 'melee' : ai.combatType
+  const style = tb.aiStyle || 'universal'
   if (hasPending) {
-    action = (ct === 'melee' || Math.random() < 0.5) ? 'dodge' : 'parry'
+    if (style === 'berserk') {
+      action = 'dodge' // берсерк иногда уклоняется, но редко парирует
+      if (Math.random() < 0.2) action = 'parry'
+    } else if (style === 'defender') {
+      action = Math.random() < 0.75 ? 'parry' : 'dodge'
+    } else if (style === 'coward') {
+      action = 'dodge'
+    } else if (style === 'duelist') {
+      action = ct === 'melee' ? 'dodge' : (Math.random() < 0.6 ? 'parry' : 'dodge')
+    } else {
+      action = (ct === 'melee' || Math.random() < 0.5) ? 'dodge' : 'parry'
+    }
   } else {
-    action = (!ai.disarmed && player.combatType === 'weapon' && Math.random() < 0.15) ? 'disarm' : 'hit'
+    const canDisarm = !ai.disarmed && player.combatType === 'weapon'
+    if (style === 'berserk') {
+      action = 'hit'
+    } else if (style === 'defender') {
+      action = 'hit'
+    } else if (style === 'coward') {
+      action = 'hit'
+    } else if (style === 'duelist') {
+      action = canDisarm && Math.random() < 0.5 ? 'disarm' : 'hit'
+    } else {
+      action = canDisarm && Math.random() < 0.15 ? 'disarm' : 'hit'
+    }
   }
 
   let aiTargetPart = null
@@ -3822,6 +3910,7 @@ function appendChatMsg(m) {
 }
 function appendFightMsg(m) {
   if (!m) return
+  fightLog.push({ name: m.game_name || '', text: m.content || '', is_system: !!m.is_system, ts: m.created_at || '' })
   const box = document.getElementById('mFight')
   const d = document.createElement('div'); d.className = 'msg'
   const name = m.game_name || '?', text = m.content || '', ts = fmtTime(m.created_at)
