@@ -474,6 +474,10 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 .tb-log-line.fail { color: #f87171; }
 .tb-log-line.pend { color: #fbbf24; }
 .tb-log-line.end  { color: #a78bfa; font-weight: 700; }
+.tb-log-line.try  { color: #7dd3fc; font-style: italic; }
+.tb-avatar { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; background: #0f172a; border: 1px solid #334155; flex-shrink: 0; display: flex; align-items: center; justify-content: center; align-self: center; }
+.tb-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tb-avatar-ai { color: #475569; }
 .tb-controls { border-top: 1px solid #0f172a; padding: 5px 8px; display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
 .tb-actions, .tb-ct-row { display: flex; gap: 3px; }
 .tb-act, .tb-ct { flex: 1; background: #0f172a; border: 1px solid #1e293b; border-radius: 4px; color: #475569; cursor: pointer; font-size: 8px; font-weight: 600; padding: 3px 2px; }
@@ -482,9 +486,6 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 .tb-ct.active { background: #1e293b; border-color: #475569; color: #94a3b8; }
 .tb-act:disabled, .tb-ct:disabled { opacity: .4; cursor: default; pointer-events: none; }
 .tb-roll-row { display: flex; gap: 4px; align-items: center; }
-.tb-roll-inp { flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #e2e8f0; font-size: 9px; padding: 3px 6px; }
-.tb-roll-inp:focus { outline: none; border-color: #3b82f6; }
-.tb-roll-inp:disabled { opacity: .4; }
 .tb-apply-btn { background: #1e3a5f; border: 1px solid #3b82f6; border-radius: 4px; color: #60a5fa; cursor: pointer; font-size: 9px; font-weight: 700; padding: 4px 10px; white-space: nowrap; }
 .tb-apply-btn:hover { background: #1d4ed8; color: #fff; }
 .tb-apply-btn:disabled { opacity: .4; cursor: default; pointer-events: none; }
@@ -826,12 +827,14 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
       <div id="tbBattleScreen" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
         <div class="tb-fighters">
           <div class="tb-fighter">
+            <div class="tb-avatar"><img id="tbPAvatar" src="" onerror="this.style.display='none'" style="display:none"></div>
             <div class="tb-f-name" id="tbPName">Игрок</div>
             <div class="tb-hp-wrap"><div class="tb-hp-bar" id="tbPHpBar" style="width:100%"></div></div>
             <div class="tb-f-stats" id="tbPStats">HP: 100 | Щит: 200</div>
           </div>
           <div class="tb-vs">VS</div>
           <div class="tb-fighter" style="align-items:flex-end;">
+            <div class="tb-avatar tb-avatar-ai"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M12 14c-6 0-8 2.8-8 4v1h16v-1c0-1.2-2-4-8-4z"/></svg></div>
             <div class="tb-f-name tb-ai-name" id="tbAINameEl">ИИ</div>
             <div class="tb-hp-wrap" style="width:100%"><div class="tb-hp-bar tb-hp-bar-ai" id="tbAIHpBar" style="width:100%"></div></div>
             <div class="tb-f-stats" id="tbAIStats" style="text-align:right">HP: 100 | Щит: 200</div>
@@ -851,7 +854,11 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
             <button class="tb-ct"        id="tbCtMelee"  onclick="tbSetCt('melee')">👊 Руки</button>
           </div>
           <div class="tb-roll-row">
-            <input class="tb-roll-inp" id="tbRollInp" type="text" inputmode="numeric" placeholder="Бросок (1–100)" onfocus="this.select()" onclick="this.select()">
+            <button class="lang-btn" id="lbTrain" onmousedown="event.preventDefault()" onclick="toggleLang()">EN</button>
+            <div class="ta-wrap" style="flex:1;min-width:0">
+              <textarea id="tbActionInp" rows="1" placeholder="Опишите действие…" onmousedown="activateInput(this)" onblur="deactivateInput()" oninput="syncMirror(this)" onkeydown="tbHk(event)"></textarea>
+              <div class="ta-mirror" id="tbActionInpMirror"></div>
+            </div>
             <button class="tb-apply-btn" id="tbApplyBtn" onclick="tbApply()">Ход ▶</button>
           </div>
           <div class="cw-trauma-pick" id="tbTraumaRow" style="display:none">
@@ -3139,7 +3146,14 @@ function tbStart() {
   document.getElementById('tbAINameEl').textContent = aiName
   document.getElementById('tbTraumaRow').style.display = 'none'
   document.getElementById('tbRestartBtn').style.display = 'none'
-  document.getElementById('tbRollInp').value = ''
+  const taEl = document.getElementById('tbActionInp')
+  if (taEl) { taEl.value = ''; taEl.style.height = 'auto'; syncMirror(taEl) }
+
+  const avatarEl = document.getElementById('tbPAvatar')
+  if (avatarEl) {
+    if (currentUser?.avatar_url) { avatarEl.src = srv + currentUser.avatar_url; avatarEl.style.display = '' }
+    else { avatarEl.style.display = 'none' }
+  }
   tbSetAction('hit'); tbSetCt('weapon')
   tbEnableControls(true)
   tbRender(); tbRenderLog()
@@ -3165,7 +3179,7 @@ function tbSetCt(ct) {
 }
 
 function tbEnableControls(on) {
-  for (const id of ['tbApplyBtn','tbActHit','tbActDisarm','tbActDodge','tbActParry','tbCtWeapon','tbCtMelee','tbRollInp']) {
+  for (const id of ['tbApplyBtn','tbActHit','tbActDisarm','tbActDodge','tbActParry','tbCtWeapon','tbCtMelee','tbActionInp']) {
     const el = document.getElementById(id); if (el) el.disabled = !on
   }
 }
@@ -3264,13 +3278,14 @@ function tbAIPickTrauma(callback) {
 
 function tbApply() {
   if (!tb.cols || tb.finished) return
-  const rollVal = parseInt(document.getElementById('tbRollInp').value) || 0
-  if (rollVal < 1 || rollVal > 100) {
-    const inp = document.getElementById('tbRollInp')
-    inp.style.borderColor = '#ef4444'; setTimeout(() => { inp.style.borderColor = '' }, 900)
+  const taEl = document.getElementById('tbActionInp')
+  const actionText = taEl?.value.trim() || ''
+  if (!actionText) {
+    if (taEl) { taEl.style.outline = '1px solid #ef4444'; setTimeout(() => { taEl.style.outline = '' }, 900) }
     return
   }
-  document.getElementById('tbRollInp').value = ''
+  const rollVal = Math.floor(Math.random() * 100) + 1
+  if (taEl) { taEl.value = ''; taEl.style.height = 'auto'; syncMirror(taEl) }
   tbEnableControls(false)
 
   const player = tb.cols[0]
@@ -3281,6 +3296,13 @@ function tbApply() {
   }
 
   player.brosok = rollVal; player.defense = tb.action; player.combatType = tb.ct
+
+  // /try-style narrative entry
+  const trySuccess = rollVal >= 50
+  const tryResult = trySuccess
+    ? `(Успешно, ${rollVal}/100)` : `(Неуспешно, ${rollVal}/100)`
+  tb.entries.push({ text: `${player.name} ${actionText} ${tryResult}`, type: 'try' })
+
   tb.pendingTraumaFor = null
   tbRunInContext(() => { pendingTraumaFor = null; calcApplyLogic(cols[0], cols[1]) })
   tbRender(); tbRenderLog()
@@ -3475,6 +3497,7 @@ el?.onKeyInput(payload => {
     else if (vk === 13) {
       if (ta.id === 'pchatNewInp') { confirmCreateChat() }
       else if (ta.id === 'gtfName') { deactivateInput(); submitCreateTable() }
+      else if (ta.id === 'tbActionInp') { tbApply() }
       else if (!isNum && ta.id !== 'iChat' && ta.id !== 'iFight') { deactivateInput() }
       else if (!isNum) { const w = ta.id === 'iChat' ? 'Chat' : 'Fight'; sendMsg(w) }
     }
@@ -3510,6 +3533,12 @@ el?.onKeyInput(payload => {
 })
 function hk(e, w) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(w); return }
+  if (e.key === 'Escape') { e.target.blur(); deactivateInput(); return }
+  const t = e.target
+  setTimeout(() => { t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 120) + 'px' }, 0)
+}
+function tbHk(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); tbApply(); return }
   if (e.key === 'Escape') { e.target.blur(); deactivateInput(); return }
   const t = e.target
   setTimeout(() => { t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 120) + 'px' }, 0)
