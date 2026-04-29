@@ -489,15 +489,16 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 .tb-act:disabled, .tb-ct:disabled { opacity: .4; cursor: default; pointer-events: none; }
 .tb-restart-btn { background: #1e293b; border: 1px solid #334155; border-radius: 5px; color: #94a3b8; cursor: pointer; font-size: .85em; font-weight: 700; margin: 4px 8px 6px; padding: 6px; }
 .tb-restart-btn:hover { border-color: #475569; color: #e2e8f0; }
-.tb-opp-card { display:flex; gap:6px; padding:5px 6px; border-radius:5px; border:1px solid #1e293b; background:#0f172a; cursor:pointer; align-items:flex-start; transition:border-color .15s; }
+.tb-opp-card { display:flex; gap:10px; padding:8px 10px; border-radius:6px; border:1px solid #1e293b; background:#0f172a; cursor:pointer; align-items:flex-start; transition:border-color .15s; }
 .tb-opp-card:hover { border-color:#334155; }
 .tb-opp-sel { border-color:#3b82f6 !important; background:#0f2040; }
-.tb-opp-av { width:38px; height:48px; border-radius:4px; background:#1e293b; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.tb-opp-av { width:52px; height:66px; border-radius:4px; background:#1e293b; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden; }
 .tb-opp-body { flex:1; min-width:0; }
-.tb-opp-name { font-size:.8em; font-weight:700; color:#e2e8f0; }
-.tb-opp-stars { font-size:.55em; color:#c9a06a; letter-spacing:-.5px; line-height:1; margin:1px 0; }
-.tb-opp-info { font-size:.68em; color:#64748b; }
-.tb-opp-desc { font-size:.65em; color:#475569; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tb-opp-nameline { display:flex; align-items:baseline; gap:5px; flex-wrap:wrap; }
+.tb-opp-name { font-size:.88em; font-weight:700; color:#e2e8f0; }
+.tb-opp-stars { font-size:.8em; color:#c9a06a; letter-spacing:1px; line-height:1; flex-shrink:0; }
+.tb-opp-info { font-size:.68em; color:#64748b; margin-top:2px; }
+.tb-opp-desc { font-size:.68em; color:#556070; margin-top:4px; line-height:1.45; }
 
 .fight-filters { display: flex; gap: 3px; padding: 4px 8px; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
 .fight-filter-btn {
@@ -3249,17 +3250,18 @@ function tbRenderOppList() {
   }
   listEl.innerHTML = tbOpponents.map(o => {
     const sel = tbSelectedOpponent?.id === o.id
-    const lvlStars = '★'.repeat(o.level) + '☆'.repeat(10 - o.level)
-    const locName = ''  // not loaded in overlay
+    const stars = '★'.repeat(Math.max(1, Math.min(10, o.level || 1)))
     return `<div class="tb-opp-card ${sel ? 'tb-opp-sel' : ''}" onclick="tbSelectOpponent('${o.id}')">
       <div class="tb-opp-av">
-        ${o.avatar_url ? `<img src="${srv}${o.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:4px">` : '<span style="color:#475569;font-size:1.1em">⚔</span>'}
+        ${o.avatar_url ? `<img src="${srv}${o.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:4px">` : '<span style="color:#475569;font-size:1.3em">⚔</span>'}
       </div>
       <div class="tb-opp-body">
-        <div class="tb-opp-name">${o.name}</div>
-        <div class="tb-opp-stars" title="Уровень ${o.level}">${lvlStars.slice(0,10)}</div>
-        <div class="tb-opp-info">HP ${o.hp} · Бр ${o.armor}${o.weapon ? ' · ' + o.weapon : ''}</div>
-        ${o.description ? `<div class="tb-opp-desc">${o.description}</div>` : ''}
+        <div class="tb-opp-nameline">
+          <span class="tb-opp-name">${esc(o.name)}</span>
+          <span class="tb-opp-stars" title="Уровень ${o.level}">${stars}</span>
+        </div>
+        <div class="tb-opp-info">HP ${o.hp} · Бр ${o.armor}${o.weapon ? ' · ' + esc(o.weapon) : ''}</div>
+        ${o.description ? `<div class="tb-opp-desc">${esc(o.description)}</div>` : ''}
       </div>
     </div>`
   }).join('')
