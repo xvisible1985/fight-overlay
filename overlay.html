@@ -2725,10 +2725,27 @@ function renderStatus() {
   box.innerHTML = lines.join('')
 }
 
-const LOG_COLORS = { ok: '#4ade80', fail: '#f87171', pend: '#fbbf24', end: '#a78bfa' }
 function entryToUnion(e) {
-  const col = LOG_COLORS[e.type]
-  return col ? `<color=${col}>${e.text}</color>` : e.text
+  const c1 = document.getElementById('c1color')?.value || '#c8bfb0'
+  const c2 = document.getElementById('c2color')?.value || '#c8bfb0'
+  const n1 = calcName(0), n2 = calcName(1)
+  const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+  let t = e.text
+  // 1. Ники → плейсхолдеры, чтобы не захватить части имени в других заменах
+  if (n1) t = t.replace(new RegExp(esc(n1), 'g'), '\x01n1\x01')
+  if (n2) t = t.replace(new RegExp(esc(n2), 'g'), '\x01n2\x01')
+  // 2. Ключевые слова результата
+  t = t.replace(/Успешно/g, '<color=#4ade80>Успешно</color>')
+  t = t.replace(/Провал/g,  '<color=#f87171>Провал</color>')
+  // 3. Числа внутри скобок (броски)
+  t = t.replace(/\(([^)]+)\)/g, (_, inner) =>
+    '(' + inner.replace(/(\d+)/g, '<color=#fbbf24>$1</color>') + ')'
+  )
+  // 4. Восстанавливаем ники с цветами
+  t = t.replace(/\x01n1\x01/g, `<color=${c1}>${n1}</color>`)
+  t = t.replace(/\x01n2\x01/g, `<color=${c2}>${n2}</color>`)
+  return t
 }
 
 async function calcCopyLast(btn) {
