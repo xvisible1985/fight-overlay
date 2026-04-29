@@ -844,7 +844,8 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
         <div class="cw-field-row"><label class="cw-lbl">Бросок</label><input class="cw-inp cw-num-inp" id="c1brosok" type="text" inputmode="numeric" value="0" onfocus="this.select()" onclick="this.select()"></div>
         <div class="cw-radio-row">
           <div class="cw-radio-grp">
-            <label class="cw-radio-lbl"><input type="radio" name="c1def" value="hit"   checked> Удар</label>
+            <label class="cw-radio-lbl"><input type="radio" name="c1def" value="hit"    checked> Удар</label>
+            <label class="cw-radio-lbl"><input type="radio" name="c1def" value="disarm"> Выбивание</label>
             <label class="cw-radio-lbl"><input type="radio" name="c1def" value="dodge" id="c1dodge"> Уворот</label>
             <label class="cw-radio-lbl"><input type="radio" name="c1def" value="parry" id="c1parry"> Парирование</label>
           </div>
@@ -902,7 +903,8 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
         <div class="cw-field-row"><label class="cw-lbl">Бросок</label><input class="cw-inp cw-num-inp" id="c2brosok" type="text" inputmode="numeric" value="0" onfocus="this.select()" onclick="this.select()"></div>
         <div class="cw-radio-row">
           <div class="cw-radio-grp">
-            <label class="cw-radio-lbl"><input type="radio" name="c2def" value="hit"   checked> Удар</label>
+            <label class="cw-radio-lbl"><input type="radio" name="c2def" value="hit"    checked> Удар</label>
+            <label class="cw-radio-lbl"><input type="radio" name="c2def" value="disarm"> Выбивание</label>
             <label class="cw-radio-lbl"><input type="radio" name="c2def" value="dodge" id="c2dodge"> Уворот</label>
             <label class="cw-radio-lbl"><input type="radio" name="c2def" value="parry" id="c2parry"> Парирование</label>
           </div>
@@ -2470,8 +2472,8 @@ async function acceptChallenge() {
 
 // ── Calc state ────────────────────────────────────────────────────────────────
 const cols = [
-  { name:'', hp:100, shield:200, brosok:0, defense:'hit', combatType:'weapon', pendingBrosok:null, cuts:0, tDmg:0, tAcc:0, tDodge:0, tParry:0, traumas:[], stunned:false },
-  { name:'', hp:100, shield:200, brosok:0, defense:'hit', combatType:'weapon', pendingBrosok:null, cuts:0, tDmg:0, tAcc:0, tDodge:0, tParry:0, traumas:[], stunned:false },
+  { name:'', hp:100, shield:200, brosok:0, defense:'hit', combatType:'weapon', pendingBrosok:null, pendingIsDisarm:false, cuts:0, tDmg:0, tAcc:0, tDodge:0, tParry:0, traumas:[], stunned:false },
+  { name:'', hp:100, shield:200, brosok:0, defense:'hit', combatType:'weapon', pendingBrosok:null, pendingIsDisarm:false, cuts:0, tDmg:0, tAcc:0, tDodge:0, tParry:0, traumas:[], stunned:false },
 ]
 let calcEntries = []  // { text: string, type: 'ok'|'fail'|'pend'|'end'|'' }
 let currentTurn = 0  // 0 = col1, 1 = col2
@@ -2573,7 +2575,7 @@ function calcReset() {
     c.hp = 100; c.shield = 200; c.brosok = 0
     c.defense = 'hit'; c.combatType = 'weapon'
     c.pendingBrosok = null
-    c.cuts = 0; c.tDmg = 0; c.tAcc = 0; c.tDodge = 0; c.tParry = 0; c.traumas = []; c.stunned = false
+    c.cuts = 0; c.tDmg = 0; c.tAcc = 0; c.tDodge = 0; c.tParry = 0; c.traumas = []; c.stunned = false; c.pendingIsDisarm = false
   })
   calcEntries = []
   undoStack.length = 0
@@ -2650,17 +2652,18 @@ function calcApplyLogic(col, other) {
   const name = calcName(cols.indexOf(col)), otherName = calcName(cols.indexOf(other))
   const wpn = col.combatType === 'weapon' ? ' оружием' : ''
 
-  if (col.defense === 'hit') {
+  if (col.defense === 'hit' || col.defense === 'disarm') {
+    const isDisarmAttempt = col.defense === 'disarm'
     if (other.pendingBrosok !== null) {
-      const inc = other.pendingBrosok; other.pendingBrosok = null
+      const inc = other.pendingBrosok; other.pendingBrosok = null; other.pendingIsDisarm = false
       const incEff = Math.max(0, inc - other.tDmg)
       const lg = applyDmg(col, incEff, other)
       addLine(`${name}: ⚡ Ответная атака — входящий ${otherName} (${inc}${other.tDmg ? ` −${other.tDmg} = ${incEff}` : ''}) прилетает. ${lg}`, 'fail')
     }
-    const b = cN(col.brosok), thr = 50 + col.tAcc
+    const b = cN(col.brosok), thr = (isDisarmAttempt ? 75 : 50) + col.tAcc
     if (b < thr) {
-      addLine(`${name}: Попытка удара${wpn} (Провал, ${b}${col.tAcc ? `, порог ${thr}` : ''}) — неудача!`, 'fail')
-    } else if (b === 100) {
+      addLine(`${name}: ${isDisarmAttempt ? 'Выбивание' : 'Попытка удара' + wpn} (Провал, ${b}, порог ${thr}) — неудача!`, 'fail')
+    } else if (!isDisarmAttempt && b === 100) {
       const eff = Math.max(0, b - col.tDmg)
       if (col.combatType === 'weapon') other.cuts += 1
       const shStripped = cN(other.shield); other.shield = 0
@@ -2672,21 +2675,30 @@ function calcApplyLogic(col, other) {
       addLine(`${name}: 💥 КРИТИЧЕСКИЙ УДАР${wpn} (100)! ${otherName} — Щит: ${shStripped}→0, HP: ${hp}→${hpA}, Порезы: ${other.cuts} (-${other.cuts} HP/ход). ${otherName} оглушён, пропускает ход!`, 'fail')
     } else {
       col.pendingBrosok = b
-      addLine(`${name}: Попытка удара${wpn} (Успешно, ${b}${col.tAcc ? `, порог ${thr}` : ''}) — ждёт ответа ${otherName}`, 'pend')
+      col.pendingIsDisarm = isDisarmAttempt
+      if (isDisarmAttempt) {
+        addLine(`${name}: Выбивание (Успешно, ${b}) — ждёт ответа ${otherName}`, 'pend')
+      } else {
+        addLine(`${name}: Попытка удара${wpn} (Успешно, ${b}${col.tAcc ? `, порог ${thr}` : ''}) — ждёт ответа ${otherName}`, 'pend')
+      }
     }
     resolveKO(col, other); return
   }
 
   const inc = other.pendingBrosok
   if (inc === null) { addLine(`${name}: нет входящей атаки от ${otherName}`, ''); return }
+  const isIncomingDisarm = other.pendingIsDisarm
   const incEff = Math.max(0, inc - other.tDmg)
   const dmgSuffix = other.tDmg ? ` (${inc} −${other.tDmg} = ${incEff})` : ` (${inc})`
 
   if (col.defense === 'dodge') {
     const b = cN(col.brosok), thr = 50 + col.tDodge
-    other.pendingBrosok = null
+    other.pendingBrosok = null; other.pendingIsDisarm = false
     if (b > thr) {
-      addLine(`${name}: Уворот Успешно (${b}) — уклонился от ${otherName}${dmgSuffix}`, 'ok')
+      addLine(`${name}: Уворот Успешно (${b}) — ${isIncomingDisarm ? `отклонил выбивание от ${otherName}` : `уклонился от ${otherName}${dmgSuffix}`}`, 'ok')
+    } else if (isIncomingDisarm) {
+      disarmPlayer(cols.indexOf(col))
+      addLine(`${name}: Уворот Провал (${b}) — выбит из рук! ${name} остаётся без оружия`, 'fail')
     } else {
       const lg = applyDmg(col, incEff, other)
       addLine(`${name}: Уворот Провал (${b}) — не уклонился, получает${dmgSuffix}. ${lg}`, 'fail')
@@ -2696,10 +2708,17 @@ function calcApplyLogic(col, other) {
 
   if (col.defense === 'parry') {
     const b = cN(col.brosok), thr = 50 + col.tParry
-    other.pendingBrosok = null
+    other.pendingBrosok = null; other.pendingIsDisarm = false
     if (b < thr) {
-      const lg = applyDmg(col, incEff, other)
-      addLine(`${name}: Парирование${wpn} Провал (${b}) — неудача! Получает${dmgSuffix}. ${lg}`, 'fail')
+      if (isIncomingDisarm) {
+        disarmPlayer(cols.indexOf(col))
+        addLine(`${name}: Парирование${wpn} Провал (${b}) — выбит из рук! ${name} остаётся без оружия`, 'fail')
+      } else {
+        const lg = applyDmg(col, incEff, other)
+        addLine(`${name}: Парирование${wpn} Провал (${b}) — неудача! Получает${dmgSuffix}. ${lg}`, 'fail')
+      }
+    } else if (isIncomingDisarm) {
+      addLine(`${name}: Парирование${wpn} Успешно (${b}) — выбивание отражено!`, 'ok')
     } else {
       const diff = Math.abs(b - incEff)
       if (b < incEff)      { const lg = applyDmg(col, diff, other);  addLine(`${name}: Парирование${wpn} Успешно (${b} vs ${incEff}) — проигрывает, получает ${diff}. ${lg}`, 'fail') }
@@ -2708,6 +2727,13 @@ function calcApplyLogic(col, other) {
     }
     resolveKO(col, other)
   }
+}
+
+function disarmPlayer(playerIdx) {
+  cols[playerIdx].combatType = 'melee'
+  const p = playerIdx === 0 ? 'c1' : 'c2'
+  const r = document.querySelector(`input[name="${p}ct"][value="melee"]`)
+  if (r) r.checked = true
 }
 
 function calcSnapshot() {
