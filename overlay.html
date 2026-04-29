@@ -2652,8 +2652,9 @@ function calcApplyLogic(col, other) {
   if (col.defense === 'hit') {
     if (other.pendingBrosok !== null) {
       const inc = other.pendingBrosok; other.pendingBrosok = null
-      const lg = applyDmg(col, inc, other)
-      addLine(`${name}: ⚡ Ответная атака — входящий ${otherName} (${inc}) прилетает. ${lg}`, 'fail')
+      const incEff = Math.max(0, inc - other.tDmg)
+      const lg = applyDmg(col, incEff, other)
+      addLine(`${name}: ⚡ Ответная атака — входящий ${otherName} (${inc}${other.tDmg ? ` −${other.tDmg} = ${incEff}` : ''}) прилетает. ${lg}`, 'fail')
     }
     const b = cN(col.brosok), thr = 50 + col.tAcc
     if (b < thr) {
@@ -2669,24 +2670,25 @@ function calcApplyLogic(col, other) {
       pendingTraumaWeapon = col.combatType === 'weapon'
       addLine(`${name}: 💥 КРИТИЧЕСКИЙ УДАР${wpn} (100)! ${otherName} — Щит: ${shStripped}→0, HP: ${hp}→${hpA}, Порезы: ${other.cuts} (-${other.cuts} HP/ход). ${otherName} оглушён, пропускает ход!`, 'fail')
     } else {
-      const eff = Math.max(0, b - col.tDmg)
-      col.pendingBrosok = eff
-      addLine(`${name}: Попытка удара${wpn} (Успешно, ${b}${col.tDmg ? ` −${col.tDmg} = ${eff}` : ''}) — ждёт ответа ${otherName}`, 'pend')
+      col.pendingBrosok = b
+      addLine(`${name}: Попытка удара${wpn} (Успешно, ${b}${col.tAcc ? `, порог ${thr}` : ''}) — ждёт ответа ${otherName}`, 'pend')
     }
     resolveKO(col, other); return
   }
 
   const inc = other.pendingBrosok
   if (inc === null) { addLine(`${name}: нет входящей атаки от ${otherName}`, ''); return }
+  const incEff = Math.max(0, inc - other.tDmg)
+  const dmgSuffix = other.tDmg ? ` (${inc} −${other.tDmg} = ${incEff})` : ` (${inc})`
 
   if (col.defense === 'dodge') {
     const b = cN(col.brosok), thr = 50 + col.tDodge
     other.pendingBrosok = null
     if (b > thr) {
-      addLine(`${name}: Уворот Успешно (${b}) — уклонился от ${otherName} (${inc})`, 'ok')
+      addLine(`${name}: Уворот Успешно (${b}) — уклонился от ${otherName}${dmgSuffix}`, 'ok')
     } else {
-      const lg = applyDmg(col, inc, other)
-      addLine(`${name}: Уворот Провал (${b}) — не уклонился, получает ${inc}. ${lg}`, 'fail')
+      const lg = applyDmg(col, incEff, other)
+      addLine(`${name}: Уворот Провал (${b}) — не уклонился, получает${dmgSuffix}. ${lg}`, 'fail')
     }
     resolveKO(col, other); return
   }
@@ -2695,13 +2697,13 @@ function calcApplyLogic(col, other) {
     const b = cN(col.brosok), thr = 50 + col.tParry
     other.pendingBrosok = null
     if (b < thr) {
-      const lg = applyDmg(col, inc, other)
-      addLine(`${name}: Парирование${wpn} Провал (${b}) — неудача! Получает ${inc}. ${lg}`, 'fail')
+      const lg = applyDmg(col, incEff, other)
+      addLine(`${name}: Парирование${wpn} Провал (${b}) — неудача! Получает${dmgSuffix}. ${lg}`, 'fail')
     } else {
-      const diff = Math.abs(b - inc)
-      if (b < inc)       { const lg = applyDmg(col, diff, other);  addLine(`${name}: Парирование${wpn} Успешно (${b} vs ${inc}) — проигрывает, получает ${diff}. ${lg}`, 'fail') }
-      else if (b > inc)  { const lg = applyDmg(other, diff, col);  addLine(`${name}: Парирование${wpn} Успешно (${b} vs ${inc}) — выигрывает! ${otherName} получает ${diff}. ${lg}`, 'ok') }
-      else               { addLine(`${name}: Парирование${wpn} Успешно (${b} vs ${inc}) — ничья`, '') }
+      const diff = Math.abs(b - incEff)
+      if (b < incEff)      { const lg = applyDmg(col, diff, other);  addLine(`${name}: Парирование${wpn} Успешно (${b} vs ${incEff}) — проигрывает, получает ${diff}. ${lg}`, 'fail') }
+      else if (b > incEff) { const lg = applyDmg(other, diff, col);  addLine(`${name}: Парирование${wpn} Успешно (${b} vs ${incEff}) — выигрывает! ${otherName} получает ${diff}. ${lg}`, 'ok') }
+      else                 { addLine(`${name}: Парирование${wpn} Успешно (${b} vs ${incEff}) — ничья`, '') }
     }
     resolveKO(col, other)
   }
