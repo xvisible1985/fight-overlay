@@ -2737,7 +2737,7 @@ function showTraumaModal(playerIdx) {
   document.getElementById('traumaModalTitle').textContent = `Травма — ${calcName(playerIdx)}`
   document.getElementById('traumaModalGrid').innerHTML = TRAUMA_PARTS.map(p =>
     `<button class="trauma-part-btn" onclick="applyTrauma('${p.key}')">${p.label}</button>`
-  ).join('')
+  ).join('') + `<button class="trauma-part-btn" style="grid-column:1/-1;color:#64748b;border-color:#1e2d3d" onclick="closeTraumaModal()">✓ Обошлось без травмы</button>`
   document.getElementById('traumaModal').style.display = 'flex'
 }
 
