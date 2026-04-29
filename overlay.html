@@ -2607,6 +2607,7 @@ function bleedTick(col) {
 function calcApplyLogic(col, other) {
   bleedTick(col)
   const name = calcName(cols.indexOf(col)), otherName = calcName(cols.indexOf(other))
+  const wpn = col.combatType === 'weapon' ? ' оружием' : ''
 
   if (col.defense === 'hit') {
     if (other.pendingBrosok !== null) {
@@ -2616,11 +2617,11 @@ function calcApplyLogic(col, other) {
     }
     const b = cN(col.brosok), thr = 50 + col.tAcc
     if (b < thr) {
-      addLine(`${name}: Попытка удара (Провал, ${b}${col.tAcc ? `, порог ${thr}` : ''}) — неудача!`, 'fail')
+      addLine(`${name}: Попытка удара${wpn} (Провал, ${b}${col.tAcc ? `, порог ${thr}` : ''}) — неудача!`, 'fail')
     } else {
       const eff = Math.max(0, b - col.tDmg)
       col.pendingBrosok = eff
-      addLine(`${name}: Попытка удара (Успешно, ${b}${col.tDmg ? ` −${col.tDmg} = ${eff}` : ''}) — ждёт ответа ${otherName}`, 'pend')
+      addLine(`${name}: Попытка удара${wpn} (Успешно, ${b}${col.tDmg ? ` −${col.tDmg} = ${eff}` : ''}) — ждёт ответа ${otherName}`, 'pend')
     }
     resolveKO(col, other); return
   }
@@ -2645,12 +2646,12 @@ function calcApplyLogic(col, other) {
     other.pendingBrosok = null
     if (b < thr) {
       const lg = applyDmg(col, inc, other)
-      addLine(`${name}: Парирование Провал (${b}) — неудача! Получает ${inc}. ${lg}`, 'fail')
+      addLine(`${name}: Парирование${wpn} Провал (${b}) — неудача! Получает ${inc}. ${lg}`, 'fail')
     } else {
       const diff = Math.abs(b - inc)
-      if (b < inc)       { const lg = applyDmg(col, diff, other);  addLine(`${name}: Парирование Успешно (${b} vs ${inc}) — проигрывает, получает ${diff}. ${lg}`, 'fail') }
-      else if (b > inc)  { const lg = applyDmg(other, diff, col);  addLine(`${name}: Парирование Успешно (${b} vs ${inc}) — выигрывает! ${otherName} получает ${diff}. ${lg}`, 'ok') }
-      else               { addLine(`${name}: Парирование Успешно (${b} vs ${inc}) — ничья`, '') }
+      if (b < inc)       { const lg = applyDmg(col, diff, other);  addLine(`${name}: Парирование${wpn} Успешно (${b} vs ${inc}) — проигрывает, получает ${diff}. ${lg}`, 'fail') }
+      else if (b > inc)  { const lg = applyDmg(other, diff, col);  addLine(`${name}: Парирование${wpn} Успешно (${b} vs ${inc}) — выигрывает! ${otherName} получает ${diff}. ${lg}`, 'ok') }
+      else               { addLine(`${name}: Парирование${wpn} Успешно (${b} vs ${inc}) — ничья`, '') }
     }
     resolveKO(col, other)
   }
