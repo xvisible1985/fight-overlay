@@ -2451,8 +2451,8 @@ async function acceptChallenge() {
 
 // ── Calc state ────────────────────────────────────────────────────────────────
 const cols = [
-  { name:'', hp:100, shield:200, brosok:0, defense:'hit', combatType:'weapon', pendingBrosok:null, cuts:0, tDmg:0, tAcc:0, tDodge:0, tParry:0, traumas:[] },
-  { name:'', hp:100, shield:200, brosok:0, defense:'hit', combatType:'weapon', pendingBrosok:null, cuts:0, tDmg:0, tAcc:0, tDodge:0, tParry:0, traumas:[] },
+  { name:'', hp:100, shield:200, brosok:0, defense:'hit', combatType:'weapon', pendingBrosok:null, cuts:0, tDmg:0, tAcc:0, tDodge:0, tParry:0, traumas:[], stunned:false },
+  { name:'', hp:100, shield:200, brosok:0, defense:'hit', combatType:'weapon', pendingBrosok:null, cuts:0, tDmg:0, tAcc:0, tDodge:0, tParry:0, traumas:[], stunned:false },
 ]
 let calcEntries = []  // { text: string, type: 'ok'|'fail'|'pend'|'end'|'' }
 let currentTurn = 0  // 0 = col1, 1 = col2
@@ -2554,7 +2554,7 @@ function calcReset() {
     c.hp = 100; c.shield = 200; c.brosok = 0
     c.defense = 'hit'; c.combatType = 'weapon'
     c.pendingBrosok = null
-    c.cuts = 0; c.tDmg = 0; c.tAcc = 0; c.tDodge = 0; c.tParry = 0; c.traumas = []
+    c.cuts = 0; c.tDmg = 0; c.tAcc = 0; c.tDodge = 0; c.tParry = 0; c.traumas = []; c.stunned = false
   })
   calcEntries = []
   undoStack.length = 0
@@ -2591,13 +2591,13 @@ function applyDmg(col, dmg, attacker) {
   if (!attacker || attacker.combatType === 'weapon') col.cuts += 1
   const sh = cN(col.shield), hp = cN(col.hp)
   const parts = []
+  if (dmg >= 90) pendingTraumaFor = cols.indexOf(col)
   if (sh > 0) {
     const shA = Math.max(0, sh - dmg); col.shield = shA
     parts.push(`Щит: ${sh}→${shA}`, `HP: ${hp}`)
   } else {
     const hpA = Math.max(0, hp - dmg); col.hp = hpA
     parts.push(`HP: ${hp}→${hpA}`, `Щит: 0`)
-    if (dmg >= 90) pendingTraumaFor = cols.indexOf(col)
   }
   parts.push(`Порезы: ${col.cuts} (-${col.cuts} HP/ход)`)
   return parts.join(', ')
@@ -2635,6 +2635,15 @@ function calcApplyLogic(col, other) {
     const b = cN(col.brosok), thr = 50 + col.tAcc
     if (b < thr) {
       addLine(`${name}: Попытка удара${wpn} (Провал, ${b}${col.tAcc ? `, порог ${thr}` : ''}) — неудача!`, 'fail')
+    } else if (b === 100) {
+      const eff = Math.max(0, b - col.tDmg)
+      if (col.combatType === 'weapon') other.cuts += 1
+      const shStripped = cN(other.shield); other.shield = 0
+      const hp = cN(other.hp), hpA = Math.max(0, hp - eff); other.hp = hpA
+      other.pendingBrosok = null
+      other.stunned = true
+      pendingTraumaFor = cols.indexOf(other)
+      addLine(`${name}: 💥 КРИТИЧЕСКИЙ УДАР${wpn} (100)! ${otherName} — Щит: ${shStripped}→0, HP: ${hp}→${hpA}, Порезы: ${other.cuts} (-${other.cuts} HP/ход). ${otherName} оглушён, пропускает ход!`, 'fail')
     } else {
       const eff = Math.max(0, b - col.tDmg)
       col.pendingBrosok = eff
@@ -2695,6 +2704,15 @@ function calcApply(idx) {
   if (idx !== currentTurn) return
   getCalcInputs(0); getCalcInputs(1)
   calcSnapshot()
+  if (cols[idx].stunned) {
+    cols[idx].stunned = false
+    addLine(`${calcName(idx)}: 😵 Оглушён — пропускает ход`, '')
+    currentTurn = idx === 0 ? 1 : 0
+    setCalcInputs(0); setCalcInputs(1)
+    renderLog()
+    renderCalcTurn()
+    return
+  }
   pendingTraumaFor = null
   calcApplyLogic(cols[idx], cols[idx === 0 ? 1 : 0])
   currentTurn = idx === 0 ? 1 : 0
@@ -2705,7 +2723,7 @@ function calcApply(idx) {
 }
 
 const TRAUMA_PARTS = [
-  { key: 'рука',   label: '💪 Рука',   tDmg:10, tAcc:0,  tDodge:0,  tParry:10 },
+  { key: 'рука',   label: '💪 Рука',   tDmg:5,  tAcc:0,  tDodge:0,  tParry:5  },
   { key: 'нога',   label: '🦵 Нога',   tDmg:0,  tAcc:0,  tDodge:10, tParry:0  },
   { key: 'живот',  label: '💢 Живот',  tDmg:5,  tAcc:5,  tDodge:0,  tParry:0  },
   { key: 'грудь',  label: '🫁 Грудь',  tDmg:10, tAcc:0,  tDodge:0,  tParry:0  },
