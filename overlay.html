@@ -853,6 +853,19 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
             <button class="tb-ct active" id="tbCtWeapon" onclick="tbSetCt('weapon')">⚔ Оружие</button>
             <button class="tb-ct"        id="tbCtMelee"  onclick="tbSetCt('melee')">👊 Руки</button>
           </div>
+          <div class="cw-trauma-pick" id="tbTargetRow" style="display:none">
+            <span style="color:#60a5fa;font-size:.85em;white-space:nowrap">🎯 Куда:</span>
+            <select class="cw-trauma-sel" id="tbTargetSel">
+              <option value="">— часть тела —</option>
+              <option value="рука">💪 Рука</option>
+              <option value="нога">🦵 Нога</option>
+              <option value="живот">💢 Живот</option>
+              <option value="грудь">🫁 Грудь</option>
+              <option value="шея">🫙 Шея</option>
+              <option value="голова">🧠 Голова</option>
+            </select>
+            <button class="cw-cnt-btn" onclick="tbConfirmTarget()">→</button>
+          </div>
           <div class="cw-trauma-pick" id="tbTraumaRow" style="display:none">
             <span style="color:#e0a050;font-size:.85em;white-space:nowrap">🩹 Травма:</span>
             <select class="cw-trauma-sel trauma-needed" id="tbTraumaSel">
@@ -3100,11 +3113,44 @@ function restoreCalcFs() {
 // ── Training fight ────────────────────────────────────────────────────────────
 const TB_AI_NAMES = ['Торвальд','Хёльги','Бьёрн','Сигурд','Рагнар','Эйрик','Гуннар','Лейф','Снорри','Хальвдан','Ульф','Ингвар']
 
+const PART_ACC = { 'рука':'руку','нога':'ногу','живот':'живот','грудь':'грудь','шея':'шею','голова':'голову' }
+const BODY_PART_KEYWORDS = {
+  'рука':   ['руку','рукой','руки','руке','рука','предплечье','локоть','локтем','локтю'],
+  'нога':   ['ногу','ногой','ноги','ноге','нога','колено','коленом','бедро','бедром'],
+  'живот':  ['живот','животе','животу','животом','брюхо','брюхе'],
+  'грудь':  ['грудь','груди','грудью','торс','торсе','корпус','корпусе'],
+  'шея':    ['шею','шеи','шее','шеей','горло','горлу','горле'],
+  'голова': ['голову','головы','голове','головой','башку','череп','черепу','лицо','лице','лоб','лбу','висок','виску'],
+}
+function parseBodyPart(text) {
+  const lower = text.toLowerCase()
+  for (const [part, kws] of Object.entries(BODY_PART_KEYWORDS)) {
+    if (lower.includes(part) || kws.some(k => lower.includes(k))) return part
+  }
+  return null
+}
+const TB_HIT_W  = [(n,p)=>`${n} наносит удар в ${p}`,(n,p)=>`${n} атакует оружием в ${p}`,(n,p)=>`${n} рубит по ${p}`,(n,p)=>`${n} колет в ${p}`]
+const TB_HIT_M  = [(n,p)=>`${n} бьёт кулаком в ${p}`,(n,p)=>`${n} замахивается в ${p}`,(n,p)=>`${n} наносит удар в ${p}`]
+const TB_DODGE  = [n=>`${n} уклоняется от атаки`,n=>`${n} отпрыгивает в сторону`,n=>`${n} уходит с линии удара`]
+const TB_PARRY  = [n=>`${n} парирует удар`,n=>`${n} блокирует атаку оружием`,n=>`${n} встречает удар клинком`]
+const TB_DISARM = [n=>`${n} пытается выбить оружие`,n=>`${n} делает захват на оружие`]
+function tbAIFlavor(ai, action, part) {
+  const rnd = a => a[Math.floor(Math.random()*a.length)]
+  const p = part ? (PART_ACC[part] || part) : 'противника'
+  if (action === 'hit')    return rnd(ai.combatType==='weapon' ? TB_HIT_W : TB_HIT_M)(ai.name, p)
+  if (action === 'dodge')  return rnd(TB_DODGE)(ai.name)
+  if (action === 'parry')  return rnd(TB_PARRY)(ai.name)
+  if (action === 'disarm') return rnd(TB_DISARM)(ai.name)
+  return ai.name + ' действует'
+}
+
 const tb = {
   cols: null, entries: [],
   pendingTraumaFor: null, pendingTraumaWeapon: false,
   playerColor: '#c8bfb0', action: 'hit', ct: 'weapon',
   finished: false, traumaCallback: null,
+  playerTargetPart: null, aiTargetPart: null,
+  deferredRollVal: null, deferredActionText: null,
 }
 
 function tbColNew(name, combatType = 'weapon') {
@@ -3137,6 +3183,8 @@ function tbStart() {
   tb.entries = []; tb.pendingTraumaFor = null; tb.pendingTraumaWeapon = false
   tb.playerColor = playerColor; tb.action = 'hit'; tb.ct = 'weapon'
   tb.finished = false; tb.traumaCallback = null
+  tb.playerTargetPart = null; tb.aiTargetPart = null
+  tb.deferredRollVal = null; tb.deferredActionText = null
 
   document.getElementById('tbStartScreen').style.display = 'none'
   document.getElementById('tbBattleScreen').style.display = 'flex'
@@ -3265,8 +3313,9 @@ function tbAIRoll(ai, player) {
 function tbAddTrauma() {
   const sel = document.getElementById('tbTraumaSel')
   const partKey = sel?.value; if (!partKey) return
+  const forIdx = tb.pendingTraumaFor ?? 0
   const withWeapon = tb.pendingTraumaWeapon
-  tbRunInContext(() => { applyTrauma(0, partKey, withWeapon) })
+  tbRunInContext(() => { applyTrauma(forIdx, partKey, withWeapon) })
   sel.value = ''
   document.getElementById('tbTraumaRow').style.display = 'none'
   tb.pendingTraumaFor = null
@@ -3275,14 +3324,50 @@ function tbAddTrauma() {
   if (tb.traumaCallback) { const cb = tb.traumaCallback; tb.traumaCallback = null; cb() }
 }
 
-function tbAIPickTrauma(callback) {
-  const randomPart = TRAUMA_PARTS[Math.floor(Math.random() * TRAUMA_PARTS.length)]
-  setTimeout(() => {
-    tbRunInContext(() => { applyTrauma(1, randomPart.key, tb.pendingTraumaWeapon) })
-    tb.pendingTraumaFor = null
-    tbRender(); tbRenderLog()
-    if (callback) callback()
-  }, 500)
+function tbAutoApplyTrauma(playerIdx, partKey, callback) {
+  tbRunInContext(() => { applyTrauma(playerIdx, partKey, tb.pendingTraumaWeapon) })
+  tb.pendingTraumaFor = null
+  tbRender(); tbRenderLog()
+  if (tbCheckFinished()) { tbFinish(); return }
+  if (callback) callback()
+}
+
+function tbConfirmTarget() {
+  const sel = document.getElementById('tbTargetSel')
+  const part = sel?.value; if (!part) return
+  sel.value = ''
+  document.getElementById('tbTargetRow').style.display = 'none'
+  tb.playerTargetPart = part
+  tbExecuteAction(tb.deferredRollVal, tb.deferredActionText)
+  tb.deferredRollVal = null; tb.deferredActionText = null
+}
+
+function tbExecuteAction(rollVal, actionText) {
+  const player = tb.cols[0], ai = tb.cols[1]
+  player.brosok = rollVal; player.defense = tb.action; player.combatType = tb.ct
+  tb.pendingTraumaFor = null
+  tbRunInContext(() => { pendingTraumaFor = null; calcApplyLogic(cols[0], cols[1]) })
+  tbRender(); tbRenderLog()
+  if (tbCheckFinished()) { tbFinish(); return }
+
+  const afterTrauma = () => { if (!tbCheckFinished()) setTimeout(tbAITurn, 1200) }
+
+  if (tb.pendingTraumaFor === 0) {
+    // player got hurt — use AI's declared target part
+    const autoPart = tb.aiTargetPart
+    if (autoPart) { tbAutoApplyTrauma(0, autoPart, afterTrauma); return }
+    document.getElementById('tbTraumaRow').style.display = 'flex'
+    tb.traumaCallback = afterTrauma; return
+  }
+  if (tb.pendingTraumaFor === 1) {
+    // AI got hurt — use player's declared target part
+    const autoPart = tb.playerTargetPart
+    if (autoPart) { setTimeout(() => tbAutoApplyTrauma(1, autoPart, afterTrauma), 400); return }
+    // fallback: random for AI
+    const rp = TRAUMA_PARTS[Math.floor(Math.random() * TRAUMA_PARTS.length)]
+    setTimeout(() => tbAutoApplyTrauma(1, rp.key, afterTrauma), 400); return
+  }
+  afterTrauma()
 }
 
 function tbApply() {
@@ -3304,28 +3389,23 @@ function tbApply() {
     setTimeout(tbAITurn, 1000); return
   }
 
-  player.brosok = rollVal; player.defense = tb.action; player.combatType = tb.ct
-
-  // /try-style narrative entry
   const trySuccess = rollVal >= 50
-  const tryResult = trySuccess
-    ? `(Успешно, ${rollVal}/100)` : `(Неуспешно, ${rollVal}/100)`
+  const tryResult = trySuccess ? `(Успешно, ${rollVal}/100)` : `(Неуспешно, ${rollVal}/100)`
   tb.entries.push({ text: `${player.name} ${actionText} ${tryResult}`, type: 'try' })
 
-  tb.pendingTraumaFor = null
-  tbRunInContext(() => { pendingTraumaFor = null; calcApplyLogic(cols[0], cols[1]) })
-  tbRender(); tbRenderLog()
-  if (tbCheckFinished()) { tbFinish(); return }
-
-  if (tb.pendingTraumaFor === 0) {
-    document.getElementById('tbTraumaRow').style.display = 'flex'
-    tb.traumaCallback = () => { if (!tbCheckFinished()) setTimeout(tbAITurn, 1000) }
-    return
+  if (tb.action === 'hit') {
+    const parsed = parseBodyPart(actionText)
+    if (parsed) {
+      tb.playerTargetPart = parsed
+      tbExecuteAction(rollVal, actionText)
+    } else {
+      tb.deferredRollVal = rollVal; tb.deferredActionText = actionText
+      document.getElementById('tbTargetRow').style.display = 'flex'
+    }
+  } else {
+    tb.playerTargetPart = null
+    tbExecuteAction(rollVal, actionText)
   }
-  if (tb.pendingTraumaFor === 1) {
-    tbAIPickTrauma(() => { if (!tbCheckFinished()) setTimeout(tbAITurn, 1200) }); return
-  }
-  setTimeout(tbAITurn, 1200)
 }
 
 function tbAITurn() {
@@ -3346,20 +3426,42 @@ function tbAITurn() {
     action = (player.combatType === 'weapon' && Math.random() < 0.15) ? 'disarm' : 'hit'
   }
 
+  let aiTargetPart = null
+  if (action === 'hit') {
+    aiTargetPart = TRAUMA_PARTS[Math.floor(Math.random() * TRAUMA_PARTS.length)].key
+    tb.aiTargetPart = aiTargetPart
+  } else {
+    tb.aiTargetPart = null
+  }
+
   const roll = tbAIRoll(ai, player)
+  const flavorText = tbAIFlavor(ai, action, aiTargetPart)
+  const rollSuccess = roll >= 50
+  const rollResult = rollSuccess ? `(Успешно, ${roll}/100)` : `(Неуспешно, ${roll}/100)`
+  tb.entries.push({ text: `${flavorText} ${rollResult}`, type: 'try' })
+  tbRenderLog()
+
   ai.brosok = roll; ai.defense = action; ai.combatType = ct
   tb.pendingTraumaFor = null
   tbRunInContext(() => { pendingTraumaFor = null; calcApplyLogic(cols[1], cols[0]) })
   tbRender(); tbRenderLog()
   if (tbCheckFinished()) { tbFinish(); return }
 
+  const afterTrauma = () => { if (!tbCheckFinished()) { tbEnableControls(true); tbRender() } }
+
   if (tb.pendingTraumaFor === 1) {
-    tbAIPickTrauma(() => { if (!tbCheckFinished()) { tbEnableControls(true); tbRender() } }); return
+    // AI got hurt — use player's declared target part
+    const autoPart = tb.playerTargetPart
+    if (autoPart) { setTimeout(() => tbAutoApplyTrauma(1, autoPart, afterTrauma), 400); return }
+    const rp = TRAUMA_PARTS[Math.floor(Math.random() * TRAUMA_PARTS.length)]
+    setTimeout(() => tbAutoApplyTrauma(1, rp.key, afterTrauma), 400); return
   }
   if (tb.pendingTraumaFor === 0) {
+    // player got hurt — use AI's declared target part
+    const autoPart = tb.aiTargetPart
+    if (autoPart) { tbAutoApplyTrauma(0, autoPart, afterTrauma); return }
     document.getElementById('tbTraumaRow').style.display = 'flex'
-    tb.traumaCallback = () => { if (!tbCheckFinished()) { tbEnableControls(true); tbRender() } }
-    return
+    tb.traumaCallback = afterTrauma; return
   }
   tbEnableControls(true); tbRender()
 }
