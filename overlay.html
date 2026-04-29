@@ -456,40 +456,36 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 }
 .fight-tab:hover { color: #94a3b8; }
 .fight-tab.active { color: #60a5fa; border-bottom-color: #3b82f6; }
-.tb-start-btn { background: #1e3a5f; border: 1px solid #3b82f6; border-radius: 6px; color: #60a5fa; cursor: pointer; font-size: 12px; font-weight: 700; padding: 8px 24px; }
+.tb-start-btn { background: #1e3a5f; border: 1px solid #3b82f6; border-radius: 6px; color: #60a5fa; cursor: pointer; font-size: 1em; font-weight: 700; padding: 8px 24px; }
 .tb-start-btn:hover { background: #1d4ed8; color: #fff; }
-.tb-fighters { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
+.tb-fighters { display: flex; align-items: stretch; gap: 6px; padding: 6px 8px; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
 .tb-fighter { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.tb-f-name { font-size: 10px; font-weight: 700; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tb-f-name { font-size: .85em; font-weight: 700; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tb-ai-name { text-align: right; }
 .tb-hp-wrap { height: 6px; background: #0f172a; border-radius: 3px; overflow: hidden; }
 .tb-hp-bar { height: 100%; background: #22c55e; border-radius: 3px; transition: width .4s; }
 .tb-hp-bar-ai { background: #ef4444; }
-.tb-f-stats { font-size: 8px; color: #64748b; }
-.tb-vs { color: #475569; font-size: 11px; font-weight: 700; padding: 0 4px; flex-shrink: 0; }
-.tb-turn-banner { font-size: 9px; font-weight: 700; text-align: center; padding: 3px 8px; background: #0f172a; color: #60a5fa; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
-.tb-log { flex: 1; overflow-y: auto; padding: 4px 8px; font-size: 9px; display: flex; flex-direction: column; gap: 2px; }
+.tb-f-stats { font-size: .7em; color: #64748b; }
+.tb-vs { color: #475569; font-size: .9em; font-weight: 700; padding: 0 4px; flex-shrink: 0; align-self: center; }
+.tb-turn-banner { font-size: .8em; font-weight: 700; text-align: center; padding: 3px 8px; background: #0f172a; color: #60a5fa; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
+.tb-log { flex: 1; overflow-y: auto; padding: 4px 8px; font-size: .8em; display: flex; flex-direction: column; gap: 2px; }
 .tb-log-line { padding: 1px 0; line-height: 1.4; }
 .tb-log-line.ok   { color: #4ade80; }
 .tb-log-line.fail { color: #f87171; }
 .tb-log-line.pend { color: #fbbf24; }
 .tb-log-line.end  { color: #a78bfa; font-weight: 700; }
 .tb-log-line.try  { color: #7dd3fc; font-style: italic; }
-.tb-avatar { width: 38px; height: 48px; border-radius: 4px; overflow: hidden; background: #0f172a; border: 1px solid #334155; flex-shrink: 0; display: flex; align-items: center; justify-content: center; align-self: center; }
+.tb-avatar { width: 54px; height: 70px; border-radius: 4px; overflow: hidden; background: #0f172a; border: 1px solid #334155; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 .tb-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .tb-avatar-ai { color: #475569; }
 .tb-controls { border-top: 1px solid #0f172a; padding: 5px 8px; display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
 .tb-actions, .tb-ct-row { display: flex; gap: 3px; }
-.tb-act, .tb-ct { flex: 1; background: #0f172a; border: 1px solid #1e293b; border-radius: 4px; color: #475569; cursor: pointer; font-size: 8px; font-weight: 600; padding: 3px 2px; }
+.tb-act, .tb-ct { flex: 1; background: #0f172a; border: 1px solid #1e293b; border-radius: 4px; color: #475569; cursor: pointer; font-size: .7em; font-weight: 600; padding: 3px 2px; }
 .tb-act:hover, .tb-ct:hover { border-color: #334155; color: #94a3b8; }
 .tb-act.active { background: #1e293b; border-color: #3b82f6; color: #60a5fa; }
 .tb-ct.active { background: #1e293b; border-color: #475569; color: #94a3b8; }
 .tb-act:disabled, .tb-ct:disabled { opacity: .4; cursor: default; pointer-events: none; }
-.tb-roll-row { display: flex; gap: 4px; align-items: center; }
-.tb-apply-btn { background: #1e3a5f; border: 1px solid #3b82f6; border-radius: 4px; color: #60a5fa; cursor: pointer; font-size: 9px; font-weight: 700; padding: 4px 10px; white-space: nowrap; }
-.tb-apply-btn:hover { background: #1d4ed8; color: #fff; }
-.tb-apply-btn:disabled { opacity: .4; cursor: default; pointer-events: none; }
-.tb-restart-btn { background: #1e293b; border: 1px solid #334155; border-radius: 5px; color: #94a3b8; cursor: pointer; font-size: 10px; font-weight: 700; margin: 4px 8px 6px; padding: 6px; }
+.tb-restart-btn { background: #1e293b; border: 1px solid #334155; border-radius: 5px; color: #94a3b8; cursor: pointer; font-size: .85em; font-weight: 700; margin: 4px 8px 6px; padding: 6px; }
 .tb-restart-btn:hover { border-color: #475569; color: #e2e8f0; }
 
 .fight-filters { display: flex; gap: 3px; padding: 4px 8px; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
@@ -853,14 +849,6 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
             <button class="tb-ct active" id="tbCtWeapon" onclick="tbSetCt('weapon')">⚔ Оружие</button>
             <button class="tb-ct"        id="tbCtMelee"  onclick="tbSetCt('melee')">👊 Руки</button>
           </div>
-          <div class="tb-roll-row">
-            <button class="lang-btn" id="lbTrain" onmousedown="event.preventDefault()" onclick="toggleLang()">EN</button>
-            <div class="ta-wrap" style="flex:1;min-width:0">
-              <textarea id="tbActionInp" rows="1" placeholder="Опишите действие…" onmousedown="activateInput(this)" onblur="deactivateInput()" oninput="syncMirror(this)" onkeydown="tbHk(event)"></textarea>
-              <div class="ta-mirror" id="tbActionInpMirror"></div>
-            </div>
-            <button class="tb-apply-btn" id="tbApplyBtn" onclick="tbApply()">Ход ▶</button>
-          </div>
           <div class="cw-trauma-pick" id="tbTraumaRow" style="display:none">
             <span style="color:#e0a050;font-size:.85em;white-space:nowrap">🩹 Травма:</span>
             <select class="cw-trauma-sel trauma-needed" id="tbTraumaSel">
@@ -874,6 +862,10 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
             </select>
             <button class="cw-cnt-btn cw-trauma-go" onclick="tbAddTrauma()">+</button>
           </div>
+        </div>
+        <div class="irow">
+          <div class="ta-wrap"><textarea id="tbActionInp" rows="1" placeholder="Опишите действие…" onmousedown="activateInput(this)" onblur="deactivateInput()" oninput="syncMirror(this)" onkeydown="tbHk(event)"></textarea><div class="ta-mirror" id="tbActionInpMirror"></div></div>
+          <button class="send-btn" id="tbApplyBtn" onclick="tbApply()">→</button>
         </div>
         <button class="tb-restart-btn" id="tbRestartBtn" style="display:none" onclick="tbRestart()">↺ Новый бой</button>
       </div>
