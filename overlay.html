@@ -2698,7 +2698,8 @@ function calcApplyLogic(col, other) {
       addLine(`${name}: Уворот Успешно (${b}) — ${isIncomingDisarm ? `отклонил выбивание от ${otherName}` : `уклонился от ${otherName}${dmgSuffix}`}`, 'ok')
     } else if (isIncomingDisarm) {
       disarmPlayer(cols.indexOf(col))
-      addLine(`${name}: Уворот Провал (${b}) — выбит из рук! ${name} остаётся без оружия`, 'fail')
+      const lg = applyDmg(col, incEff, other)
+      addLine(`${name}: Уворот Провал (${b}) — выбит из рук! ${name} остаётся без оружия. ${lg}`, 'fail')
     } else {
       const lg = applyDmg(col, incEff, other)
       addLine(`${name}: Уворот Провал (${b}) — не уклонился, получает${dmgSuffix}. ${lg}`, 'fail')
@@ -2712,7 +2713,8 @@ function calcApplyLogic(col, other) {
     if (b < thr) {
       if (isIncomingDisarm) {
         disarmPlayer(cols.indexOf(col))
-        addLine(`${name}: Парирование${wpn} Провал (${b}) — выбит из рук! ${name} остаётся без оружия`, 'fail')
+        const lg = applyDmg(col, incEff, other)
+        addLine(`${name}: Парирование${wpn} Провал (${b}) — выбит из рук! ${name} остаётся без оружия. ${lg}`, 'fail')
       } else {
         const lg = applyDmg(col, incEff, other)
         addLine(`${name}: Парирование${wpn} Провал (${b}) — неудача! Получает${dmgSuffix}. ${lg}`, 'fail')
