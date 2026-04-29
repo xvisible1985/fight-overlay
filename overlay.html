@@ -2850,6 +2850,7 @@ function calcApplyLogic(col, other) {
 
 function disarmPlayer(playerIdx) {
   cols[playerIdx].combatType = 'melee'
+  cols[playerIdx].disarmed = true
   if (inTbContext) {
     if (playerIdx === 0) { tb.ct = 'melee'; tbSetCt('melee') }
   } else {
@@ -3132,8 +3133,8 @@ function parseBodyPart(text) {
   }
   return null
 }
-const TB_HIT_W  = [(n,p)=>`${n} наносит удар в ${p}`,(n,p)=>`${n} атакует оружием в ${p}`,(n,p)=>`${n} рубит по ${p}`,(n,p)=>`${n} колет в ${p}`]
-const TB_HIT_M  = [(n,p)=>`${n} бьёт кулаком в ${p}`,(n,p)=>`${n} замахивается в ${p}`,(n,p)=>`${n} наносит удар в ${p}`]
+const TB_HIT_W  = [(n,p)=>`${n} наносит удар в ${p}`,(n,p)=>`${n} атакует в ${p}`,(n,p)=>`${n} рубит в ${p}`,(n,p)=>`${n} колет в ${p}`]
+const TB_HIT_M  = [(n,p)=>`${n} бьёт кулаком в ${p}`,(n,p)=>`${n} бьёт в ${p}`,(n,p)=>`${n} наносит удар в ${p}`]
 const TB_DODGE  = [n=>`${n} уклоняется от атаки`,n=>`${n} отпрыгивает в сторону`,n=>`${n} уходит с линии удара`]
 const TB_PARRY  = [n=>`${n} парирует удар`,n=>`${n} блокирует атаку оружием`,n=>`${n} встречает удар клинком`]
 const TB_DISARM = [n=>`${n} пытается выбить оружие`,n=>`${n} делает захват на оружие`]
@@ -3159,7 +3160,7 @@ const tb = {
 function tbColNew(name, combatType = 'weapon') {
   return { name, hp: 100, shield: 200, brosok: 0, defense: 'hit', combatType,
     pendingBrosok: null, pendingIsDisarm: false,
-    cuts: 0, tDmg: 0, tAcc: 0, tDodge: 0, tParry: 0, traumas: [], stunned: false }
+    cuts: 0, tDmg: 0, tAcc: 0, tDodge: 0, tParry: 0, traumas: [], stunned: false, disarmed: false }
 }
 
 function tbRunInContext(fn) {
@@ -3230,6 +3231,7 @@ function tbSetAction(a) {
 }
 
 function tbSetCt(ct) {
+  if (ct === 'weapon' && tb.cols?.[0]?.disarmed) return
   tb.ct = ct
   document.getElementById('tbCtWeapon')?.classList.toggle('active', ct === 'weapon')
   document.getElementById('tbCtMelee')?.classList.toggle('active', ct === 'melee')
@@ -3273,7 +3275,8 @@ function tbRender() {
     if (col.tDodge) t.push(`-${col.tDodge}ув`)
     if (col.tParry) t.push(`-${col.tParry}пар`)
     if (t.length) s += ` [${t.join(',')}]`
-    if (col.combatType === 'melee') s += ' [без оружия]'
+    if (col.disarmed) s += ' [разоружён]'
+    else if (col.combatType === 'melee') s += ' [без оружия]'
     return s
   }
   document.getElementById('tbPStats').textContent  = statStr(p)
@@ -3292,6 +3295,12 @@ function tbRender() {
   const dodgeBtn = document.getElementById('tbActDodge'); if (dodgeBtn) dodgeBtn.disabled = !hasPending
   const parryBtn = document.getElementById('tbActParry'); if (parryBtn) parryBtn.disabled = !hasPending
   if (!hasPending && (tb.action === 'dodge' || tb.action === 'parry')) tbSetAction('hit')
+
+  const wepBtn = document.getElementById('tbCtWeapon')
+  if (wepBtn) {
+    wepBtn.disabled = p.disarmed
+    if (p.disarmed && tb.ct === 'weapon') { tb.ct = 'melee'; wepBtn.classList.remove('active'); document.getElementById('tbCtMelee')?.classList.add('active') }
+  }
 }
 
 function tbRenderLog() {
@@ -3432,11 +3441,11 @@ function tbAITurn() {
   }
 
   const hasPending = player.pendingBrosok !== null
-  let action, ct = ai.combatType
+  let action, ct = ai.disarmed ? 'melee' : ai.combatType
   if (hasPending) {
-    action = (ai.combatType === 'melee' || Math.random() < 0.5) ? 'dodge' : 'parry'
+    action = (ct === 'melee' || Math.random() < 0.5) ? 'dodge' : 'parry'
   } else {
-    action = (player.combatType === 'weapon' && Math.random() < 0.15) ? 'disarm' : 'hit'
+    action = (!ai.disarmed && player.combatType === 'weapon' && Math.random() < 0.15) ? 'disarm' : 'hit'
   }
 
   let aiTargetPart = null
