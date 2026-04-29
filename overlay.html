@@ -2605,12 +2605,16 @@ function cN(v) { return typeof v === 'number' ? v : (parseInt(v) || 0) }
 function calcName(i) { return cols[i].name.trim() || (i === 0 ? 'Игрок 1' : 'Игрок 2') }
 
 let pendingTraumaFor = null
+let pendingTraumaWeapon = false
 
 function applyDmg(col, dmg, attacker) {
   if (!attacker || attacker.combatType === 'weapon') col.cuts += 1
   const sh = cN(col.shield), hp = cN(col.hp)
   const parts = []
-  if (dmg >= 90) pendingTraumaFor = cols.indexOf(col)
+  if (dmg >= 90) {
+    pendingTraumaFor = cols.indexOf(col)
+    pendingTraumaWeapon = !attacker || attacker.combatType === 'weapon'
+  }
   if (sh > 0) {
     const shA = Math.max(0, sh - dmg); col.shield = shA
     parts.push(`Щит: ${sh}→${shA}`, `HP: ${hp}`)
@@ -2662,6 +2666,7 @@ function calcApplyLogic(col, other) {
       other.pendingBrosok = null
       other.stunned = true
       pendingTraumaFor = cols.indexOf(other)
+      pendingTraumaWeapon = col.combatType === 'weapon'
       addLine(`${name}: 💥 КРИТИЧЕСКИЙ УДАР${wpn} (100)! ${otherName} — Щит: ${shStripped}→0, HP: ${hp}→${hpA}, Порезы: ${other.cuts} (-${other.cuts} HP/ход). ${otherName} оглушён, пропускает ход!`, 'fail')
     } else {
       const eff = Math.max(0, b - col.tDmg)
@@ -2756,12 +2761,13 @@ function addTrauma(playerIdx) {
   const sel = document.getElementById(`c${playerIdx + 1}traumaSel`)
   const partKey = sel?.value
   if (!partKey) return
-  applyTrauma(playerIdx, partKey)
+  const withWeapon = pendingTraumaFor === playerIdx && pendingTraumaWeapon
+  applyTrauma(playerIdx, partKey, withWeapon)
   sel.value = ''
   sel.classList.remove('trauma-needed')
 }
 
-function applyTrauma(playerIdx, partKey) {
+function applyTrauma(playerIdx, partKey, withWeapon = false) {
   const col = cols[playerIdx]
   const name = calcName(playerIdx)
   const part = TRAUMA_PARTS.find(p => p.key === partKey)
@@ -2777,6 +2783,7 @@ function applyTrauma(playerIdx, partKey) {
   if (part.tAcc)   debuffs.push(`−${part.tAcc} точн.`)
   if (part.tDodge) debuffs.push(`−${part.tDodge} увор.`)
   if (part.tParry) debuffs.push(`−${part.tParry} парир.`)
+  if (withWeapon) { col.cuts += 3; debuffs.push(`+3 пореза`) }
   addLine(`${name}: 🩹 Травма — ${part.key} (${debuffs.join(', ')})`, 'fail')
   setCalcInputs(playerIdx)
   renderTraumaList(playerIdx)
