@@ -574,8 +574,17 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
   width: 100%; min-height: 8em; max-height: 14em;
   background: #0f172a; border: 1px solid #1e293b; border-radius: 5px;
   padding: .38em .5em; color: #cbd5e1; font-family: 'Courier New', monospace;
-  font-size: .68em; line-height: 1.55; resize: none; outline: none;
+  font-size: .68em; line-height: 1.55; overflow-y: auto;
 }
+.cw-result::-webkit-scrollbar { width: 4px; }
+.cw-result::-webkit-scrollbar-track { background: #0a0f1a; }
+.cw-result::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+.cw-log-line { padding: .05em 0; word-break: break-word; }
+.cw-log-ok   { color: #4ade80; }
+.cw-log-fail { color: #f87171; }
+.cw-log-pend { color: #fbbf24; }
+.cw-log-end  { color: #a78bfa; font-weight: 700; }
+.cw-log-empty { color: #334155; font-style: italic; }
 .cw-status-box {
   background: #0f172a; border: 1px solid #1e293b; border-radius: 5px;
   padding: .38em .5em; font-family: 'Courier New', monospace;
@@ -879,10 +888,10 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
       <div class="cw-lower-hdr">
         <span class="cw-lower-title">Лог</span>
         <button class="cw-act-btn" onclick="calcUndo()" id="cw-undo-btn" disabled style="color:#e0a050">↩ Отменить</button>
-        <button class="cw-act-btn" onclick="calcResult='';renderLog()" id="cw-clear-btn" disabled>Очистить</button>
+        <button class="cw-act-btn" onclick="calcEntries=[];renderLog()" id="cw-clear-btn" disabled>Очистить</button>
         <button class="cw-act-btn" onclick="calcCopy()" id="cw-copy-btn" disabled>📋 Скопировать</button>
       </div>
-      <textarea class="cw-result" id="calcLog" readonly placeholder="Результат появится здесь…"></textarea>
+      <div class="cw-result" id="calcLog"><div class="cw-log-empty">Результат появится здесь…</div></div>
       <div class="cw-lower-hdr">
         <span class="cw-lower-title">Состояние</span>
         <div class="cw-bleed-row">
@@ -2431,7 +2440,7 @@ const cols = [
   { name:'', hp:100, shield:200, brosok:0, defense:'hit', combatType:'weapon', pendingBrosok:null, cuts:0, tDmg:0, tAcc:0, tDodge:0, tParry:0 },
   { name:'', hp:100, shield:200, brosok:0, defense:'hit', combatType:'weapon', pendingBrosok:null, cuts:0, tDmg:0, tAcc:0, tDodge:0, tParry:0 },
 ]
-let calcResult = ''
+let calcEntries = []  // { text: string, type: 'ok'|'fail'|'pend'|'end'|'' }
 let currentTurn = 0  // 0 = col1, 1 = col2
 const undoStack = []
 let bleedSpaces    = 8
@@ -2533,7 +2542,7 @@ function calcReset() {
     c.pendingBrosok = null
     c.cuts = 0; c.tDmg = 0; c.tAcc = 0; c.tDodge = 0; c.tParry = 0
   })
-  calcResult = ''
+  calcEntries = []
   undoStack.length = 0
   currentTurn = 0
   setCalcInputs(0); setCalcInputs(1)
@@ -2576,14 +2585,14 @@ function applyDmg(col, dmg, attacker) {
   return parts.join(', ')
 }
 
-function addLine(line) { calcResult = calcResult ? line + '\n' + calcResult : line }
+function addLine(line, type = '') { calcEntries.push({ text: line, type }) }
 
 function resolveKO(col, other) {
   const n1 = calcName(cols.indexOf(col)), n2 = calcName(cols.indexOf(other))
   const d1 = cN(col.hp) <= 0, d2 = cN(other.hp) <= 0
-  if (d1 && d2) addLine('⚔ НИЧЬЯ — оба пали!')
-  else if (d1)  addLine(`🏆 БОЙ ОКОНЧЕН — победитель: ${n2}! ${n1} повержен.`)
-  else if (d2)  addLine(`🏆 БОЙ ОКОНЧЕН — победитель: ${n1}! ${n2} повержен.`)
+  if (d1 && d2) addLine('⚔ НИЧЬЯ — оба пали!', 'end')
+  else if (d1)  addLine(`🏆 БОЙ ОКОНЧЕН — победитель: ${n2}! ${n1} повержен.`, 'end')
+  else if (d2)  addLine(`🏆 БОЙ ОКОНЧЕН — победитель: ${n1}! ${n2} повержен.`, 'end')
 }
 
 function bleedTick(col) {
@@ -2591,7 +2600,7 @@ function bleedTick(col) {
   const name = calcName(cols.indexOf(col))
   const hp = cN(col.hp), hpA = Math.max(0, hp - col.cuts)
   col.hp = hpA
-  addLine(`${name}: 🩸 Кровотечение (${col.cuts}) — HP: ${hp}→${hpA}`)
+  addLine(`${name}: 🩸 Кровотечение (${col.cuts}) — HP: ${hp}→${hpA}`, 'fail')
 }
 
 function calcApplyLogic(col, other) {
@@ -2602,30 +2611,30 @@ function calcApplyLogic(col, other) {
     if (other.pendingBrosok !== null) {
       const inc = other.pendingBrosok; other.pendingBrosok = null
       const lg = applyDmg(col, inc, other)
-      addLine(`${name}: ⚡ Атакует в ответ — входящий ${otherName} (${inc}) прилетает. ${lg}`)
+      addLine(`${name}: ⚡ Ответная атака — входящий ${otherName} (${inc}) прилетает. ${lg}`, 'fail')
     }
     const b = cN(col.brosok), thr = 50 + col.tAcc
     if (b < thr) {
-      addLine(`${name}: ⚔ Удар (${b})${col.tAcc ? ` порог ${thr}` : ''} — неудача!`)
+      addLine(`${name}: Попытка удара (Провал, ${b}${col.tAcc ? `, порог ${thr}` : ''}) — неудача!`, 'fail')
     } else {
       const eff = Math.max(0, b - col.tDmg)
       col.pendingBrosok = eff
-      addLine(`${name}: ⚔ Удар (${b}${col.tDmg ? ` −${col.tDmg}` : ''} = ${eff}) — ждёт ответа ${otherName}`)
+      addLine(`${name}: Попытка удара (Успешно, ${b}${col.tDmg ? ` −${col.tDmg} = ${eff}` : ''}) — ждёт ответа ${otherName}`, 'pend')
     }
     resolveKO(col, other); return
   }
 
   const inc = other.pendingBrosok
-  if (inc === null) { addLine(`${name}: нет входящей атаки от ${otherName}`); return }
+  if (inc === null) { addLine(`${name}: нет входящей атаки от ${otherName}`, ''); return }
 
   if (col.defense === 'dodge') {
     const b = cN(col.brosok), thr = 50 + col.tDodge
     other.pendingBrosok = null
     if (b > thr) {
-      addLine(`${name}: Уворот (${b}) — уклонился от ${otherName} (${inc})`)
+      addLine(`${name}: Уворот Успешно (${b}) — уклонился от ${otherName} (${inc})`, 'ok')
     } else {
       const lg = applyDmg(col, inc, other)
-      addLine(`${name}: Уворот (${b}) — не уклонился, получает ${inc}. ${lg}`)
+      addLine(`${name}: Уворот Провал (${b}) — не уклонился, получает ${inc}. ${lg}`, 'fail')
     }
     resolveKO(col, other); return
   }
@@ -2635,12 +2644,12 @@ function calcApplyLogic(col, other) {
     other.pendingBrosok = null
     if (b < thr) {
       const lg = applyDmg(col, inc, other)
-      addLine(`${name}: Парирование (${b}) — неудача! Получает ${inc}. ${lg}`)
+      addLine(`${name}: Парирование Провал (${b}) — неудача! Получает ${inc}. ${lg}`, 'fail')
     } else {
       const diff = Math.abs(b - inc)
-      if (b < inc)       { const lg = applyDmg(col, diff, other);  addLine(`${name}: Парирование (${b} vs ${inc}) — проигрывает, получает ${diff}. ${lg}`) }
-      else if (b > inc)  { const lg = applyDmg(other, diff, col);  addLine(`${name}: Парирование (${b} vs ${inc}) — выигрывает! ${otherName} получает ${diff}. ${lg}`) }
-      else               { addLine(`${name}: Парирование (${b} vs ${inc}) — ничья`) }
+      if (b < inc)       { const lg = applyDmg(col, diff, other);  addLine(`${name}: Парирование Успешно (${b} vs ${inc}) — проигрывает, получает ${diff}. ${lg}`, 'fail') }
+      else if (b > inc)  { const lg = applyDmg(other, diff, col);  addLine(`${name}: Парирование Успешно (${b} vs ${inc}) — выигрывает! ${otherName} получает ${diff}. ${lg}`, 'ok') }
+      else               { addLine(`${name}: Парирование Успешно (${b} vs ${inc}) — ничья`, '') }
     }
     resolveKO(col, other)
   }
@@ -2648,14 +2657,14 @@ function calcApplyLogic(col, other) {
 
 function calcSnapshot() {
   if (undoStack.length >= 20) undoStack.shift()
-  undoStack.push({ cols: cols.map(c => ({ ...c })), result: calcResult, turn: currentTurn })
+  undoStack.push({ cols: cols.map(c => ({ ...c })), entries: calcEntries.slice(), turn: currentTurn })
 }
 
 function calcUndo() {
   const snap = undoStack.pop()
   if (!snap) return
   snap.cols.forEach((s, i) => Object.assign(cols[i], s))
-  calcResult = snap.result
+  calcEntries = snap.entries.slice()
   currentTurn = snap.turn
   setCalcInputs(0); setCalcInputs(1)
   renderLog()
@@ -2674,8 +2683,18 @@ function calcApply(idx) {
 }
 
 function renderLog() {
-  document.getElementById('calcLog').value = calcResult
-  const has = !!calcResult
+  const div = document.getElementById('calcLog')
+  if (!calcEntries.length) {
+    div.innerHTML = '<div class="cw-log-empty">Результат появится здесь…</div>'
+  } else {
+    div.innerHTML = calcEntries.map(e => {
+      const cls = e.type ? ` cw-log-${e.type}` : ''
+      const safe = e.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      return `<div class="cw-log-line${cls}">${safe}</div>`
+    }).join('')
+    div.scrollTop = div.scrollHeight
+  }
+  const has = calcEntries.length > 0
   document.getElementById('cw-clear-btn').disabled = !has
   document.getElementById('cw-copy-btn').disabled  = !has
   const undoBtn = document.getElementById('cw-undo-btn')
@@ -2705,8 +2724,9 @@ function renderStatus() {
 }
 
 async function calcCopy() {
-  if (window.electronAPI?.writeClipboard) { window.electronAPI.writeClipboard(calcResult); return }
-  try { await navigator.clipboard.writeText(calcResult) } catch {}
+  const text = calcEntries.map(e => e.text).join('\n')
+  if (window.electronAPI?.writeClipboard) { window.electronAPI.writeClipboard(text); return }
+  try { await navigator.clipboard.writeText(text) } catch {}
 }
 
 async function copyStatus(btn) {
