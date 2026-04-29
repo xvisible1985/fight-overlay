@@ -1605,17 +1605,13 @@ function connectGamesWs() {
 // ── Auth ──────────────────────────────────────────────────────────────────────
 function applyAdminVisibility() {
   const isAdmin = currentUser?.is_admin
-  for (const id of ['nb-fight', 'nb-calc']) {
-    const btn = document.getElementById(id)
-    if (btn) btn.style.display = isAdmin ? '' : 'none'
-  }
+  const calcBtn = document.getElementById('nb-calc')
+  if (calcBtn) calcBtn.style.display = isAdmin ? '' : 'none'
   const testArea = document.getElementById('gTestArea')
   if (testArea) testArea.style.display = isAdmin ? 'flex' : 'none'
   if (!isAdmin) {
-    for (const id of ['wFight', 'wCalc']) {
-      const w = document.getElementById(id)
-      if (w) w.style.display = 'none'
-    }
+    const w = document.getElementById('wCalc')
+    if (w) w.style.display = 'none'
   }
 }
 
