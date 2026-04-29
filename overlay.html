@@ -2751,6 +2751,7 @@ function showTraumaModal(playerIdx) {
   noBtn.addEventListener('click', closeTraumaModal)
   grid.appendChild(noBtn)
   document.getElementById('traumaModal').style.display = 'flex'
+  window.electronAPI?.setIgnoreMouseEvents(false)
 }
 
 function closeTraumaModal() {
@@ -3245,7 +3246,7 @@ function toggleNbarCollapse() {
 }
 
 // ── Mouse passthrough ─────────────────────────────────────────────────────────
-const interactiveEls = ['wChat','wWarriors','wFight','wCalc','wGames','nbar','challenge','gameInvite','ctxMenu','fontPanel','fontPanelOverlay','colorPicker','emojiPicker']
+const interactiveEls = ['wChat','wWarriors','wFight','wCalc','wGames','nbar','challenge','gameInvite','ctxMenu','fontPanel','fontPanelOverlay','colorPicker','emojiPicker','traumaModal']
 for (const id of interactiveEls) {
   const w = document.getElementById(id)
   if (!w) continue
