@@ -2664,15 +2664,11 @@ function calcApplyLogic(col, other) {
     if (b < thr) {
       addLine(`${name}: ${isDisarmAttempt ? 'Выбивание' : 'Попытка удара' + wpn} (Провал, ${b}, порог ${thr}) — неудача!`, 'fail')
     } else if (!isDisarmAttempt && b === 100) {
-      const eff = Math.max(0, b - col.tDmg)
       if (col.combatType === 'weapon') other.cuts += 1
       const shStripped = cN(other.shield); other.shield = 0
-      const hp = cN(other.hp), hpA = Math.max(0, hp - eff); other.hp = hpA
       other.pendingBrosok = null
       other.stunned = true
-      pendingTraumaFor = cols.indexOf(other)
-      pendingTraumaWeapon = col.combatType === 'weapon'
-      addLine(`${name}: 💥 КРИТИЧЕСКИЙ УДАР${wpn} (100)! ${otherName} — Щит: ${shStripped}→0, HP: ${hp}→${hpA}, Порезы: ${other.cuts} (-${other.cuts} HP/ход). ${otherName} оглушён, пропускает ход!`, 'fail')
+      addLine(`${name}: 💥 КРИТИЧЕСКИЙ УДАР${wpn} (100)! ${otherName} — Щит: ${shStripped}→0, Порезы: ${other.cuts} (-${other.cuts} HP/ход). ${otherName} оглушён, пропускает ход!`, 'fail')
     } else {
       col.pendingBrosok = b
       col.pendingIsDisarm = isDisarmAttempt
