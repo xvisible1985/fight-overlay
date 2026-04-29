@@ -541,17 +541,12 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 .cw-cnt-note { font-size: .58em; color: rgba(200,80,80,.65); white-space: nowrap; flex-shrink: 0; }
 .cw-trauma-block { display: flex; flex-direction: column; gap: .15em; padding: .25em .3em; background: rgba(180,100,40,.04); border: 1px solid rgba(180,100,40,.15); border-radius: 5px; }
 .cw-trauma-hdr { font-size: .54em; font-weight: 700; color: rgba(200,140,60,.5); letter-spacing: .06em; text-transform: uppercase; margin-bottom: .04em; display: flex; align-items: center; justify-content: space-between; }
-.cw-trauma-add-btn { font-size: .85em; background: rgba(200,140,60,.12); border: 1px solid rgba(200,140,60,.28); color: rgba(200,140,60,.85); border-radius: 3px; padding: .08em .32em; cursor: pointer; line-height: 1.5; letter-spacing: 0; text-transform: none; font-weight: 600; }
-.cw-trauma-add-btn:hover { background: rgba(200,140,60,.28); }
 .cw-trauma-list { font-size: .56em; color: rgba(200,140,60,.65); min-height: .7em; word-break: break-word; }
-.trauma-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 35000; display: flex; align-items: center; justify-content: center; }
-.trauma-modal { background: #1a2535; border: 1px solid #334155; border-radius: 8px; padding: .9em 1em; min-width: 200px; }
-.trauma-modal-title { font-size: .72em; color: #94a3b8; text-align: center; font-weight: 700; margin-bottom: .55em; }
-.trauma-modal-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .28em; }
-.trauma-part-btn { background: #0f172a; border: 1px solid #334155; color: #cbd5e1; border-radius: 4px; padding: .32em .4em; cursor: pointer; font-size: .69em; text-align: center; }
-.trauma-part-btn:hover { background: #1e3a4a; border-color: rgba(200,140,60,.6); color: rgba(200,140,60,1); }
-.trauma-modal-cancel { margin-top: .45em; width: 100%; background: transparent; border: 1px solid #1e2d3d; color: #475569; border-radius: 4px; padding: .28em; cursor: pointer; font-size: .67em; }
-.trauma-modal-cancel:hover { color: #94a3b8; }
+.cw-trauma-pick { display: flex; align-items: center; gap: .2em; margin-top: .1em; }
+.cw-trauma-sel { flex: 1; min-width: 0; background: #0f172a; border: 1px solid #334155; color: #94a3b8; border-radius: 3px; font-size: .6em; padding: .15em .2em; cursor: pointer; }
+.cw-trauma-sel:focus { outline: none; border-color: rgba(200,140,60,.5); }
+.cw-trauma-sel.trauma-needed { border-color: rgba(200,140,60,.9); box-shadow: 0 0 0 1px rgba(200,140,60,.4); }
+.cw-trauma-go { font-size: .75em; font-weight: 700; padding: .1em .4em; }
 .cw-field-row { display: flex; align-items: center; gap: .3em; }
 .cw-lbl { font-size: .6em; font-weight: 700; color: #475569; width: 3.2em; flex-shrink: 0; }
 .cw-num-inp { flex: 1; min-width: 0; }
@@ -827,11 +822,23 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
           <span class="cw-cnt-note" id="c1cuts-note"></span>
         </div>
         <div class="cw-trauma-block">
-          <div class="cw-trauma-hdr"><span>Травмы</span><button class="cw-trauma-add-btn" onclick="showTraumaModal(0)">+ Травма</button></div>
+          <div class="cw-trauma-hdr"><span>Травмы</span></div>
           <div class="cw-cnt-row"><span class="cw-cnt-lbl">⚔ Урон</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(1,'tDmg',-1)">−</button><span class="cw-cnt-val" id="c1tDmg">0</span><button class="cw-cnt-btn" onclick="incC(1,'tDmg',1)">+</button></div></div>
           <div class="cw-cnt-row"><span class="cw-cnt-lbl">🎯 Точность</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(1,'tAcc',-1)">−</button><span class="cw-cnt-val" id="c1tAcc">0</span><button class="cw-cnt-btn" onclick="incC(1,'tAcc',1)">+</button></div></div>
           <div class="cw-cnt-row"><span class="cw-cnt-lbl">💨 Уворот</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(1,'tDodge',-1)">−</button><span class="cw-cnt-val" id="c1tDodge">0</span><button class="cw-cnt-btn" onclick="incC(1,'tDodge',1)">+</button></div></div>
           <div class="cw-cnt-row"><span class="cw-cnt-lbl">🛡 Парир.</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(1,'tParry',-1)">−</button><span class="cw-cnt-val" id="c1tParry">0</span><button class="cw-cnt-btn" onclick="incC(1,'tParry',1)">+</button></div></div>
+          <div class="cw-trauma-pick">
+            <select class="cw-trauma-sel" id="c1traumaSel">
+              <option value="">— часть тела —</option>
+              <option value="рука">💪 Рука</option>
+              <option value="нога">🦵 Нога</option>
+              <option value="живот">💢 Живот</option>
+              <option value="грудь">🫁 Грудь</option>
+              <option value="шея">🫙 Шея</option>
+              <option value="голова">🧠 Голова</option>
+            </select>
+            <button class="cw-cnt-btn cw-trauma-go" onclick="addTrauma(0)">+</button>
+          </div>
           <div class="cw-trauma-list" id="c1traumaList"></div>
         </div>
         <div class="cw-field-row"><label class="cw-lbl">Бросок</label><input class="cw-inp cw-num-inp" id="c1brosok" type="text" inputmode="numeric" value="0" onfocus="this.select()" onclick="this.select()"></div>
@@ -873,11 +880,23 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
           <span class="cw-cnt-note" id="c2cuts-note"></span>
         </div>
         <div class="cw-trauma-block">
-          <div class="cw-trauma-hdr"><span>Травмы</span><button class="cw-trauma-add-btn" onclick="showTraumaModal(1)">+ Травма</button></div>
+          <div class="cw-trauma-hdr"><span>Травмы</span></div>
           <div class="cw-cnt-row"><span class="cw-cnt-lbl">⚔ Урон</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(2,'tDmg',-1)">−</button><span class="cw-cnt-val" id="c2tDmg">0</span><button class="cw-cnt-btn" onclick="incC(2,'tDmg',1)">+</button></div></div>
           <div class="cw-cnt-row"><span class="cw-cnt-lbl">🎯 Точность</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(2,'tAcc',-1)">−</button><span class="cw-cnt-val" id="c2tAcc">0</span><button class="cw-cnt-btn" onclick="incC(2,'tAcc',1)">+</button></div></div>
           <div class="cw-cnt-row"><span class="cw-cnt-lbl">💨 Уворот</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(2,'tDodge',-1)">−</button><span class="cw-cnt-val" id="c2tDodge">0</span><button class="cw-cnt-btn" onclick="incC(2,'tDodge',1)">+</button></div></div>
           <div class="cw-cnt-row"><span class="cw-cnt-lbl">🛡 Парир.</span><div class="cw-cnt-ctrl"><button class="cw-cnt-btn" onclick="incC(2,'tParry',-1)">−</button><span class="cw-cnt-val" id="c2tParry">0</span><button class="cw-cnt-btn" onclick="incC(2,'tParry',1)">+</button></div></div>
+          <div class="cw-trauma-pick">
+            <select class="cw-trauma-sel" id="c2traumaSel">
+              <option value="">— часть тела —</option>
+              <option value="рука">💪 Рука</option>
+              <option value="нога">🦵 Нога</option>
+              <option value="живот">💢 Живот</option>
+              <option value="грудь">🫁 Грудь</option>
+              <option value="шея">🫙 Шея</option>
+              <option value="голова">🧠 Голова</option>
+            </select>
+            <button class="cw-cnt-btn cw-trauma-go" onclick="addTrauma(1)">+</button>
+          </div>
           <div class="cw-trauma-list" id="c2traumaList"></div>
         </div>
         <div class="cw-field-row"><label class="cw-lbl">Бросок</label><input class="cw-inp cw-num-inp" id="c2brosok" type="text" inputmode="numeric" value="0" onfocus="this.select()" onclick="this.select()"></div>
@@ -2719,7 +2738,10 @@ function calcApply(idx) {
   setCalcInputs(0); setCalcInputs(1)
   renderLog()
   renderCalcTurn()
-  if (pendingTraumaFor !== null) showTraumaModal(pendingTraumaFor)
+  if (pendingTraumaFor !== null) {
+    const sel = document.getElementById(`c${pendingTraumaFor + 1}traumaSel`)
+    if (sel) { sel.classList.add('trauma-needed'); sel.scrollIntoView({ block: 'nearest' }) }
+  }
 }
 
 const TRAUMA_PARTS = [
@@ -2730,39 +2752,18 @@ const TRAUMA_PARTS = [
   { key: 'шея',    label: '🫙 Шея',    tDmg:0,  tAcc:10, tDodge:0,  tParry:0  },
   { key: 'голова', label: '🧠 Голова', tDmg:0,  tAcc:10, tDodge:5,  tParry:0  },
 ]
-let traumaTargetIdx = null
-
-function showTraumaModal(playerIdx) {
-  traumaTargetIdx = playerIdx
-  document.getElementById('traumaModalTitle').textContent = `Травма — ${calcName(playerIdx)}`
-  const grid = document.getElementById('traumaModalGrid')
-  grid.innerHTML = ''
-  TRAUMA_PARTS.forEach(p => {
-    const btn = document.createElement('button')
-    btn.className = 'trauma-part-btn'
-    btn.textContent = p.label
-    btn.addEventListener('click', () => applyTrauma(p.key))
-    grid.appendChild(btn)
-  })
-  const noBtn = document.createElement('button')
-  noBtn.className = 'trauma-part-btn'
-  noBtn.style.cssText = 'grid-column:1/-1;color:#64748b;border-color:#1e2d3d'
-  noBtn.textContent = '✓ Обошлось без травмы'
-  noBtn.addEventListener('click', closeTraumaModal)
-  grid.appendChild(noBtn)
-  document.getElementById('traumaModal').style.display = 'flex'
-  window.electronAPI?.setIgnoreMouseEvents(false)
+function addTrauma(playerIdx) {
+  const sel = document.getElementById(`c${playerIdx + 1}traumaSel`)
+  const partKey = sel?.value
+  if (!partKey) return
+  applyTrauma(playerIdx, partKey)
+  sel.value = ''
+  sel.classList.remove('trauma-needed')
 }
 
-function closeTraumaModal() {
-  document.getElementById('traumaModal').style.display = 'none'
-  traumaTargetIdx = null
-}
-
-function applyTrauma(partKey) {
-  if (traumaTargetIdx === null) return
-  const col = cols[traumaTargetIdx]
-  const name = calcName(traumaTargetIdx)
+function applyTrauma(playerIdx, partKey) {
+  const col = cols[playerIdx]
+  const name = calcName(playerIdx)
   const part = TRAUMA_PARTS.find(p => p.key === partKey)
   if (!part) return
   col.tDmg   += part.tDmg
@@ -2777,10 +2778,9 @@ function applyTrauma(partKey) {
   if (part.tDodge) debuffs.push(`−${part.tDodge} увор.`)
   if (part.tParry) debuffs.push(`−${part.tParry} парир.`)
   addLine(`${name}: 🩹 Травма — ${part.key} (${debuffs.join(', ')})`, 'fail')
-  setCalcInputs(traumaTargetIdx)
-  renderTraumaList(traumaTargetIdx)
+  setCalcInputs(playerIdx)
+  renderTraumaList(playerIdx)
   renderLog()
-  closeTraumaModal()
 }
 
 function renderTraumaList(playerIdx) {
@@ -3246,7 +3246,7 @@ function toggleNbarCollapse() {
 }
 
 // ── Mouse passthrough ─────────────────────────────────────────────────────────
-const interactiveEls = ['wChat','wWarriors','wFight','wCalc','wGames','nbar','challenge','gameInvite','ctxMenu','fontPanel','fontPanelOverlay','colorPicker','emojiPicker','traumaModal']
+const interactiveEls = ['wChat','wWarriors','wFight','wCalc','wGames','nbar','challenge','gameInvite','ctxMenu','fontPanel','fontPanelOverlay','colorPicker','emojiPicker']
 for (const id of interactiveEls) {
   const w = document.getElementById(id)
   if (!w) continue
@@ -3398,17 +3398,7 @@ renderCalcTurn()
 document.getElementById('bleedVal').textContent = bleedSpaces
 // Init name colors
 updateNameColor(0); updateNameColor(1)
-// Trauma modal listeners
-document.getElementById('traumaModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeTraumaModal() })
-document.getElementById('traumaModalCancel').addEventListener('click', closeTraumaModal)
 </script>
 
-<div id="traumaModal" class="trauma-overlay" style="display:none">
-  <div class="trauma-modal" id="traumaModalInner">
-    <div class="trauma-modal-title" id="traumaModalTitle">Травма</div>
-    <div class="trauma-modal-grid" id="traumaModalGrid"></div>
-    <button class="trauma-modal-cancel" id="traumaModalCancel">Отмена</button>
-  </div>
-</div>
 </body>
 </html>
