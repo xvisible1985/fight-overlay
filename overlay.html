@@ -2730,11 +2730,11 @@ function _applyLogColors(raw, spanFn, numberFn) {
   let t = raw
   if (n1) t = t.replace(new RegExp(reEsc(n1), 'g'), '\x01n1\x01')
   if (n2) t = t.replace(new RegExp(reEsc(n2), 'g'), '\x01n2\x01')
-  t = t.replace(/Успешно/g, spanFn('#4ade80', 'Успешно'))
-  t = t.replace(/Провал/g,  spanFn('#f87171', 'Провал'))
   t = t.replace(/\(([^)]+)\)/g, (_, inner) =>
     '(' + inner.replace(/(\d+)/g, (m) => numberFn('#fbbf24', m)) + ')'
   )
+  t = t.replace(/Успешно/g, spanFn('#4ade80', 'Успешно'))
+  t = t.replace(/Провал/g,  spanFn('#f87171', 'Провал'))
   t = t.replace(/\x01n1\x01/g, spanFn(c1, n1, true))
   t = t.replace(/\x01n2\x01/g, spanFn(c2, n2, true))
   return t
