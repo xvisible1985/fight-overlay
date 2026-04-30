@@ -3288,7 +3288,7 @@ function tbStart() {
     ? factionColors[currentUser.fraction] : '#c8bfb0'
   const opp = tbSelectedOpponent
   const aiName = opp ? opp.name : 'Противник'
-  const aiCt   = (opp && opp.weapon) ? 'weapon' : 'melee'
+  const aiCt   = (opp && opp.weapon && opp.weapon !== 'Кулаки') ? 'weapon' : 'melee'
 
   tb.cols = [tbColNew(playerName), tbColNew(aiName, aiCt)]
   tb.cols[1].hp     = opp ? opp.hp    : 100
