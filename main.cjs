@@ -378,6 +378,37 @@ function clearCodeCache() {
   } catch {}
 }
 
+// Auto-update overlay.html from server if a newer version is available
+async function checkAndUpdateOverlay() {
+  try {
+    const srv = savedLogin.srv || 'https://nordheimunion.ru'
+    const metaPath = path.join(app.getPath('userData'), 'overlay-meta.json')
+    let localVersion = ''
+    try { localVersion = JSON.parse(fs.readFileSync(metaPath, 'utf8')).version || '' } catch {}
+
+    const ctrl = new AbortController()
+    const tid = setTimeout(() => ctrl.abort(), 8000)
+    const vRes = await fetch(srv + '/api/overlay/version', { signal: ctrl.signal })
+    clearTimeout(tid)
+    if (!vRes.ok) return
+    const { version } = await vRes.json()
+    if (!version || version === localVersion) return
+
+    const ctrl2 = new AbortController()
+    const tid2 = setTimeout(() => ctrl2.abort(), 30000)
+    const hRes = await fetch(srv + '/api/overlay/html', { signal: ctrl2.signal })
+    clearTimeout(tid2)
+    if (!hRes.ok) return
+    const html = await hRes.text()
+    const destPath = path.join(app.getPath('userData'), 'overlay.html')
+    fs.writeFileSync(destPath, html, 'utf8')
+    fs.writeFileSync(metaPath, JSON.stringify({ version }), 'utf8')
+    console.log('[overlay-update] Updated to version', version)
+  } catch (e) {
+    console.log('[overlay-update] Skipped:', e.message)
+  }
+}
+
 // Saved login data (in-memory, persisted via Electron store via IPC)
 let savedLogin = { srv: 'https://nordheimunion.ru', email: '', remember: false, token: '' }
 try {
@@ -424,7 +455,9 @@ function createWindow() {
       if (ourHwnd && daemonReady) sendHelper('NOACT ' + ourHwnd)
     } catch {}
   })
-  mainWindow.loadFile(path.join(__dirname, 'overlay.html'))
+  const userOverlay = path.join(app.getPath('userData'), 'overlay.html')
+  const overlayPath = fs.existsSync(userOverlay) ? userOverlay : path.join(__dirname, 'overlay.html')
+  mainWindow.loadFile(overlayPath)
   mainWindow.on('closed', () => { mainWindow = null })
 }
 
@@ -582,8 +615,9 @@ ipcMain.on('logout', () => {
 })
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   clearCodeCache()
+  await checkAndUpdateOverlay()
   createWindow()
   createTray()
   initWinHelper()
