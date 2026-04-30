@@ -447,26 +447,72 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 #wWarriors .warrior-avatar { width: 2.2em; height: 2.2em; font-size: .8em; }
 #wWarriors .w-empty { font-size: 1em; }
 
-/* ── Fight widget updates ── */
+/* ── Fight widget tabs ── */
 .fight-tabs {
-  display: flex; background: #050c17; border-bottom: 2px solid #0a1525; flex-shrink: 0; gap: 1px;
+  display: flex; background: #030a14; padding: 4px 4px 0; border-bottom: 2px solid #091320; flex-shrink: 0; gap: 3px;
 }
 .fight-tab {
-  flex: 1; background: none; border: none; border-bottom: 3px solid transparent;
-  color: #3d4f68; cursor: pointer; font-size: 9px; font-weight: 700;
-  padding: 7px 4px 5px; letter-spacing: .05em; text-transform: uppercase; transition: all .15s;
+  flex: 1; background: #0c1927; border: 1px solid #1a2d40; border-bottom: 3px solid #0c1927;
+  border-radius: 5px 5px 0 0; color: #3d5268; cursor: pointer; font-size: 9px; font-weight: 700;
+  padding: 6px 4px 4px; letter-spacing: .05em; text-transform: uppercase; transition: all .12s;
   display: flex; flex-direction: column; align-items: center; gap: 3px; line-height: 1;
 }
-.fight-tab .ft-icon { font-size: 15px; line-height: 1; filter: grayscale(1) opacity(.4); transition: filter .15s; }
-.fight-tab:hover { color: #64748b; background: rgba(255,255,255,.02); }
-.fight-tab:hover .ft-icon { filter: grayscale(.4) opacity(.7); }
-.fight-tab.active { background: rgba(255,255,255,.03); }
-#ft-lobby.active { color: #60a5fa; border-bottom-color: #3b82f6; }
-#ft-lobby.active .ft-icon { filter: none; }
-#ft-fight.active { color: #fbbf24; border-bottom-color: #f59e0b; }
-#ft-fight.active .ft-icon { filter: none; }
-#ft-train.active { color: #4ade80; border-bottom-color: #22c55e; }
-#ft-train.active .ft-icon { filter: none; }
+.fight-tab .ft-icon { font-size: 14px; line-height: 1; opacity: .45; transition: opacity .12s; }
+.fight-tab:hover { background: #122336; border-color: #2a4060; color: #5a7898; }
+.fight-tab:hover .ft-icon { opacity: .7; }
+#ft-lobby.active { color: #60a5fa; background: #0d2040; border-color: #2a4f8a; border-bottom-color: #0d2040; }
+#ft-lobby.active .ft-icon { opacity: 1; }
+#ft-fight.active { color: #fbbf24; background: #1e1000; border-color: #5a3a00; border-bottom-color: #1e1000; }
+#ft-fight.active .ft-icon { opacity: 1; }
+#ft-train.active { color: #4ade80; background: #071a10; border-color: #1a4a28; border-bottom-color: #071a10; }
+#ft-train.active .ft-icon { opacity: 1; }
+/* ── PvP create form ── */
+.pvp-bar { display: flex; align-items: center; gap: 4px; padding: 5px 8px; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
+.pvp-create-btn { flex: 1; background: #0f2040; border: 1px solid #1e4070; border-radius: 4px; color: #60a5fa; cursor: pointer; font-size: 9px; font-weight: 700; padding: 4px 8px; letter-spacing: .04em; text-transform: uppercase; transition: all .12s; }
+.pvp-create-btn:hover { background: #1e3a60; border-color: #3b6aaa; color: #93c5fd; }
+.pvp-create-btn.cancel { background: #200; border-color: #500; color: #f87171; }
+.pvp-create-btn.cancel:hover { background: #400; border-color: #800; }
+.pvp-form { background: #060f1c; border-bottom: 1px solid #0f172a; padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+.pvp-form-row { display: flex; gap: 4px; align-items: center; }
+.pvp-form label { font-size: 8px; color: #475569; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
+.pvp-inp { flex: 1; background: #0a1525; border: 1px solid #1e293b; border-radius: 3px; color: #94a3b8; font-size: 10px; padding: 3px 5px; min-width: 0; }
+.pvp-inp:focus { outline: none; border-color: #3b82f6; }
+.pvp-sel { flex: 1; background: #0a1525; border: 1px solid #1e293b; border-radius: 3px; color: #94a3b8; font-size: 9px; padding: 2px 3px; min-width: 0; }
+.pvp-submit-btn { background: #1e3a5f; border: 1px solid #3b6aaa; border-radius: 4px; color: #60a5fa; cursor: pointer; font-size: 9px; font-weight: 700; padding: 5px 0; width: 100%; letter-spacing: .04em; transition: all .12s; }
+.pvp-submit-btn:hover { background: #1d4ed8; color: #fff; }
+/* ── Fight list item ── */
+.fight-item-acts { display: flex; gap: 3px; flex-shrink: 0; align-items: center; }
+.fi-join-btn { background: #0f2040; border: 1px solid #1e4070; border-radius: 3px; color: #60a5fa; cursor: pointer; font-size: 8px; font-weight: 700; padding: 2px 6px; white-space: nowrap; }
+.fi-join-btn:hover { background: #1e3a60; border-color: #3b82f6; }
+.fi-start-btn { background: #0a2a10; border: 1px solid #1a5030; border-radius: 3px; color: #4ade80; cursor: pointer; font-size: 8px; font-weight: 700; padding: 2px 6px; white-space: nowrap; }
+.fi-start-btn:hover { background: #143a1a; border-color: #22c55e; }
+.fi-enter-btn { background: #1e1000; border: 1px solid #5a3a00; border-radius: 3px; color: #fbbf24; cursor: pointer; font-size: 8px; font-weight: 700; padding: 2px 6px; white-space: nowrap; }
+.fi-enter-btn:hover { background: #2a1800; border-color: #f59e0b; }
+.fight-item-sub2 { font-size: .75em; color: #3b5268; margin-top: 1px; }
+/* ── PvP fight panel ── */
+.pvp-fighters { display: flex; align-items: stretch; gap: 6px; padding: 5px 8px; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
+.pvp-turn-banner { font-size: .8em; font-weight: 700; text-align: center; padding: 3px 8px; background: #0f172a; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
+.pvp-turn-banner.my-turn { color: #4ade80; background: #071a0e; }
+.pvp-turn-banner.their-turn { color: #60a5fa; }
+.pvp-defend-panel { padding: 5px 8px; border-bottom: 1px solid #0f172a; background: #1a0a00; flex-shrink: 0; display: flex; flex-direction: column; gap: 4px; }
+.pvp-defend-label { font-size: .75em; color: #f59e0b; font-weight: 700; }
+.pvp-defend-btns { display: flex; gap: 3px; }
+.pvp-def-btn { flex: 1; background: #0f172a; border: 1px solid #1e293b; border-radius: 4px; color: #94a3b8; cursor: pointer; font-size: .72em; font-weight: 600; padding: 3px 2px; transition: all .1s; }
+.pvp-def-btn:hover { border-color: #475569; color: #e2e8f0; }
+.pvp-def-btn.dodge:hover { border-color: #3b82f6; color: #60a5fa; }
+.pvp-def-btn.block:hover { border-color: #7c3aed; color: #a78bfa; }
+.pvp-def-btn.accept:hover { border-color: #ef4444; color: #f87171; }
+.pvp-attack-panel { padding: 5px 8px; border-bottom: 1px solid #0f172a; background: #0a1000; flex-shrink: 0; display: flex; flex-direction: column; gap: 4px; }
+.pvp-parts { display: flex; gap: 2px; flex-wrap: wrap; }
+.pvp-part-btn { background: #0f172a; border: 1px solid #1e293b; border-radius: 3px; color: #64748b; cursor: pointer; font-size: .68em; padding: 2px 5px; transition: all .1s; }
+.pvp-part-btn:hover { border-color: #3b82f6; color: #60a5fa; }
+.pvp-part-btn.sel { background: #0f2040; border-color: #3b82f6; color: #93c5fd; font-weight: 700; }
+.pvp-attack-row { display: flex; gap: 4px; align-items: center; }
+.pvp-attack-btn { flex: 1; background: #1e3a5f; border: 1px solid #3b6aaa; border-radius: 4px; color: #60a5fa; cursor: pointer; font-size: .8em; font-weight: 700; padding: 5px; transition: all .12s; }
+.pvp-attack-btn:hover { background: #1d4ed8; color: #fff; }
+.pvp-attack-btn:disabled { opacity: .4; cursor: default; pointer-events: none; }
+.pvp-status-bar { padding: 4px 8px; border-bottom: 1px solid #0f172a; font-size: .75em; color: #475569; text-align: center; flex-shrink: 0; }
+.pvp-join-wait { padding: 8px; text-align: center; font-size: .8em; color: #475569; flex-shrink: 0; }
 .tb-start-btn { background: #1e3a5f; border: 1px solid #3b82f6; border-radius: 6px; color: #60a5fa; cursor: pointer; font-size: 1em; font-weight: 700; padding: 8px 24px; }
 .tb-start-btn:hover { background: #1d4ed8; color: #fff; }
 .tb-fighters { display: flex; align-items: stretch; gap: 6px; padding: 6px 8px; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
@@ -827,11 +873,48 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
     </div>
     <!-- Lobby tab -->
     <div id="fightLobbyTab" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+      <!-- Create fight bar -->
+      <div class="pvp-bar">
+        <button class="pvp-create-btn" id="pvpToggleBtn" onclick="togglePvpCreateForm()">⚔ Выставить кандидатуру</button>
+        <button class="fight-filter-btn" style="flex-shrink:0" onclick="loadFightsList()" title="Обновить">↺</button>
+      </div>
+      <!-- Create fight form -->
+      <div id="pvpCreateForm" style="display:none">
+        <div class="pvp-form">
+          <div class="pvp-form-row">
+            <label>Тип</label>
+            <select class="pvp-sel" id="pvpType">
+              <option value="1v1">1 vs 1</option>
+              <option value="team">Командный</option>
+            </select>
+            <label style="margin-left:4px">Правила</label>
+            <select class="pvp-sel" id="pvpRules">
+              <option value="rp-soyuz">РП-Союз</option>
+              <option value="nordheim">Nordheim</option>
+            </select>
+          </div>
+          <div class="pvp-form-row">
+            <label>Ставка</label>
+            <input class="pvp-inp" id="pvpBet" type="number" min="0" placeholder="монет (0 = без ставки)" style="width:100%">
+          </div>
+          <div class="pvp-form-row">
+            <label>Ур. мин</label>
+            <input class="pvp-inp" id="pvpMinLvl" type="number" min="0" max="100" placeholder="0" style="width:50px;flex:none">
+            <label style="margin-left:4px">макс</label>
+            <input class="pvp-inp" id="pvpMaxLvl" type="number" min="0" max="100" placeholder="100" style="width:50px;flex:none">
+          </div>
+          <div class="pvp-form-row">
+            <label>Название</label>
+            <input class="pvp-inp" id="pvpTitle" placeholder="(авто)" style="width:100%">
+          </div>
+          <button class="pvp-submit-btn" onclick="createPvpFight()">⚔ Выставить кандидатуру</button>
+        </div>
+      </div>
+      <!-- Filters -->
       <div class="fight-filters">
         <button class="fight-filter-btn active" id="ff-all"     onclick="setFightFilter('all')">Все</button>
         <button class="fight-filter-btn"        id="ff-mine"    onclick="setFightFilter('mine')">Мои</button>
         <button class="fight-filter-btn"        id="ff-archive" onclick="setFightFilter('archive')">Архив</button>
-        <button class="fight-filter-btn" style="margin-left:auto" onclick="loadFightsList()" title="Обновить">↺</button>
       </div>
       <div id="fightsList" style="flex:1;overflow-y:auto;padding:6px 8px;display:flex;flex-direction:column;gap:4px;">
         <div class="no-fights">Загрузка…</div>
@@ -842,7 +925,53 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
       <div id="fightChat" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
         <div class="fight-chat-hdr">
           <span class="fight-chat-title" id="fightChatTitle"></span>
+          <button class="fight-hdr-btn" id="pvpStartBtn" style="display:none" onclick="pvpStartFight()">▶ Начать</button>
           <button class="fight-leave" onclick="leaveFight()" title="Покинуть">✕</button>
+        </div>
+        <!-- PvP HP bars -->
+        <div class="pvp-fighters" id="pvpFighters" style="display:none">
+          <div class="tb-fighter" id="pvpF1">
+            <div class="tb-f-name" id="pvpF1Name">—</div>
+            <div class="tb-bar-wrap"><div class="tb-sh-bar" id="pvpF1ShBar" style="width:100%"></div></div>
+            <div class="tb-bar-wrap"><div class="tb-hp-bar" id="pvpF1HpBar" style="width:100%"></div></div>
+            <div class="tb-f-stats" id="pvpF1Stats"></div>
+          </div>
+          <div class="tb-vs">VS</div>
+          <div class="tb-fighter" id="pvpF2">
+            <div class="tb-f-name" id="pvpF2Name">—</div>
+            <div class="tb-bar-wrap"><div class="tb-sh-bar tb-sh-bar-ai" id="pvpF2ShBar" style="width:100%"></div></div>
+            <div class="tb-bar-wrap"><div class="tb-hp-bar tb-hp-bar-ai" id="pvpF2HpBar" style="width:100%"></div></div>
+            <div class="tb-f-stats" id="pvpF2Stats"></div>
+          </div>
+        </div>
+        <!-- Status / waiting banner -->
+        <div class="pvp-join-wait" id="pvpWaitBanner" style="display:none">
+          ⏳ Ожидание участников… <span id="pvpWaitCount"></span>
+        </div>
+        <!-- Turn banner -->
+        <div class="pvp-turn-banner" id="pvpTurnBanner" style="display:none"></div>
+        <!-- Defend controls -->
+        <div class="pvp-defend-panel" id="pvpDefendPanel" style="display:none">
+          <div class="pvp-defend-label">⚡ Атака в <span id="pvpDefendPart">—</span>! Ваш ответ:</div>
+          <div class="pvp-defend-btns">
+            <button class="pvp-def-btn dodge" onclick="pvpDefend('dodge')">💨 Уворот</button>
+            <button class="pvp-def-btn block" onclick="pvpDefend('block')">🛡 Блок</button>
+            <button class="pvp-def-btn accept" onclick="pvpDefend('accept')">✋ Принять</button>
+          </div>
+        </div>
+        <!-- Attack controls -->
+        <div class="pvp-attack-panel" id="pvpAttackPanel" style="display:none">
+          <div class="pvp-parts" id="pvpParts">
+            <button class="pvp-part-btn" onclick="pvpSetPart('голова')">Голова</button>
+            <button class="pvp-part-btn" onclick="pvpSetPart('шея')">Шея</button>
+            <button class="pvp-part-btn sel" onclick="pvpSetPart('грудь')">Грудь</button>
+            <button class="pvp-part-btn" onclick="pvpSetPart('живот')">Живот</button>
+            <button class="pvp-part-btn" onclick="pvpSetPart('рука')">Рука</button>
+            <button class="pvp-part-btn" onclick="pvpSetPart('нога')">Нога</button>
+          </div>
+          <div class="pvp-attack-row">
+            <button class="pvp-attack-btn" id="pvpAttackBtn" onclick="pvpAttack()">⚔ Ударить</button>
+          </div>
         </div>
         <div class="members-bar" id="membersBar"></div>
         <div class="msgs" id="mFight"></div>
@@ -1330,6 +1459,14 @@ let warriorFilter = 'all'
 let fightFilter = 'all'
 let allFights   = []
 
+// ── PvP state ─────────────────────────────────────────────────────────────────
+let pvpFightStatus      = 'waiting'  // 'waiting' | 'active' | 'finished'
+let pvpCurrentTurnId    = null
+let pvpMembers          = []
+let pvpPendingAttack    = null  // { id, attacker_id, target_id, body_part }
+let pvpTargetPart       = 'грудь'
+let pvpCreateFormOpen   = false
+
 // Incoming challenge
 let pendingChallenge = null
 
@@ -1636,8 +1773,8 @@ function applyAdminVisibility() {
     const w = document.getElementById('wCalc')
     if (w) w.style.display = 'none'
   }
-  // For non-admins lobby/fight tabs are stubs
-  if (!isAdmin) switchFightTab('train')
+  // All authenticated users can use all fight tabs
+  switchFightTab('lobby')
 }
 
 async function onAuth({ token: t, srv: s }) {
@@ -2391,39 +2528,270 @@ function warriorCtx(e, name) {
 }
 
 // ── Fight WS ──────────────────────────────────────────────────────────────────
-function connectFightWs(fightId, fightTitle) {
+function connectFightWs(fightId, fightTitle, fight) {
   if (fightWs) { fightWs.onclose = null; fightWs.close(); fightWs = null }
   currentFightId = fightId; currentFightTitle = fightTitle
-  fightLog = []
+  fightLog = []; pvpPendingAttack = null
+  pvpFightStatus = fight?.status ?? 'waiting'
+  pvpCurrentTurnId = fight?.current_turn_user_id ?? null
+
   document.getElementById('fightChatTitle').textContent = fightTitle
   clearMsgs('Fight')
   loadFightHistory(fightId)
-  loadMembers(fightId)
+  loadPvpMembers(fightId)
   switchFightTab('fight')
+  pvpUpdateStartBtn(fight)
+  pvpShowPanels()
 
   const wsBase = srv.replace(/^https/, 'wss').replace(/^http/, 'ws')
   fightWs = new WebSocket(wsBase + '/ws?token=' + token + '&fight=' + fightId)
   fightWs.onopen  = () => { dot('Fight', true);  setSend('Fight', true) }
   fightWs.onclose = () => {
     dot('Fight', false); setSend('Fight', false)
-    if (currentFightId === fightId) setTimeout(() => connectFightWs(fightId, fightTitle), 2000)
+    if (currentFightId === fightId) setTimeout(() => connectFightWs(fightId, fightTitle, null), 2000)
   }
   fightWs.onerror = () => {}
   fightWs.onmessage = e => {
     const m = JSON.parse(e.data)
-    if (m.type === 'message')         appendFightMsg(m.data)
-    else if (m.type === 'reload_messages') { loadFightHistory(fightId); loadMembers(fightId) }
+    if (m.type === 'message')              appendFightMsg(m.data)
+    else if (m.type === 'reload_messages') { loadFightHistory(fightId); loadPvpMembers(fightId) }
+    else if (m.type === 'members')         pvpHandleMembers(m.data)
+    else if (m.type === 'fight_status')    pvpHandleStatus(m.data)
+    else if (m.type === 'turn')            pvpHandleTurn(m.data)
+    else if (m.type === 'pending_attack')  pvpHandlePendingAttack(m.data)
+    else if (m.type === 'pending_attack_resolved') pvpHandleResolved()
+    else if (m.type === 'fight_closed')    leaveFight()
+    else if (m.type === 'kicked' && m.data?.userId === currentUser?.id) leaveFight()
   }
 }
 
 function leaveFight() {
   currentFightId = null
+  pvpMembers = []; pvpPendingAttack = null; pvpFightStatus = 'waiting'; pvpCurrentTurnId = null
   if (fightWs) { fightWs.onclose = null; fightWs.close(); fightWs = null }
   dot('Fight', false); setSend('Fight', false)
   clearMsgs('Fight')
   document.getElementById('membersBar').innerHTML = ''
+  pvpHideAll()
   switchFightTab('lobby')
   loadFightsList()
+}
+
+// ── PvP helpers ───────────────────────────────────────────────────────────────
+async function loadPvpMembers(fightId) {
+  try {
+    const r = await apiFetch('/api/fights/' + fightId + '/members')
+    if (!r.ok) return
+    const members = await r.json()
+    pvpHandleMembers(members)
+    // Also update the small members bar
+    const bar = document.getElementById('membersBar')
+    if (!bar) return
+    bar.innerHTML = members.map((m, i) => {
+      const tc = 'team' + (m.team || 0)
+      const dc = m.departed ? ' departed' : ''
+      const sep = i < members.length - 1 ? '<span style="color:#334155">, </span>' : ''
+      return `<span class="member-dot ${tc}"></span><span class="member-name${dc}">${esc(m.game_name||'?')}</span> <span class="hp-val">❤${m.hp??'—'}</span>${m.shield!=null?` <span class="sh-val">🛡${m.shield}</span>`:''}${sep}`
+    }).join('')
+  } catch {}
+}
+
+function pvpHandleMembers(members) {
+  pvpMembers = members
+  const me = members.find(m => String(m.user_id) === String(currentUser?.id))
+  const opp = members.find(m => String(m.user_id) !== String(currentUser?.id) && m.team !== 3)
+  const figs = document.getElementById('pvpFighters')
+  if (!figs) return
+  if (members.length >= 1) {
+    figs.style.display = 'flex'
+    pvpSetFighter(1, me || members[0])
+    pvpSetFighter(2, opp || members[1] || null)
+  }
+  pvpShowPanels()
+  // update wait banner
+  const wb = document.getElementById('pvpWaitBanner')
+  const wc = document.getElementById('pvpWaitCount')
+  if (wb && pvpFightStatus === 'waiting') {
+    wb.style.display = 'block'
+    if (wc) wc.textContent = `(${members.length} участник${members.length > 1 ? 'а' : ''})`
+  }
+}
+
+function pvpSetFighter(slot, member) {
+  if (!member) return
+  const name  = document.getElementById('pvpF' + slot + 'Name')
+  const hp    = document.getElementById('pvpF' + slot + 'HpBar')
+  const sh    = document.getElementById('pvpF' + slot + 'ShBar')
+  const stats = document.getElementById('pvpF' + slot + 'Stats')
+  const maxHp = 100, maxSh = 200
+  if (name)  name.textContent  = member.game_name || '—'
+  if (hp)    hp.style.width    = Math.max(0, Math.min(100, ((member.hp ?? maxHp) / maxHp) * 100)) + '%'
+  if (sh)    sh.style.width    = Math.max(0, Math.min(100, ((member.shield ?? maxSh) / maxSh) * 100)) + '%'
+  if (stats) stats.textContent = `❤ ${member.hp ?? '—'} 🛡 ${member.shield ?? '—'}`
+}
+
+function pvpHandleStatus(data) {
+  pvpFightStatus = data.status
+  if (data.currentTurnUserId) pvpCurrentTurnId = data.currentTurnUserId
+  pvpShowPanels()
+  const wb = document.getElementById('pvpWaitBanner')
+  if (wb) wb.style.display = pvpFightStatus === 'waiting' ? 'block' : 'none'
+}
+
+function pvpHandleTurn(data) {
+  pvpCurrentTurnId = data.currentTurnUserId
+  pvpPendingAttack = null
+  pvpShowPanels()
+}
+
+function pvpHandlePendingAttack(data) {
+  if (String(data.target_id) !== String(currentUser?.id)) return
+  pvpPendingAttack = data
+  const partEl = document.getElementById('pvpDefendPart')
+  if (partEl) partEl.textContent = data.body_part || '—'
+  pvpShowPanels()
+}
+
+function pvpHandleResolved() {
+  pvpPendingAttack = null
+  pvpShowPanels()
+}
+
+function pvpShowPanels() {
+  const isActive = pvpFightStatus === 'active'
+  const isMyTurn = isActive && String(pvpCurrentTurnId) === String(currentUser?.id)
+  const hasPending = !!pvpPendingAttack
+
+  const turn    = document.getElementById('pvpTurnBanner')
+  const defend  = document.getElementById('pvpDefendPanel')
+  const attack  = document.getElementById('pvpAttackPanel')
+
+  if (turn) {
+    turn.style.display = isActive ? '' : 'none'
+    if (isActive) {
+      if (hasPending) {
+        turn.textContent = '⚡ Атака! Выберите защиту:'
+        turn.className = 'pvp-turn-banner my-turn'
+      } else if (isMyTurn) {
+        turn.textContent = '⚔ Ваш ход — атакуйте!'
+        turn.className = 'pvp-turn-banner my-turn'
+      } else {
+        const opp = pvpMembers.find(m => String(m.user_id) === String(pvpCurrentTurnId))
+        turn.textContent = `🕐 Ход: ${opp?.game_name || 'противника'}`
+        turn.className = 'pvp-turn-banner their-turn'
+      }
+    }
+  }
+  if (defend) defend.style.display = (hasPending && isMyTurn) ? '' : 'none'
+  if (attack) attack.style.display = (isMyTurn && !hasPending) ? '' : 'none'
+}
+
+function pvpHideAll() {
+  for (const id of ['pvpFighters','pvpWaitBanner','pvpTurnBanner','pvpDefendPanel','pvpAttackPanel']) {
+    const el = document.getElementById(id)
+    if (el) el.style.display = 'none'
+  }
+  const sb = document.getElementById('pvpStartBtn')
+  if (sb) sb.style.display = 'none'
+}
+
+function pvpUpdateStartBtn(fight) {
+  const sb = document.getElementById('pvpStartBtn')
+  if (!sb) return
+  const isCreator = fight && String(fight.admin_id) === String(currentUser?.id)
+  sb.style.display = (isCreator && fight?.status === 'waiting') ? '' : 'none'
+}
+
+async function pvpStartFight() {
+  if (!currentFightId) return
+  const r = await apiFetch('/api/fights/' + currentFightId + '/start', { method: 'POST' })
+  if (r.ok) {
+    const sb = document.getElementById('pvpStartBtn')
+    if (sb) sb.style.display = 'none'
+  } else {
+    const d = await r.json()
+    alert(d.error || 'Ошибка запуска')
+  }
+}
+
+function pvpSetPart(part) {
+  pvpTargetPart = part
+  document.querySelectorAll('.pvp-part-btn').forEach(b => {
+    b.classList.toggle('sel', b.textContent.trim().toLowerCase() === part)
+  })
+}
+
+async function pvpAttack() {
+  if (!currentFightId) return
+  const me = pvpMembers.find(m => String(m.user_id) === String(currentUser?.id))
+  const opp = pvpMembers.find(m => String(m.user_id) !== String(currentUser?.id) && m.team !== me?.team)
+  if (!opp) return
+  const btn = document.getElementById('pvpAttackBtn')
+  if (btn) btn.disabled = true
+  const attackWith = me?.weapon ? 'weapon' : 'melee'
+  try {
+    const r = await apiFetch('/api/fights/' + currentFightId + '/attack', {
+      method: 'POST',
+      body: JSON.stringify({ targetUserId: opp.user_id, bodyPart: pvpTargetPart, attackWith })
+    })
+    if (!r.ok) { const d = await r.json(); console.warn(d.error) }
+  } finally {
+    if (btn) btn.disabled = false
+  }
+}
+
+async function pvpDefend(action) {
+  if (!currentFightId || !pvpPendingAttack) return
+  document.querySelectorAll('.pvp-def-btn').forEach(b => b.disabled = true)
+  try {
+    const r = await apiFetch('/api/fights/' + currentFightId + '/defend', {
+      method: 'POST',
+      body: JSON.stringify({ pendingAttackId: pvpPendingAttack.id, action })
+    })
+    if (!r.ok) { const d = await r.json(); console.warn(d.error) }
+    else pvpPendingAttack = null
+  } finally {
+    document.querySelectorAll('.pvp-def-btn').forEach(b => b.disabled = false)
+  }
+}
+
+// ── PvP create / join ─────────────────────────────────────────────────────────
+function togglePvpCreateForm() {
+  pvpCreateFormOpen = !pvpCreateFormOpen
+  const form = document.getElementById('pvpCreateForm')
+  const btn  = document.getElementById('pvpToggleBtn')
+  if (form) form.style.display = pvpCreateFormOpen ? '' : 'none'
+  if (btn)  btn.textContent = pvpCreateFormOpen ? '✕ Отмена' : '⚔ Выставить кандидатуру'
+  if (btn)  btn.classList.toggle('cancel', pvpCreateFormOpen)
+}
+
+async function createPvpFight() {
+  const type    = document.getElementById('pvpType')?.value || '1v1'
+  const rules   = document.getElementById('pvpRules')?.value || 'rp-soyuz'
+  const bet     = parseInt(document.getElementById('pvpBet')?.value || '0') || 0
+  const minLvl  = parseInt(document.getElementById('pvpMinLvl')?.value || '0') || 0
+  const maxLvl  = parseInt(document.getElementById('pvpMaxLvl')?.value || '100') || 100
+  const titleEl = document.getElementById('pvpTitle')
+  const myName  = currentUser ? (await (await apiFetch('/api/auth/me')).json())?.game_name : null
+  const title   = titleEl?.value.trim() || (myName ? `Вызов от ${myName}` : 'Вызов на бой')
+
+  const r = await apiFetch('/api/fights', {
+    method: 'POST',
+    body: JSON.stringify({ title, rules, fight_type: type, bet, min_level: minLvl, max_level: maxLvl })
+  })
+  if (!r.ok) { const d = await r.json(); alert(d.error || 'Ошибка'); return }
+  const fight = await r.json()
+  togglePvpCreateForm()
+  connectFightWs(fight.id, fight.title, fight)
+  loadFightsList(true)
+}
+
+async function joinFight(fightId) {
+  const r = await apiFetch('/api/fights/' + fightId + '/join', { method: 'POST', body: JSON.stringify({ team: 2 }) })
+  if (!r.ok) { const d = await r.json(); alert(d.error || 'Ошибка'); return }
+  const fr = await apiFetch('/api/fights/' + fightId)
+  const fight = fr.ok ? await fr.json() : { id: fightId, title: 'Бой', status: 'waiting' }
+  connectFightWs(fightId, fight.title, fight)
 }
 
 async function saveFight() {
@@ -2459,17 +2827,16 @@ function switchFightTab(tab) {
   const ftl   = document.getElementById('ft-lobby')
   const ftf   = document.getElementById('ft-fight')
   const ftt   = document.getElementById('ft-train')
-  const stub = document.getElementById('fightStub')
+  const stub  = document.getElementById('fightStub')
   lobby.style.display = 'none'; fight.style.display = 'none'
   if (train) train.style.display = 'none'; if (stub) stub.style.display = 'none'
   ftl.classList.remove('active'); ftf.classList.remove('active'); if (ftt) ftt.classList.remove('active')
-  const isAdmin = currentUser?.is_admin
   if (tab === 'lobby') {
-    if (isAdmin) { lobby.style.display = 'flex'; ftl.classList.add('active'); dot('Fight', !!(fightWs && fightWs.readyState === 1)) }
-    else { if (stub) stub.style.display = 'flex'; ftl.classList.add('active') }
+    lobby.style.display = 'flex'; ftl.classList.add('active')
+    dot('Fight', !!(fightWs && fightWs.readyState === 1))
   } else if (tab === 'fight') {
-    if (isAdmin) { fight.style.display = 'flex'; ftf.classList.add('active'); dot('Fight', !!(fightWs && fightWs.readyState === 1)) }
-    else { if (stub) stub.style.display = 'flex'; ftf.classList.add('active') }
+    fight.style.display = 'flex'; ftf.classList.add('active')
+    dot('Fight', !!(fightWs && fightWs.readyState === 1))
   } else if (tab === 'train') {
     if (train) { train.style.display = 'flex'; if (ftt) ftt.classList.add('active') }
     dot('Fight', !!currentUser)
@@ -2519,18 +2886,52 @@ function renderFightsList() {
   if (fightFilter === 'archive') fights = fights.filter(f => f.status === 'finished')
   else                           fights = fights.filter(f => f.status !== 'finished')
   if (!fights.length) { box.innerHTML = '<div class="no-fights">Нет боёв</div>'; return }
+  const myId = String(currentUser?.id ?? '')
   box.innerHTML = fights.map(f => {
-    const sc  = f.status === 'active' ? 'active' : f.status === 'finished' ? 'finished' : 'waiting'
-    const sl  = f.status === 'active' ? 'Идёт' : f.status === 'finished' ? 'Завершён' : 'Ожидание'
-    const sub = f.admin_name ? `${esc(f.admin_name)}` : ''
-    return `<div class="fight-item" onclick="connectFightWs('${f.id}','${esc(f.title).replace(/'/g,"\\'")}')">
+    const sc       = f.status === 'active' ? 'active' : f.status === 'finished' ? 'finished' : 'waiting'
+    const sl       = f.status === 'active' ? 'Идёт' : f.status === 'finished' ? 'Завершён' : 'Ожидание'
+    const isCreator= String(f.admin_id) === myId
+    const escTitle = esc(f.title).replace(/'/g,"\\'")
+    const escFull  = JSON.stringify(f).replace(/"/g,'&quot;')
+
+    // Extra info: bet, level range
+    const betInfo  = f.bet > 0 ? `💰 ${f.bet} монет` : ''
+    const lvlInfo  = (f.min_level > 0 || (f.max_level > 0 && f.max_level < 100)) ? `⚔ ур.${f.min_level||0}–${f.max_level||100}` : ''
+    const sub2     = [f.admin_name ? `ор: ${esc(f.admin_name)}` : '', betInfo, lvlInfo].filter(Boolean).join(' · ')
+
+    let actions = ''
+    if (f.status === 'finished') {
+      actions = `<button class="fi-enter-btn" onclick="connectFightWsById('${f.id}','${escTitle}')">👁 Лог</button>`
+    } else if (isCreator && f.status === 'waiting') {
+      actions = `<button class="fi-start-btn" onclick="event.stopPropagation();pvpStartFightById('${f.id}','${escTitle}')">▶ Начать</button>`
+    } else if (f.status === 'waiting') {
+      actions = `<button class="fi-join-btn" onclick="event.stopPropagation();joinFight('${f.id}')">⚔ Вступить</button>`
+    } else if (f.status === 'active') {
+      actions = `<button class="fi-enter-btn" onclick="connectFightWsById('${f.id}','${escTitle}')">▶ В бой</button>`
+    }
+
+    return `<div class="fight-item" onclick="connectFightWsById('${f.id}','${escTitle}')">
       <div class="fight-item-info">
         <div class="fight-item-title">${esc(f.title)}</div>
-        ${sub ? `<div class="fight-item-sub">${sub}</div>` : ''}
+        ${sub2 ? `<div class="fight-item-sub2">${sub2}</div>` : ''}
       </div>
-      <span class="fight-status ${sc}">${sl}</span>
+      <div class="fight-item-acts">
+        <span class="fight-status ${sc}">${sl}</span>
+        ${actions}
+      </div>
     </div>`
   }).join('')
+}
+
+async function connectFightWsById(fightId, fightTitle) {
+  const r = await apiFetch('/api/fights/' + fightId)
+  const fight = r.ok ? await r.json() : { id: fightId, title: fightTitle, status: 'waiting' }
+  connectFightWs(fightId, fight.title || fightTitle, fight)
+}
+
+async function pvpStartFightById(fightId, fightTitle) {
+  await connectFightWsById(fightId, fightTitle)
+  await pvpStartFight()
 }
 
 // ── Fight members / history ───────────────────────────────────────────────────
