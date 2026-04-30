@@ -448,14 +448,25 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 #wWarriors .w-empty { font-size: 1em; }
 
 /* ── Fight widget updates ── */
-.fight-tabs { display: flex; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
-.fight-tab {
-  flex: 1; background: none; border: none; border-bottom: 2px solid transparent;
-  color: #475569; cursor: pointer; font-size: 10px; font-weight: 700;
-  padding: 4px 8px; letter-spacing: .04em; text-transform: uppercase; transition: all .15s;
+.fight-tabs {
+  display: flex; background: #050c17; border-bottom: 2px solid #0a1525; flex-shrink: 0; gap: 1px;
 }
-.fight-tab:hover { color: #94a3b8; }
-.fight-tab.active { color: #60a5fa; border-bottom-color: #3b82f6; }
+.fight-tab {
+  flex: 1; background: none; border: none; border-bottom: 3px solid transparent;
+  color: #3d4f68; cursor: pointer; font-size: 9px; font-weight: 700;
+  padding: 7px 4px 5px; letter-spacing: .05em; text-transform: uppercase; transition: all .15s;
+  display: flex; flex-direction: column; align-items: center; gap: 3px; line-height: 1;
+}
+.fight-tab .ft-icon { font-size: 15px; line-height: 1; filter: grayscale(1) opacity(.4); transition: filter .15s; }
+.fight-tab:hover { color: #64748b; background: rgba(255,255,255,.02); }
+.fight-tab:hover .ft-icon { filter: grayscale(.4) opacity(.7); }
+.fight-tab.active { background: rgba(255,255,255,.03); }
+#ft-lobby.active { color: #60a5fa; border-bottom-color: #3b82f6; }
+#ft-lobby.active .ft-icon { filter: none; }
+#ft-fight.active { color: #fbbf24; border-bottom-color: #f59e0b; }
+#ft-fight.active .ft-icon { filter: none; }
+#ft-train.active { color: #4ade80; border-bottom-color: #22c55e; }
+#ft-train.active .ft-icon { filter: none; }
 .tb-start-btn { background: #1e3a5f; border: 1px solid #3b82f6; border-radius: 6px; color: #60a5fa; cursor: pointer; font-size: 1em; font-weight: 700; padding: 8px 24px; }
 .tb-start-btn:hover { background: #1d4ed8; color: #fff; }
 .tb-fighters { display: flex; align-items: stretch; gap: 6px; padding: 6px 8px; border-bottom: 1px solid #0f172a; flex-shrink: 0; }
@@ -798,9 +809,15 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
   <div class="wbody" id="wbFight">
     <!-- Tab switcher -->
     <div class="fight-tabs" id="fightTabsRow">
-      <button class="fight-tab active" id="ft-lobby" onclick="switchFightTab('lobby')">Лобби</button>
-      <button class="fight-tab"        id="ft-fight" onclick="switchFightTab('fight')">Бой</button>
-      <button class="fight-tab"        id="ft-train" onclick="switchFightTab('train')">⚔ Учебный</button>
+      <button class="fight-tab active" id="ft-lobby" onclick="switchFightTab('lobby')">
+        <span class="ft-icon">🛡</span><span>Лобби</span>
+      </button>
+      <button class="fight-tab" id="ft-fight" onclick="switchFightTab('fight')">
+        <span class="ft-icon">⚔️</span><span>Бой</span>
+      </button>
+      <button class="fight-tab" id="ft-train" onclick="switchFightTab('train')">
+        <span class="ft-icon">🎯</span><span>Учебный</span>
+      </button>
     </div>
     <!-- Stub for non-admins -->
     <div id="fightStub" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px;text-align:center;">
