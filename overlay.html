@@ -592,6 +592,9 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
 .cw-trauma-hdr { font-size: .54em; font-weight: 700; color: rgba(200,140,60,.5); letter-spacing: .06em; text-transform: uppercase; margin-bottom: .04em; display: flex; align-items: center; justify-content: space-between; }
 .cw-trauma-list { font-size: .56em; color: rgba(200,140,60,.65); min-height: .7em; word-break: break-word; }
 .cw-trauma-pick { display: flex; align-items: center; gap: .2em; margin-top: .1em; }
+.tb-part-pick-row { flex-wrap: wrap; gap: .25em; margin-top: .2em; }
+.tb-part-btn { background: rgba(15,23,42,.85); border: 1px solid #334155; color: #94a3b8; border-radius: 3px; font-size: .6em; padding: .18em .4em; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: background .12s, border-color .12s, color .12s; }
+.tb-part-btn:hover { background: #1e293b; border-color: #60a5fa; color: #e2e8f0; }
 .cw-trauma-sel { flex: 1; min-width: 0; background: #0f172a; border: 1px solid #334155; color: #94a3b8; border-radius: 3px; font-size: .6em; padding: .15em .2em; cursor: pointer; }
 .cw-trauma-sel:focus { outline: none; border-color: rgba(200,140,60,.5); }
 .cw-trauma-sel.trauma-needed { border-color: rgba(200,140,60,.9); box-shadow: 0 0 0 1px rgba(200,140,60,.4); }
@@ -880,18 +883,14 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
             <button class="tb-ct active" id="tbCtWeapon" onclick="tbSetCt('weapon')">⚔ Оружие</button>
             <button class="tb-ct"        id="tbCtMelee"  onclick="tbSetCt('melee')">👊 Руки</button>
           </div>
-          <div class="cw-trauma-pick" id="tbTargetRow" style="display:none">
-            <span style="color:#60a5fa;font-size:.85em;white-space:nowrap">🎯 Куда:</span>
-            <select class="cw-trauma-sel" id="tbTargetSel">
-              <option value="">— часть тела —</option>
-              <option value="рука">💪 Рука</option>
-              <option value="нога">🦵 Нога</option>
-              <option value="живот">💢 Живот</option>
-              <option value="грудь">🫁 Грудь</option>
-              <option value="шея">🫙 Шея</option>
-              <option value="голова">🧠 Голова</option>
-            </select>
-            <button class="cw-cnt-btn" onclick="tbConfirmTarget()">→</button>
+          <div class="cw-trauma-pick tb-part-pick-row" id="tbTargetRow" style="display:none">
+            <span style="color:#60a5fa;font-size:.75em;white-space:nowrap;flex-shrink:0">🎯 Куда:</span>
+            <button class="tb-part-btn" onclick="tbSelectTargetPart('рука')">Рука</button>
+            <button class="tb-part-btn" onclick="tbSelectTargetPart('нога')">Нога</button>
+            <button class="tb-part-btn" onclick="tbSelectTargetPart('живот')">Живот</button>
+            <button class="tb-part-btn" onclick="tbSelectTargetPart('грудь')">Грудь</button>
+            <button class="tb-part-btn" onclick="tbSelectTargetPart('шея')">Шея</button>
+            <button class="tb-part-btn" onclick="tbSelectTargetPart('голова')">Голова</button>
           </div>
           <div class="cw-trauma-pick" id="tbTraumaRow" style="display:none">
             <span style="color:#e0a050;font-size:.85em;white-space:nowrap">🩹 Травма:</span>
@@ -3218,7 +3217,7 @@ const tb = {
 }
 
 function tbColNew(name, combatType = 'weapon') {
-  return { name, hp: 100, shield: 200, brosok: 0, defense: 'hit', combatType,
+  return { name, hp: 100, shield: 200, maxHp: 100, maxShield: 200, brosok: 0, defense: 'hit', combatType,
     pendingBrosok: null, pendingIsDisarm: false,
     cuts: 0, tDmg: 0, tAcc: 0, tDodge: 0, tParry: 0, traumas: [], stunned: false, disarmed: false }
 }
@@ -3291,8 +3290,10 @@ function tbStart() {
   const aiCt   = (opp && opp.weapon && opp.weapon !== 'Кулаки') ? 'weapon' : 'melee'
 
   tb.cols = [tbColNew(playerName), tbColNew(aiName, aiCt)]
-  tb.cols[1].hp     = opp ? opp.hp    : 100
-  tb.cols[1].shield = opp ? opp.armor : 200
+  tb.cols[1].hp       = opp ? opp.hp    : 100
+  tb.cols[1].shield   = opp ? opp.armor : 200
+  tb.cols[1].maxHp    = tb.cols[1].hp
+  tb.cols[1].maxShield = tb.cols[1].shield
   tb.entries = []; tb.pendingTraumaFor = null; tb.pendingTraumaWeapon = false
   tb.playerColor = playerColor; tb.action = 'hit'; tb.ct = 'weapon'
   tb.finished = false; tb.traumaCallback = null
@@ -3421,10 +3422,10 @@ async function tbSurrender() {
 function tbRender() {
   if (!tb.cols) return
   const [p, ai] = tb.cols
-  const pPct   = Math.max(0, Math.min(100, cN(p.hp)))
-  const aiPct  = Math.max(0, Math.min(100, cN(ai.hp)))
-  const pShPct  = Math.max(0, Math.min(100, cN(p.shield)  / 2))
-  const aiShPct = Math.max(0, Math.min(100, cN(ai.shield) / 2))
+  const pPct    = Math.max(0, Math.min(100, cN(p.hp)      / (p.maxHp     || 100) * 100))
+  const aiPct   = Math.max(0, Math.min(100, cN(ai.hp)     / (ai.maxHp    || 100) * 100))
+  const pShPct  = Math.max(0, Math.min(100, cN(p.shield)  / (p.maxShield || 200) * 100))
+  const aiShPct = Math.max(0, Math.min(100, cN(ai.shield) / (ai.maxShield|| 200) * 100))
   document.getElementById('tbPHpBar').style.width   = pPct   + '%'
   document.getElementById('tbAIHpBar').style.width  = aiPct  + '%'
   document.getElementById('tbPShBar').style.width   = pShPct  + '%'
@@ -3516,15 +3517,19 @@ function tbAutoApplyTrauma(playerIdx, partKey, callback) {
   if (callback) callback()
 }
 
-function tbConfirmTarget() {
-  const sel = document.getElementById('tbTargetSel')
-  const part = sel?.value; if (!part) return
-  sel.value = ''
+function tbSelectTargetPart(part) {
   document.getElementById('tbTargetRow').style.display = 'none'
   tb.playerTargetPart = part
   if (tb.entries.length) tb.entries[tb.entries.length - 1].text += ` [→ ${PART_ACC[part] || part}]`
   tbExecuteAction(tb.deferredRollVal, tb.deferredActionText)
   tb.deferredRollVal = null; tb.deferredActionText = null
+}
+
+function tbConfirmTarget() {
+  const sel = document.getElementById('tbTargetSel')
+  const part = sel?.value; if (!part) return
+  sel.value = ''
+  tbSelectTargetPart(part)
 }
 
 function tbExecuteAction(rollVal, actionText) {
