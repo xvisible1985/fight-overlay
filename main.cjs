@@ -378,13 +378,20 @@ function clearCodeCache() {
   } catch {}
 }
 
-// Auto-update overlay.html from server if a newer version is available
+// Current overlay version (read from userData meta on startup)
+let overlayCurrentVersion = ''
+let overlayPendingVersion = ''
+const overlayMetaPath = () => path.join(app.getPath('userData'), 'overlay-meta.json')
+const overlayHtmlUserPath = () => path.join(app.getPath('userData'), 'overlay.html')
+
+function readLocalOverlayMeta() {
+  try { overlayCurrentVersion = JSON.parse(fs.readFileSync(overlayMetaPath(), 'utf8')).version || '' } catch {}
+}
+
+// Background check — does NOT block startup
 async function checkAndUpdateOverlay() {
   try {
     const srv = savedLogin.srv || 'https://nordheimunion.ru'
-    const metaPath = path.join(app.getPath('userData'), 'overlay-meta.json')
-    let localVersion = ''
-    try { localVersion = JSON.parse(fs.readFileSync(metaPath, 'utf8')).version || '' } catch {}
 
     const ctrl = new AbortController()
     const tid = setTimeout(() => ctrl.abort(), 8000)
@@ -392,20 +399,49 @@ async function checkAndUpdateOverlay() {
     clearTimeout(tid)
     if (!vRes.ok) return
     const { version } = await vRes.json()
-    if (!version || version === localVersion) return
+    if (!version || version === overlayCurrentVersion) return
 
+    // Download new html
     const ctrl2 = new AbortController()
     const tid2 = setTimeout(() => ctrl2.abort(), 30000)
     const hRes = await fetch(srv + '/api/overlay/html', { signal: ctrl2.signal })
     clearTimeout(tid2)
     if (!hRes.ok) return
     const html = await hRes.text()
-    const destPath = path.join(app.getPath('userData'), 'overlay.html')
-    fs.writeFileSync(destPath, html, 'utf8')
-    fs.writeFileSync(metaPath, JSON.stringify({ version }), 'utf8')
-    console.log('[overlay-update] Updated to version', version)
+    fs.writeFileSync(overlayHtmlUserPath(), html, 'utf8')
+    fs.writeFileSync(overlayMetaPath(), JSON.stringify({ version }), 'utf8')
+    overlayPendingVersion = version
+    console.log('[overlay-update] Downloaded version', version)
+
+    // Notify widget UI
+    if (mainWindow) {
+      mainWindow.webContents.send('overlay-update-available', {
+        currentVersion: overlayCurrentVersion || 'встроенная',
+        newVersion: version,
+      })
+    }
+
+    // Tray notification
+    rebuildTrayMenu()
+    tray?.displayBalloon?.({
+      iconType: 'info',
+      title: 'FightArena Overlay',
+      content: `Доступно обновление оверлея → ${version}`,
+    })
   } catch (e) {
     console.log('[overlay-update] Skipped:', e.message)
+  }
+}
+
+function applyOverlayUpdate() {
+  if (!overlayPendingVersion) return
+  clearCodeCache()
+  const p = overlayHtmlUserPath()
+  if (fs.existsSync(p) && mainWindow) {
+    overlayCurrentVersion = overlayPendingVersion
+    overlayPendingVersion = ''
+    rebuildTrayMenu()
+    mainWindow.loadFile(p)
   }
 }
 
@@ -469,15 +505,20 @@ function loadIcon() {
 
 function rebuildTrayMenu() {
   if (!tray) return
-  tray.setContextMenu(Menu.buildFromTemplate([
+  const items = [
     nbarVisible
       ? { label: 'Скрыть Нордхейм',    click: () => sendNbarToggle(false) }
       : { label: 'Показать Нордхейм',   click: () => sendNbarToggle(true)  },
     { type: 'separator' },
     { label: 'Подключиться',  click: () => createLoginWindow() },
-    { type: 'separator' },
-    { label: 'Выход',         click: () => app.quit() },
-  ]))
+  ]
+  if (overlayPendingVersion) {
+    items.push({ type: 'separator' })
+    items.push({ label: `⬆ Обновить оверлей → ${overlayPendingVersion}`, click: () => applyOverlayUpdate() })
+  }
+  items.push({ type: 'separator' })
+  items.push({ label: 'Выход', click: () => app.quit() })
+  tray.setContextMenu(Menu.buildFromTemplate(items))
 }
 
 function sendNbarToggle(visible) {
@@ -607,6 +648,8 @@ ipcMain.on('game-window-start-resize', (e) => {
     if (win && !win.isDestroyed()) win.startResizing('bottom-right')
   } catch {}
 })
+ipcMain.on('overlay-apply-update', () => { applyOverlayUpdate() })
+ipcMain.on('overlay-get-version', (e) => { e.returnValue = overlayCurrentVersion || 'встроенная' })
 ipcMain.on('logout', () => {
   savedLogin.token = ''
   saveLogin(savedLogin)
@@ -616,11 +659,13 @@ ipcMain.on('logout', () => {
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
 app.whenReady().then(async () => {
+  readLocalOverlayMeta()
   clearCodeCache()
-  await checkAndUpdateOverlay()
   createWindow()
   createTray()
   initWinHelper()
+  // Check for overlay update in background (non-blocking)
+  setTimeout(() => checkAndUpdateOverlay(), 3000)
   // Auto-login if saved token exists, otherwise show login window
   if (savedLogin.token && savedLogin.remember) {
     fetch(savedLogin.srv + '/api/auth/me', {

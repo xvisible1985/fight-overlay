@@ -20,4 +20,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openImage:        (url) => ipcRenderer.send('open-image', url),
   openGameWindow: (tableId, token, srv) => ipcRenderer.send('open-game-window', tableId, token, srv),
   onGameWindowClosed: (cb) => ipcRenderer.on('game-window-closed', (_, tableId) => cb(tableId)),
+  getOverlayVersion: () => ipcRenderer.sendSync('overlay-get-version'),
+  applyOverlayUpdate: () => ipcRenderer.send('overlay-apply-update'),
+  onOverlayUpdateAvailable: (cb) => ipcRenderer.on('overlay-update-available', (_, d) => cb(d)),
 })
