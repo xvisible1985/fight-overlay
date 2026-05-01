@@ -444,8 +444,12 @@ function applyOverlayUpdate() {
   mainWindow.webContents.once('did-finish-load', () => {
     if (savedLogin.token) {
       mainWindow.webContents.send('auth-token', { token: savedLogin.token, srv: savedLogin.srv })
-      setTimeout(sendWidgetState, 300)
+      setTimeout(() => {
+        sendWidgetState()
+        mainWindow.webContents.send('nbar-toggle', nbarVisible)
+      }, 300)
     }
+    mainWindow.setAlwaysOnTop(true, 'screen-saver')
     mainWindow.showInactive()
   })
   mainWindow.loadFile(p)
