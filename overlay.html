@@ -229,7 +229,7 @@ body {
 .nb-btn:hover { background: #1e3a5f; border-color: #3b82f6; color: #93c5fd; }
 .nb-btn.active { background: #1e3a5f; border-color: #3b82f6; color: #93c5fd; }
 .nb-cnt { font-size: 11px; color: #4ade80; font-weight: 700; }
-.nb-footer { font-size: 10px; color: #64748b; text-align: right; padding: 5px 10px 7px; letter-spacing: .03em; }
+.nb-footer { font-size: 10px; color: #8a9bb0; text-align: right; padding: 5px 10px 7px; letter-spacing: .03em; }
 .overlay-update-banner {
   display: flex; align-items: center; gap: 8px; padding: 7px 12px;
   background: #0c1f0c; border-top: 1px solid #1a4a1a; flex-shrink: 0;
@@ -1827,7 +1827,7 @@ async function onAuth({ token: t, srv: s }) {
   const v = window.electronAPI?.getOverlayVersion?.() || ''
   if (v) {
     const el2 = document.getElementById('nbVersion')
-    if (el2) el2.textContent = 'v' + v
+    if (el2) el2.textContent = 'v ' + v
   }
 })()
 
