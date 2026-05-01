@@ -23,4 +23,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getOverlayVersion: () => ipcRenderer.sendSync('overlay-get-version'),
   applyOverlayUpdate: () => ipcRenderer.send('overlay-apply-update'),
   onOverlayUpdateAvailable: (cb) => ipcRenderer.on('overlay-update-available', (_, d) => cb(d)),
+  applyExeUpdate: () => ipcRenderer.send('exe-apply-update'),
+  onExeUpdateAvailable: (cb) => ipcRenderer.on('exe-update-available', (_, d) => cb(d)),
+  onExeDownloadProgress: (cb) => ipcRenderer.on('exe-download-progress', (_, d) => cb(d)),
 })

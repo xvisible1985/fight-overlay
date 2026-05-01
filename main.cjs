@@ -388,6 +388,92 @@ function readLocalOverlayMeta() {
   try { overlayCurrentVersion = JSON.parse(fs.readFileSync(overlayMetaPath(), 'utf8')).version || '' } catch {}
 }
 
+// ── EXE self-update ───────────────────────────────────────────────────────────
+let exeCurrentVersion = ''
+let exePendingVersion = ''
+const exeMetaPath = () => path.join(app.getPath('userData'), 'exe-meta.json')
+
+function readLocalExeMeta() {
+  try { exeCurrentVersion = JSON.parse(fs.readFileSync(exeMetaPath(), 'utf8')).version || '' } catch {}
+}
+
+async function checkAndUpdateExe() {
+  try {
+    const srv = savedLogin.srv || 'https://nordheimunion.ru'
+    const ctrl = new AbortController()
+    const tid = setTimeout(() => ctrl.abort(), 8000)
+    const vRes = await fetch(srv + '/api/widget-version', { signal: ctrl.signal })
+    clearTimeout(tid)
+    if (!vRes.ok) return
+    const { version, size } = await vRes.json()
+    if (!version || version === exeCurrentVersion) return
+    exePendingVersion = version
+    if (mainWindow) {
+      mainWindow.webContents.send('exe-update-available', {
+        currentVersion: exeCurrentVersion || 'текущая',
+        newVersion: version,
+        size,
+      })
+    }
+    rebuildTrayMenu()
+    tray?.displayBalloon?.({
+      iconType: 'info',
+      title: 'FightArena Overlay',
+      content: `Доступна новая версия виджета → ${version}`,
+    })
+  } catch (e) {
+    console.log('[exe-update] Skipped:', e.message)
+  }
+}
+
+async function downloadAndApplyExeUpdate() {
+  if (!exePendingVersion) return
+  const srv = savedLogin.srv || 'https://nordheimunion.ru'
+  const downloadUrl = srv + '/api/widget-download'
+  const currentExePath = app.getPath('exe')
+  const updatePath = path.join(path.dirname(currentExePath), '_FA-update.exe')
+
+  try {
+    await new Promise((resolve, reject) => {
+      const proto = downloadUrl.startsWith('https') ? require('https') : require('http')
+      const file = fs.createWriteStream(updatePath)
+      proto.get(downloadUrl, (res) => {
+        const total = parseInt(res.headers['content-length'] || '0')
+        let downloaded = 0
+        res.on('data', (chunk) => {
+          downloaded += chunk.length
+          const percent = total > 0 ? Math.floor(downloaded / total * 100) : 0
+          if (mainWindow) mainWindow.webContents.send('exe-download-progress', { percent })
+        })
+        res.pipe(file)
+        file.on('finish', () => { file.close(); resolve(null) })
+        res.on('error', reject)
+      }).on('error', (err) => { try { file.close(); fs.unlinkSync(updatePath) } catch {} reject(err) })
+    })
+  } catch (e) {
+    console.log('[exe-update] Download failed:', e.message)
+    if (mainWindow) mainWindow.webContents.send('exe-download-progress', { percent: -1 })
+    return
+  }
+
+  // Save new version locally
+  fs.writeFileSync(exeMetaPath(), JSON.stringify({ version: exePendingVersion }), 'utf8')
+
+  // Batch script: wait for current process to die, replace EXE, launch new
+  const batPath = path.join(os.tmpdir(), 'fa-update.bat')
+  const bat = [
+    '@echo off',
+    'timeout /t 2 /nobreak > nul',
+    `del "${currentExePath}"`,
+    `move "${updatePath}" "${currentExePath}"`,
+    `start "" "${currentExePath}"`,
+    'del "%~f0"',
+  ].join('\r\n')
+  fs.writeFileSync(batPath, bat, 'ascii')
+  spawn('cmd.exe', ['/c', batPath], { detached: true, stdio: 'ignore' }).unref()
+  app.quit()
+}
+
 // WebSocket connection to /overlay-notify for instant push updates
 let overlayNotifyWs = null
 function connectOverlayNotifyWs() {
@@ -402,6 +488,9 @@ function connectOverlayNotifyWs() {
         if (msg.type === 'overlay_update') {
           console.log('[overlay-notify] Push received, version:', msg.version)
           checkAndUpdateOverlay()
+        } else if (msg.type === 'exe_update') {
+          console.log('[exe-notify] Push received, version:', msg.version)
+          checkAndUpdateExe()
         }
       } catch {}
     })
@@ -557,6 +646,10 @@ function rebuildTrayMenu() {
     items.push({ type: 'separator' })
     items.push({ label: `⬆ Обновить оверлей → ${overlayPendingVersion}`, click: () => applyOverlayUpdate() })
   }
+  if (exePendingVersion) {
+    items.push({ type: 'separator' })
+    items.push({ label: `⬆ Обновить виджет → ${exePendingVersion}`, click: () => downloadAndApplyExeUpdate() })
+  }
   items.push({ type: 'separator' })
   items.push({ label: 'Выход', click: () => app.quit() })
   tray.setContextMenu(Menu.buildFromTemplate(items))
@@ -691,6 +784,7 @@ ipcMain.on('game-window-start-resize', (e) => {
 })
 ipcMain.on('overlay-apply-update', () => { applyOverlayUpdate() })
 ipcMain.on('overlay-get-version', (e) => { e.returnValue = overlayCurrentVersion || 'встроенная' })
+ipcMain.on('exe-apply-update', () => { downloadAndApplyExeUpdate() })
 ipcMain.on('logout', () => {
   savedLogin.token = ''
   saveLogin(savedLogin)
@@ -714,6 +808,7 @@ if (!app.requestSingleInstanceLock()) {
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
 app.whenReady().then(async () => {
   readLocalOverlayMeta()
+  readLocalExeMeta()
   clearCodeCache()
   createWindow()
   createTray()
@@ -721,7 +816,8 @@ app.whenReady().then(async () => {
   // Check for overlay update in background (non-blocking), then every 30s
   setTimeout(() => {
     checkAndUpdateOverlay()
-    setInterval(() => checkAndUpdateOverlay(), 30_000)
+    checkAndUpdateExe()
+    setInterval(() => { checkAndUpdateOverlay(); checkAndUpdateExe() }, 30_000)
     connectOverlayNotifyWs()
   }, 3000)
   // Auto-login if saved token exists, otherwise show login window

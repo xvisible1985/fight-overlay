@@ -243,6 +243,22 @@ body {
   padding: 4px 10px; white-space: nowrap; flex-shrink: 0;
 }
 .oub-btn:hover { background: #166534; }
+.exe-update-banner {
+  display: flex; flex-direction: column; padding: 7px 12px;
+  background: #1a0e00; border-top: 1px solid #4a2800; flex-shrink: 0;
+}
+.exe-update-row { display: flex; align-items: center; gap: 8px; }
+.eub-label { font-size: 11px; color: #f59e0b; font-weight: 700; }
+.eub-versions { font-size: 10px; color: #64748b; flex: 1; }
+.eub-btn {
+  background: #431407; border: 1px solid #f59e0b; border-radius: 5px;
+  color: #fbbf24; cursor: pointer; font-size: 11px; font-weight: 700;
+  padding: 4px 10px; white-space: nowrap; flex-shrink: 0;
+}
+.eub-btn:hover { background: #7c2d12; }
+.eub-btn:disabled { opacity: .5; cursor: default; }
+.exe-progress-wrap { margin-top: 5px; background: #0d0600; border-radius: 2px; overflow: hidden; height: 3px; }
+.exe-progress-fill { height: 100%; background: #f59e0b; width: 0%; transition: width .2s; }
 
 /* ── Games widget ── */
 #wGames { width: 300px; }
@@ -774,6 +790,16 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
     <span class="nb-hdr-title">ᚾ Нордхейм</span>
     <button class="nb-close" id="nb-collapse-btn" onclick="toggleNbarCollapse()" title="Свернуть">▼</button>
     <button class="nb-close" onclick="hideNbar()" title="Скрыть">✕</button>
+  </div>
+  <div id="exeUpdateBanner" style="display:none" class="exe-update-banner">
+    <div class="exe-update-row">
+      <span class="eub-label">⬆ Новый виджет</span>
+      <span class="eub-versions" id="eubVersions"></span>
+      <button class="eub-btn" id="eubBtn" onclick="doApplyExeUpdate()">Обновить</button>
+    </div>
+    <div class="exe-progress-wrap" id="exeProgressWrap" style="display:none">
+      <div class="exe-progress-fill" id="exeProgressFill"></div>
+    </div>
   </div>
   <div id="overlayUpdateBanner" style="display:none" class="overlay-update-banner">
     <div class="oub-text">
@@ -1830,6 +1856,31 @@ async function onAuth({ token: t, srv: s }) {
     if (el2) el2.textContent = 'v ' + v
   }
 })()
+
+// EXE update
+window.electronAPI?.onExeUpdateAvailable?.(({ currentVersion, newVersion }) => {
+  const banner = document.getElementById('exeUpdateBanner')
+  const info = document.getElementById('eubVersions')
+  if (banner) banner.style.display = 'flex'
+  if (info) info.textContent = currentVersion + ' → ' + newVersion
+})
+window.electronAPI?.onExeDownloadProgress?.(({ percent }) => {
+  const wrap = document.getElementById('exeProgressWrap')
+  const fill = document.getElementById('exeProgressFill')
+  const btn  = document.getElementById('eubBtn')
+  if (percent === -1) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Повторить' }
+    if (wrap) wrap.style.display = 'none'
+    return
+  }
+  if (wrap) wrap.style.display = 'block'
+  if (fill) fill.style.width = percent + '%'
+  if (btn)  { btn.disabled = true; btn.textContent = percent + '%' }
+})
+function doApplyExeUpdate() {
+  document.getElementById('exeProgressWrap').style.display = 'block'
+  window.electronAPI?.applyExeUpdate?.()
+}
 
 // Handle update notification from main process
 window.electronAPI?.onOverlayUpdateAvailable?.(({ currentVersion, newVersion }) => {
