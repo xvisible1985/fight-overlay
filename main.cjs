@@ -437,12 +437,18 @@ function applyOverlayUpdate() {
   if (!overlayPendingVersion) return
   clearCodeCache()
   const p = overlayHtmlUserPath()
-  if (fs.existsSync(p) && mainWindow) {
-    overlayCurrentVersion = overlayPendingVersion
-    overlayPendingVersion = ''
-    rebuildTrayMenu()
-    mainWindow.loadFile(p)
-  }
+  if (!fs.existsSync(p) || !mainWindow) return
+  overlayCurrentVersion = overlayPendingVersion
+  overlayPendingVersion = ''
+  rebuildTrayMenu()
+  mainWindow.webContents.once('did-finish-load', () => {
+    if (savedLogin.token) {
+      mainWindow.webContents.send('auth-token', { token: savedLogin.token, srv: savedLogin.srv })
+      setTimeout(sendWidgetState, 300)
+    }
+    mainWindow.showInactive()
+  })
+  mainWindow.loadFile(p)
 }
 
 // Saved login data (in-memory, persisted via Electron store via IPC)
