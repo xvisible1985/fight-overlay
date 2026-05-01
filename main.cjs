@@ -388,6 +388,37 @@ function readLocalOverlayMeta() {
   try { overlayCurrentVersion = JSON.parse(fs.readFileSync(overlayMetaPath(), 'utf8')).version || '' } catch {}
 }
 
+// WebSocket connection to /overlay-notify for instant push updates
+let overlayNotifyWs = null
+function connectOverlayNotifyWs() {
+  const srv = savedLogin.srv || 'https://nordheimunion.ru'
+  const wsUrl = srv.replace(/^http/, 'ws') + '/overlay-notify'
+  try {
+    const ws = new (require('ws'))( wsUrl)
+    overlayNotifyWs = ws
+    ws.on('message', (data) => {
+      try {
+        const msg = JSON.parse(data.toString())
+        if (msg.type === 'overlay_update') {
+          console.log('[overlay-notify] Push received, version:', msg.version)
+          checkAndUpdateOverlay()
+        }
+      } catch {}
+    })
+    ws.on('close', () => {
+      overlayNotifyWs = null
+      // Reconnect after 10s
+      setTimeout(connectOverlayNotifyWs, 10_000)
+    })
+    ws.on('error', () => {
+      overlayNotifyWs = null
+    })
+  } catch (e) {
+    console.log('[overlay-notify] Connect failed:', e.message)
+    setTimeout(connectOverlayNotifyWs, 10_000)
+  }
+}
+
 // Background check — does NOT block startup
 async function checkAndUpdateOverlay() {
   try {
@@ -678,6 +709,7 @@ app.whenReady().then(async () => {
   setTimeout(() => {
     checkAndUpdateOverlay()
     setInterval(() => checkAndUpdateOverlay(), 30_000)
+    connectOverlayNotifyWs()
   }, 3000)
   // Auto-login if saved token exists, otherwise show login window
   if (savedLogin.token && savedLogin.remember) {
