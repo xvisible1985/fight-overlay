@@ -698,6 +698,19 @@ ipcMain.on('logout', () => {
   createLoginWindow()
 })
 
+// ── Single instance lock ──────────────────────────────────────────────────────
+if (!app.requestSingleInstanceLock()) {
+  app.quit()
+} else {
+  app.on('second-instance', () => {
+    // Bring existing window to front if user launches a second copy
+    if (mainWindow) {
+      mainWindow.setAlwaysOnTop(true, 'screen-saver')
+      mainWindow.showInactive()
+    }
+  })
+}
+
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
 app.whenReady().then(async () => {
   readLocalOverlayMeta()
