@@ -674,8 +674,11 @@ app.whenReady().then(async () => {
   createWindow()
   createTray()
   initWinHelper()
-  // Check for overlay update in background (non-blocking)
-  setTimeout(() => checkAndUpdateOverlay(), 3000)
+  // Check for overlay update in background (non-blocking), then every 30s
+  setTimeout(() => {
+    checkAndUpdateOverlay()
+    setInterval(() => checkAndUpdateOverlay(), 30_000)
+  }, 3000)
   // Auto-login if saved token exists, otherwise show login window
   if (savedLogin.token && savedLogin.remember) {
     fetch(savedLogin.srv + '/api/auth/me', {
