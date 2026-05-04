@@ -389,12 +389,13 @@ function readLocalOverlayMeta() {
 }
 
 // ── EXE self-update ───────────────────────────────────────────────────────────
-let exeCurrentVersion = ''
+const APP_VERSION = '0.925' // встроенная версия этой сборки — обновлять при каждой пересборке
+let exeCurrentVersion = APP_VERSION
 let exePendingVersion = ''
 const exeMetaPath = () => path.join(app.getPath('userData'), 'exe-meta.json')
 
 function readLocalExeMeta() {
-  try { exeCurrentVersion = JSON.parse(fs.readFileSync(exeMetaPath(), 'utf8')).version || '' } catch {}
+  try { exeCurrentVersion = JSON.parse(fs.readFileSync(exeMetaPath(), 'utf8')).version || APP_VERSION } catch { exeCurrentVersion = APP_VERSION }
 }
 
 async function checkAndUpdateExe() {
@@ -784,6 +785,7 @@ ipcMain.on('game-window-start-resize', (e) => {
 })
 ipcMain.on('overlay-apply-update', () => { applyOverlayUpdate() })
 ipcMain.on('overlay-get-version', (e) => { e.returnValue = overlayCurrentVersion || 'встроенная' })
+ipcMain.on('exe-get-version', (e) => { e.returnValue = exeCurrentVersion || APP_VERSION })
 ipcMain.on('exe-apply-update', () => { downloadAndApplyExeUpdate() })
 ipcMain.on('logout', () => {
   savedLogin.token = ''

@@ -1848,13 +1848,16 @@ async function onAuth({ token: t, srv: s }) {
   applyFontToChat()
 }
 
-// Show current version in nbar header
-;(function initOverlayVersion() {
-  const v = window.electronAPI?.getOverlayVersion?.() || ''
-  if (v) {
-    const el2 = document.getElementById('nbVersion')
-    if (el2) el2.textContent = 'v ' + v
-  }
+// Show current version in nbar footer
+;(function initVersions() {
+  const ov = window.electronAPI?.getOverlayVersion?.() || ''
+  const ev = window.electronAPI?.getExeVersion?.() || ''
+  const el2 = document.getElementById('nbVersion')
+  if (!el2) return
+  const parts = []
+  if (ev) parts.push('exe v ' + ev)
+  if (ov) parts.push('overlay v ' + ov)
+  if (parts.length) el2.textContent = parts.join(' | ')
 })()
 
 // EXE update
