@@ -821,8 +821,9 @@ ipcMain.on('check-for-updates', async () => {
     const vRes = await fetch(srv + '/api/widget-version', { signal: ctrl.signal })
     clearTimeout(tid)
     if (!vRes.ok) throw new Error('HTTP ' + vRes.status)
+    const raw = await vRes.text().catch(() => '')
     let data
-    try { data = await vRes.json() } catch { throw new Error('ответ сервера не JSON') }
+    try { data = JSON.parse(raw) } catch { throw new Error('не JSON: ' + raw.slice(0, 80).replace(/\s+/g, ' ')) }
     const { version } = data
     if (!version) throw new Error('нет данных о версии')
     if (!mainWindow) return
