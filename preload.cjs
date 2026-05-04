@@ -27,4 +27,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   applyExeUpdate: () => ipcRenderer.send('exe-apply-update'),
   onExeUpdateAvailable: (cb) => ipcRenderer.on('exe-update-available', (_, d) => cb(d)),
   onExeDownloadProgress: (cb) => ipcRenderer.on('exe-download-progress', (_, d) => cb(d)),
+  onExeUpdated: (cb) => ipcRenderer.on('exe-updated', (_, d) => cb(d)),
 })

@@ -460,19 +460,34 @@ async function downloadAndApplyExeUpdate() {
   // Save new version locally
   fs.writeFileSync(exeMetaPath(), JSON.stringify({ version: exePendingVersion }), 'utf8')
 
-  // Batch script: wait for current process to die, replace EXE, launch new
+  // Save post-update flag so new EXE auto-shows overlay after restart
+  try {
+    fs.writeFileSync(
+      path.join(app.getPath('userData'), 'post-update.json'),
+      JSON.stringify({ token: savedLogin.token, srv: savedLogin.srv, version: exePendingVersion }),
+      'utf8'
+    )
+  } catch {}
+
+  if (mainWindow) mainWindow.webContents.send('exe-download-progress', { percent: 100 })
+
+  // Batch script: retry until old EXE is deleted, then replace and relaunch
   const batPath = path.join(os.tmpdir(), 'fa-update.bat')
   const bat = [
     '@echo off',
-    'timeout /t 2 /nobreak > nul',
-    `del "${currentExePath}"`,
-    `move "${updatePath}" "${currentExePath}"`,
+    ':WAIT',
+    'timeout /t 1 /nobreak > nul',
+    `del /F /Q "${currentExePath}" 2>nul`,
+    `if exist "${currentExePath}" goto WAIT`,
+    `move /Y "${updatePath}" "${currentExePath}"`,
     `start "" "${currentExePath}"`,
     'del "%~f0"',
   ].join('\r\n')
   fs.writeFileSync(batPath, bat, 'ascii')
-  spawn('cmd.exe', ['/c', batPath], { detached: true, stdio: 'ignore' }).unref()
-  app.quit()
+  setTimeout(() => {
+    spawn('cmd.exe', ['/c', batPath], { detached: true, stdio: 'ignore' }).unref()
+    app.quit()
+  }, 600)
 }
 
 // WebSocket connection to /overlay-notify for instant push updates
@@ -824,8 +839,31 @@ app.whenReady().then(async () => {
     setInterval(() => { checkAndUpdateOverlay(); checkAndUpdateExe() }, 30_000)
     connectOverlayNotifyWs()
   }, 3000)
-  // Auto-login if saved token exists, otherwise show login window
-  if (savedLogin.token && savedLogin.remember) {
+  // Check for post-update restart flag
+  let postUpdate = null
+  try {
+    const flagPath = path.join(app.getPath('userData'), 'post-update.json')
+    if (fs.existsSync(flagPath)) {
+      postUpdate = JSON.parse(fs.readFileSync(flagPath, 'utf8'))
+      fs.unlinkSync(flagPath)
+    }
+  } catch {}
+
+  if (postUpdate?.token) {
+    // Auto-show overlay after EXE update, regardless of remember flag
+    if (mainWindow) {
+      mainWindow.showInactive()
+      mainWindow.webContents.once('did-finish-load', () => {
+        mainWindow.webContents.send('auth-token', { token: postUpdate.token, srv: postUpdate.srv })
+        setTimeout(() => {
+          sendWidgetState()
+          mainWindow.webContents.send('nbar-toggle', true)
+          mainWindow.webContents.send('exe-updated', { version: exeCurrentVersion || APP_VERSION })
+        }, 400)
+      })
+    }
+  } else if (savedLogin.token && savedLogin.remember) {
+    // Normal auto-login
     fetch(savedLogin.srv + '/api/auth/me', {
       headers: { 'Authorization': 'Bearer ' + savedLogin.token }
     }).then(r => r.ok ? r.json() : Promise.reject())

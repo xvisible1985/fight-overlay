@@ -259,6 +259,12 @@ body {
 .eub-btn:disabled { opacity: .5; cursor: default; }
 .exe-progress-wrap { margin-top: 5px; background: #0d0600; border-radius: 2px; overflow: hidden; height: 3px; }
 .exe-progress-fill { height: 100%; background: #f59e0b; width: 0%; transition: width .2s; }
+.exe-updated-toast {
+  position: fixed; bottom: 48px; right: 14px; z-index: 9999;
+  background: #14532d; border: 1px solid #16a34a; border-radius: 7px;
+  padding: 8px 14px; font-size: 11px; color: #86efac; font-weight: 700;
+  pointer-events: none; opacity: 0; transition: opacity .4s;
+}
 
 /* ── Games widget ── */
 #wGames { width: 300px; }
@@ -827,6 +833,7 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
   </div>
   <div class="nb-footer" id="nbVersion"></div>
 </div>
+<div class="exe-updated-toast" id="exeUpdatedToast"></div>
 
 <!-- ── Chat widget ── -->
 <div class="widget" id="wChat" style="display:none; width:346px; height:360px;">
@@ -1884,9 +1891,21 @@ window.electronAPI?.onExeDownloadProgress?.(({ percent }) => {
   if (btn)  { btn.disabled = true; btn.textContent = percent + '%' }
 })
 function doApplyExeUpdate() {
-  document.getElementById('exeProgressWrap').style.display = 'block'
+  const btn = document.getElementById('eubBtn')
+  const wrap = document.getElementById('exeProgressWrap')
+  if (btn) { btn.disabled = true; btn.textContent = 'Загрузка…' }
+  if (wrap) wrap.style.display = 'block'
   window.electronAPI?.applyExeUpdate?.()
 }
+
+// Toast after restart with new version
+window.electronAPI?.onExeUpdated?.(({ version }) => {
+  const toast = document.getElementById('exeUpdatedToast')
+  if (!toast) return
+  toast.textContent = '✓ Виджет обновлён → v ' + version
+  toast.style.opacity = '1'
+  setTimeout(() => { toast.style.opacity = '0' }, 4000)
+})
 
 // Handle update notification from main process
 window.electronAPI?.onOverlayUpdateAvailable?.(({ currentVersion, newVersion }) => {
