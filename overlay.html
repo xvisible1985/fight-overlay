@@ -1869,14 +1869,12 @@ async function onAuth({ token: t, srv: s }) {
 
 // Versions in nbar footer — OVERLAY_VERSION is replaced at upload time, or falls back to IPC
 ;(function initVersions() {
-  const OVERLAY_VERSION = '0.925'
-  let ov = OVERLAY_VERSION
+  const OVERLAY_VERSION = '0.926'
   let ev = ''
-  try { const v = window.electronAPI?.getOverlayVersion?.(); if (v) ov = v } catch {}
   const el2 = document.getElementById('nbVersion')
   function render() {
     if (!el2) return
-    el2.textContent = ev ? ('exe v ' + ev + ' | overlay v ' + ov) : ('overlay v ' + ov)
+    el2.textContent = 'v ' + (ev || OVERLAY_VERSION)
   }
   render()
   window.electronAPI?.onExeVersion?.(function(v) { ev = v || ''; render() })
