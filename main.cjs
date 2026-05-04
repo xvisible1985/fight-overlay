@@ -389,7 +389,7 @@ function readLocalOverlayMeta() {
 }
 
 // ── EXE self-update ───────────────────────────────────────────────────────────
-const APP_VERSION = '0.925' // встроенная версия этой сборки — обновлять при каждой пересборке
+const APP_VERSION = '0.926' // встроенная версия этой сборки — обновлять при каждой пересборке
 let exeCurrentVersion = APP_VERSION
 let exePendingVersion = ''
 const exeMetaPath = () => path.join(app.getPath('userData'), 'exe-meta.json')
