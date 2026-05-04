@@ -638,7 +638,15 @@ function createWindow() {
     } catch {}
   })
   mainWindow.webContents.on('did-finish-load', () => {
-    if (mainWindow) mainWindow.webContents.send('exe-version', exeCurrentVersion || APP_VERSION)
+    if (!mainWindow) return
+    mainWindow.webContents.send('exe-version', exeCurrentVersion || APP_VERSION)
+    // Re-send pending update notification in case page loaded after first check
+    if (exePendingVersion) {
+      mainWindow.webContents.send('exe-update-available', {
+        currentVersion: exeCurrentVersion || APP_VERSION,
+        newVersion: exePendingVersion,
+      })
+    }
   })
   const userOverlay = path.join(app.getPath('userData'), 'overlay.html')
   const overlayPath = fs.existsSync(userOverlay) ? userOverlay : path.join(__dirname, 'overlay.html')
@@ -836,7 +844,8 @@ app.whenReady().then(async () => {
   setTimeout(() => {
     checkAndUpdateOverlay()
     checkAndUpdateExe()
-    setInterval(() => { checkAndUpdateOverlay(); checkAndUpdateExe() }, 30_000)
+    setInterval(checkAndUpdateOverlay, 30_000)
+    setInterval(checkAndUpdateExe, 15_000)
     connectOverlayNotifyWs()
   }, 3000)
   // Check for post-update restart flag
