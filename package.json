@@ -1,6 +1,6 @@
 {
   "name": "fight-overlay",
-  "version": "0.926",
+  "version": "0.9.26",
   "description": "FightArena Overlay",
   "main": "main.cjs",
   "type": "commonjs",
