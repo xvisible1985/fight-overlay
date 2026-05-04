@@ -817,11 +817,15 @@ ipcMain.on('check-for-updates', async () => {
   try {
     const srv = savedLogin.srv || 'https://nordheimunion.ru'
     const ctrl = new AbortController()
-    setTimeout(() => ctrl.abort(), 8000)
+    const tid = setTimeout(() => ctrl.abort(), 8000)
     const vRes = await fetch(srv + '/api/widget-version', { signal: ctrl.signal })
+    clearTimeout(tid)
     if (!vRes.ok) throw new Error('HTTP ' + vRes.status)
-    const { version } = await vRes.json()
-    if (!version) throw new Error('нет данных')
+    let data
+    try { data = await vRes.json() } catch { throw new Error('ответ сервера не JSON') }
+    const { version } = data
+    if (!version) throw new Error('нет данных о версии')
+    if (!mainWindow) return
     if (version === exeCurrentVersion) {
       mainWindow.webContents.send('update-check-result', { status: 'ok', message: '✓ Последняя версия (' + version + ')' })
     } else {
@@ -831,7 +835,7 @@ ipcMain.on('check-for-updates', async () => {
       rebuildTrayMenu()
     }
   } catch (e) {
-    mainWindow.webContents.send('update-check-result', { status: 'err', message: '✗ Ошибка: ' + e.message })
+    if (mainWindow) mainWindow.webContents.send('update-check-result', { status: 'err', message: '✗ Ошибка: ' + e.message })
   }
 })
 ipcMain.on('logout', () => {
