@@ -622,6 +622,9 @@ function createWindow() {
       if (ourHwnd && daemonReady) sendHelper('NOACT ' + ourHwnd)
     } catch {}
   })
+  mainWindow.webContents.on('did-finish-load', () => {
+    if (mainWindow) mainWindow.webContents.send('exe-version', exeCurrentVersion || APP_VERSION)
+  })
   const userOverlay = path.join(app.getPath('userData'), 'overlay.html')
   const overlayPath = fs.existsSync(userOverlay) ? userOverlay : path.join(__dirname, 'overlay.html')
   mainWindow.loadFile(overlayPath)
@@ -785,7 +788,6 @@ ipcMain.on('game-window-start-resize', (e) => {
 })
 ipcMain.on('overlay-apply-update', () => { applyOverlayUpdate() })
 ipcMain.on('overlay-get-version', (e) => { e.returnValue = overlayCurrentVersion || 'встроенная' })
-ipcMain.on('exe-get-version', (e) => { e.returnValue = exeCurrentVersion || APP_VERSION })
 ipcMain.on('exe-apply-update', () => { downloadAndApplyExeUpdate() })
 ipcMain.on('logout', () => {
   savedLogin.token = ''
