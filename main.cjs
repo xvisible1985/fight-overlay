@@ -480,7 +480,7 @@ async function downloadAndApplyExeUpdate() {
   if (mainWindow) mainWindow.webContents.send('exe-download-progress', { percent: 100 })
 
   // Stable install path in userData — independent of where current EXE lives
-  const stablePath = path.join(app.getPath('userData'), 'FightArena Overlay.exe')
+  const stablePath = path.join(app.getPath('userData'), 'Souz_widget.exe')
   const batPath    = path.join(app.getPath('userData'), 'fa-update.bat')
   // Wait for stable path to be free (if running from there), then move update into place
   const bat = [

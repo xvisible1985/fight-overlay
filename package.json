@@ -11,7 +11,7 @@
   },
   "build": {
     "appId": "com.fightarena.overlay",
-    "productName": "FightArena Overlay",
+    "productName": "Souz_widget",
     "npmRebuild": false,
     "asar": true,
     "files": [
