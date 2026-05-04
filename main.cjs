@@ -398,6 +398,13 @@ function readLocalExeMeta() {
   try { exeCurrentVersion = JSON.parse(fs.readFileSync(exeMetaPath(), 'utf8')).version || APP_VERSION } catch { exeCurrentVersion = APP_VERSION }
 }
 
+function cleanupOldUpdate() {
+  const updatePath = path.join(app.getPath('userData'), '_FA-update.exe')
+  if (fs.existsSync(updatePath) && updatePath !== app.getPath('exe')) {
+    try { fs.unlinkSync(updatePath) } catch {}
+  }
+}
+
 async function checkAndUpdateExe() {
   try {
     const srv = savedLogin.srv || 'https://nordheimunion.ru'
@@ -478,28 +485,9 @@ async function downloadAndApplyExeUpdate() {
 
   if (mainWindow) mainWindow.webContents.send('exe-download-progress', { percent: 100 })
 
-  // Batch script: retry until old EXE is deleted, move update, relaunch
-  const batPath = path.join(app.getPath('userData'), 'fa-update.bat')
-  const bat = [
-    '@echo off',
-    ':WAIT',
-    'timeout /t 1 /nobreak > nul',
-    `del /F /Q "${currentExePath}" 2>nul`,
-    `if exist "${currentExePath}" goto WAIT`,
-    `move /Y "${updatePath}" "${currentExePath}"`,
-    `if not exist "${currentExePath}" goto FAIL`,
-    `start "" "${currentExePath}"`,
-    `goto END`,
-    ':FAIL',
-    `start "" "${updatePath}"`,
-    ':END',
-    'del "%~f0"',
-  ].join('\r\n')
-  fs.writeFileSync(batPath, bat, 'ascii')
-  setTimeout(() => {
-    spawn('cmd.exe', ['/c', batPath], { detached: true, stdio: 'ignore' }).unref()
-    app.quit()
-  }, 600)
+  // Relaunch from the new EXE after current instance exits
+  app.relaunch({ execPath: updatePath, args: [] })
+  setTimeout(() => app.quit(), 500)
 }
 
 // WebSocket connection to /overlay-notify for instant push updates
@@ -875,6 +863,7 @@ if (!app.requestSingleInstanceLock()) {
 app.whenReady().then(async () => {
   readLocalOverlayMeta()
   readLocalExeMeta()
+  cleanupOldUpdate()
   clearCodeCache()
   createWindow()
   createTray()
