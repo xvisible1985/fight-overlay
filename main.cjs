@@ -430,7 +430,7 @@ async function checkAndUpdateExe() {
 async function downloadAndApplyExeUpdate() {
   if (!exePendingVersion) return
   const srv = savedLogin.srv || 'https://nordheimunion.ru'
-  const downloadUrl = srv + '/api/widget-download'
+  const downloadUrl = srv + '/api/admin/widget-download'
   const currentExePath = app.getPath('exe')
   // Store update in userData — стабильная папка, не чистится Windows
   const updatePath = path.join(app.getPath('userData'), '_FA-update.exe')
