@@ -177,6 +177,7 @@ function startDaemon() {
   helperProc = spawn(helperExe, ['DAEMON'])
   daemonReady = true
   daemonBuf   = ''
+  helperProc.stdin.on('error', () => {})
   if (ourHwnd) setTimeout(() => sendHelper('NOACT ' + ourHwnd), 200)
 
   helperProc.stdout.on('data', chunk => {
