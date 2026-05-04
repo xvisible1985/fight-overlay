@@ -28,4 +28,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onExeUpdateAvailable: (cb) => ipcRenderer.on('exe-update-available', (_, d) => cb(d)),
   onExeDownloadProgress: (cb) => ipcRenderer.on('exe-download-progress', (_, d) => cb(d)),
   onExeUpdated: (cb) => ipcRenderer.on('exe-updated', (_, d) => cb(d)),
+  checkForUpdates: () => ipcRenderer.send('check-for-updates'),
+  onUpdateCheckResult: (cb) => ipcRenderer.on('update-check-result', (_, d) => cb(d)),
 })

@@ -812,6 +812,28 @@ ipcMain.on('game-window-start-resize', (e) => {
 ipcMain.on('overlay-apply-update', () => { applyOverlayUpdate() })
 ipcMain.on('overlay-get-version', (e) => { e.returnValue = overlayCurrentVersion || 'встроенная' })
 ipcMain.on('exe-apply-update', () => { downloadAndApplyExeUpdate() })
+ipcMain.on('check-for-updates', async () => {
+  if (!mainWindow) return
+  try {
+    const srv = savedLogin.srv || 'https://nordheimunion.ru'
+    const ctrl = new AbortController()
+    setTimeout(() => ctrl.abort(), 8000)
+    const vRes = await fetch(srv + '/api/widget-version', { signal: ctrl.signal })
+    if (!vRes.ok) throw new Error('HTTP ' + vRes.status)
+    const { version } = await vRes.json()
+    if (!version) throw new Error('нет данных')
+    if (version === exeCurrentVersion) {
+      mainWindow.webContents.send('update-check-result', { status: 'ok', message: '✓ Последняя версия (' + version + ')' })
+    } else {
+      exePendingVersion = version
+      mainWindow.webContents.send('update-check-result', { status: 'upd', message: '⬆ Доступна v ' + version })
+      mainWindow.webContents.send('exe-update-available', { currentVersion: exeCurrentVersion || APP_VERSION, newVersion: version })
+      rebuildTrayMenu()
+    }
+  } catch (e) {
+    mainWindow.webContents.send('update-check-result', { status: 'err', message: '✗ Ошибка: ' + e.message })
+  }
+})
 ipcMain.on('logout', () => {
   savedLogin.token = ''
   saveLogin(savedLogin)

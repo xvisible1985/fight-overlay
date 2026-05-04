@@ -199,6 +199,7 @@ body {
 }
 .toast.ok  { border-color: #22c55e; color: #4ade80; }
 .toast.err { border-color: #ef4444; color: #f87171; }
+@keyframes spin { to { transform: rotate(360deg) } }
 @keyframes toastIn  { from { opacity: 0; bottom: 16px } to { opacity: 1; bottom: 28px } }
 @keyframes toastOut { from { opacity: 1 } to { opacity: 0 } }
 
@@ -229,7 +230,14 @@ body {
 .nb-btn:hover { background: #1e3a5f; border-color: #3b82f6; color: #93c5fd; }
 .nb-btn.active { background: #1e3a5f; border-color: #3b82f6; color: #93c5fd; }
 .nb-cnt { font-size: 11px; color: #4ade80; font-weight: 700; }
-.nb-footer { font-size: 10px; color: #8a9bb0; text-align: right; padding: 5px 10px 7px; letter-spacing: .03em; }
+.nb-footer { display:flex; align-items:center; gap:6px; padding: 5px 10px 7px; }
+.nb-footer-ver { font-size: 10px; color: #8a9bb0; letter-spacing: .03em; flex:1; text-align:right; }
+.nb-check-btn { font-size:10px; color:#4a6080; background:none; border:none; cursor:pointer; padding:0 2px; line-height:1; flex-shrink:0; }
+.nb-check-btn:hover { color:#7aa0c0; }
+.nb-check-result { font-size:10px; padding:2px 8px; border-radius:3px; white-space:nowrap; }
+.nb-check-result--ok  { color:#4ade80; }
+.nb-check-result--upd { color:#f59e0b; }
+.nb-check-result--err { color:#f87171; }
 .overlay-update-banner {
   display: flex; align-items: center; gap: 8px; padding: 7px 12px;
   background: #0c1f0c; border-top: 1px solid #1a4a1a; flex-shrink: 0;
@@ -831,7 +839,11 @@ textarea.chat-active, input.chat-active { outline: 1.5px solid #3b82f6; }
       🃏 Миниигры
     </button>
   </div>
-  <div class="nb-footer" id="nbVersion"></div>
+  <div class="nb-footer">
+    <span class="nb-check-result" id="nbCheckResult" style="display:none"></span>
+    <span class="nb-footer-ver" id="nbVersion"></span>
+    <button class="nb-check-btn" id="nbCheckBtn" title="Проверить обновления" onclick="runUpdateCheck()">↻</button>
+  </div>
 </div>
 <div class="exe-updated-toast" id="exeUpdatedToast"></div>
 
@@ -1869,6 +1881,28 @@ async function onAuth({ token: t, srv: s }) {
   render()
   window.electronAPI?.onExeVersion?.(function(v) { ev = v || ''; render() })
 })()
+
+// Manual update check
+let _checkResultTimer = null
+function runUpdateCheck() {
+  const btn = document.getElementById('nbCheckBtn')
+  const res = document.getElementById('nbCheckResult')
+  if (btn) btn.style.animation = 'spin .8s linear infinite'
+  if (res) { res.style.display = 'none'; res.className = 'nb-check-result' }
+  window.electronAPI?.checkForUpdates?.()
+}
+window.electronAPI?.onUpdateCheckResult?.(({ status, message }) => {
+  const btn = document.getElementById('nbCheckBtn')
+  const res = document.getElementById('nbCheckResult')
+  if (btn) btn.style.animation = ''
+  if (res) {
+    res.textContent = message
+    res.className = 'nb-check-result nb-check-result--' + status
+    res.style.display = 'inline'
+    clearTimeout(_checkResultTimer)
+    _checkResultTimer = setTimeout(() => { res.style.display = 'none' }, 6000)
+  }
+})
 
 // EXE update
 window.electronAPI?.onExeUpdateAvailable?.(({ currentVersion, newVersion }) => {
