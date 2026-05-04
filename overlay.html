@@ -1848,22 +1848,20 @@ async function onAuth({ token: t, srv: s }) {
   applyFontToChat()
 }
 
-// Show versions in nbar footer
+// Versions in nbar footer — OVERLAY_VERSION is replaced at upload time, or falls back to IPC
 ;(function initVersions() {
-  const ov = window.electronAPI?.getOverlayVersion?.() || ''
+  const OVERLAY_VERSION = '0.925'
+  let ov = OVERLAY_VERSION
+  let ev = ''
+  try { const v = window.electronAPI?.getOverlayVersion?.(); if (v) ov = v } catch {}
   const el2 = document.getElementById('nbVersion')
-  if (el2 && ov) el2.textContent = 'overlay v ' + ov
+  function render() {
+    if (!el2) return
+    el2.textContent = ev ? ('exe v ' + ev + ' | overlay v ' + ov) : ('overlay v ' + ov)
+  }
+  render()
+  window.electronAPI?.onExeVersion?.(function(v) { ev = v || ''; render() })
 })()
-// exe version pushed by main process after page load
-window.electronAPI?.onExeVersion?.(function(ev) {
-  const el2 = document.getElementById('nbVersion')
-  if (!el2) return
-  const ov = window.electronAPI?.getOverlayVersion?.() || ''
-  const parts = []
-  if (ev) parts.push('exe v ' + ev)
-  if (ov) parts.push('overlay v ' + ov)
-  el2.textContent = parts.join(' | ')
-})
 
 // EXE update
 window.electronAPI?.onExeUpdateAvailable?.(({ currentVersion, newVersion }) => {
