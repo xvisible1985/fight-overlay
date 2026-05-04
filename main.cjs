@@ -432,7 +432,8 @@ async function downloadAndApplyExeUpdate() {
   const srv = savedLogin.srv || 'https://nordheimunion.ru'
   const downloadUrl = srv + '/api/widget-download'
   const currentExePath = app.getPath('exe')
-  const updatePath = path.join(path.dirname(currentExePath), '_FA-update.exe')
+  // Store update in userData — стабильная папка, не чистится Windows
+  const updatePath = path.join(app.getPath('userData'), '_FA-update.exe')
 
   try {
     await new Promise((resolve, reject) => {
@@ -457,6 +458,12 @@ async function downloadAndApplyExeUpdate() {
     return
   }
 
+  // Verify downloaded file exists
+  if (!fs.existsSync(updatePath)) {
+    if (mainWindow) mainWindow.webContents.send('exe-download-progress', { percent: -1 })
+    return
+  }
+
   // Save new version locally
   fs.writeFileSync(exeMetaPath(), JSON.stringify({ version: exePendingVersion }), 'utf8')
 
@@ -471,8 +478,8 @@ async function downloadAndApplyExeUpdate() {
 
   if (mainWindow) mainWindow.webContents.send('exe-download-progress', { percent: 100 })
 
-  // Batch script: retry until old EXE is deleted, then replace and relaunch
-  const batPath = path.join(os.tmpdir(), 'fa-update.bat')
+  // Batch script: retry until old EXE is deleted, move update, relaunch
+  const batPath = path.join(app.getPath('userData'), 'fa-update.bat')
   const bat = [
     '@echo off',
     ':WAIT',
@@ -480,7 +487,12 @@ async function downloadAndApplyExeUpdate() {
     `del /F /Q "${currentExePath}" 2>nul`,
     `if exist "${currentExePath}" goto WAIT`,
     `move /Y "${updatePath}" "${currentExePath}"`,
+    `if not exist "${currentExePath}" goto FAIL`,
     `start "" "${currentExePath}"`,
+    `goto END`,
+    ':FAIL',
+    `start "" "${updatePath}"`,
+    ':END',
     'del "%~f0"',
   ].join('\r\n')
   fs.writeFileSync(batPath, bat, 'ascii')
